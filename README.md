@@ -25,7 +25,7 @@ a terminal window and install Django with the following command:
     pip install Django==1.9.7
 ```
 
-Next, `cd` into the `plantalytics-backend` directory and run the
+Next, `cd` into the `plantalytics-backend/src` directory and run the
 following command:
 
 ```

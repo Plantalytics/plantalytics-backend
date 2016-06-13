@@ -8,7 +8,7 @@ This project is licensed under the MIT License. Please see the file LICENSE in t
 
 ## How to Run Locally
 
-So you'd like to give this project a spin? You've in luck, follow these 
+So you'd like to give this project a spin? You've in luck, follow these
 instructions for success! To start, you'll need to obtain the following:
 
 * **Python** (version 3 or greater)
@@ -33,15 +33,14 @@ following command:
 ```
 
 Once the development server is up and running, launch a web browser
-and go to the following url
+and go to the following URL:
 
-   http://localhost:8000/dummy/
-    
+* http://localhost:8000/dummy/
+
 If successful, you should see the following message:
 
-   *Hello , Plantalytics World!! Welcome to the backend, where things ain't pretty, but they get stuff DONE!*
-    
+* *Hello , Plantalytics World!! Welcome to the backend, where things ain't pretty, but they get stuff DONE!*
+
 **Did you see it? Congrats!! You're a *backend dev* now!**
 
 <img src="http://cdn-assets.insomniac.com/images/news/GIF%20Dance%20Party.gif">
-

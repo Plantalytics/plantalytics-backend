@@ -1,4 +1,4 @@
-# plantalytics
+# plantalytics-backend
 
 ## License
 

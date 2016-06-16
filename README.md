@@ -8,7 +8,7 @@ This project is licensed under the MIT License. Please see the file LICENSE in t
 
 ## How to Run Locally
 
-So you'd like to give this project a spin? You've in luck, follow these
+So you'd like to give this project a spin? You're in luck, follow these
 instructions for success! To start, you'll need to obtain the following:
 
 * **Python** (version 3 or greater)

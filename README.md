@@ -1,8 +1,6 @@
-[![Coverage Status](https://coveralls.io/repos/github/Plantalytics/plantalytics-backend/badge.svg?branch=master)](https://coveralls.io/github/Plantalytics/plantalytics-backend?branch=master)
-
-[![Build Status](https://travis-ci.org/Plantalytics/plantalytics-backend.svg?branch=master)](https://travis-ci.org/Plantalytics/plantalytics-backend)
-
 # plantalytics-backend
+[![Coverage Status](https://coveralls.io/repos/github/Plantalytics/plantalytics-backend/badge.svg?branch=master)](https://coveralls.io/github/Plantalytics/plantalytics-backend?branch=master)
+[![Build Status](https://travis-ci.org/Plantalytics/plantalytics-backend.svg?branch=master)](https://travis-ci.org/Plantalytics/plantalytics-backend)
 
 ## License
 
@@ -39,7 +37,7 @@ Next activate the virtual environment, to ensure you have a clean environment fo
 To turn the virtual environment off, simply type 'deactivate'
 Once the environment is on, install the required dependencies:
 ```
-    pip install -r requirements
+    pip install -r requirements.txt
 ```
 
 Next, run the following command:

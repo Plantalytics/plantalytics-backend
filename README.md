@@ -1,3 +1,7 @@
+[![Coverage Status](https://coveralls.io/repos/github/Plantalytics/plantalytics-backend/badge.svg?branch=master)](https://coveralls.io/github/Plantalytics/plantalytics-backend?branch=master)
+
+[![Build Status](https://travis-ci.org/Plantalytics/plantalytics-backend.svg?branch=master)](https://travis-ci.org/Plantalytics/plantalytics-backend)
+
 # plantalytics-backend
 
 ## License
@@ -18,19 +22,37 @@ instructions for success! To start, you'll need to obtain the following:
 * **Text Editor** (or **IDE**, *PyCharm* is worth a try ;) )
   * https://www.jetbrains.com/pycharm/download/#section=windows
 
-After successfully installing Python and/or your Text Editor/IDE, launch
-a terminal window and install Django with the following command:
+After successfully installing Python and/or your Text Editor/IDE, it's recommended you set up a virtual environment.
+
+To enable a virtual environment using python 3, first install virtualenv with the following command:
+```
+    pip install virtualenv
+```
+Then from inside your project directory use the following command:
+```
+    virtualenv -p python3 venv
+```
+Next activate the virtual environment, to ensure you have a clean environment for development.
+```
+    source venv/bin/activate
+```
+To turn the virtual environment off, simply type 'deactivate'
+Once the environment is on, install the required dependencies:
+```
+    pip install -r requirements
+```
+
+Next, run the following command:
 
 ```
-    pip install Django==1.9.7
+    python src/manage.py runserver
 ```
 
-Next, `cd` into the `plantalytics-backend/src` directory and run the
-following command:
-
+To run tests locally use the following:
 ```
-    python manage.py runserver
+    python src/manage.py test dummy
 ```
+where 'dummy' is the suits associated with the 'dummy' application page.
 
 Once the development server is up and running, launch a web browser
 and go to the following URL:

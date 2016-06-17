@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+#    'django_cassandra_engine',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -75,10 +76,18 @@ WSGI_APPLICATION = 'plantalytics_backend.wsgi.application'
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+#    'default': {
+#        'ENGINE': 'django_cassandra_engine',
+#        'NAME': '',
+#        'TEST_NAME': 'test_db',
+#        'HOST': '',
+#        'OPTIONS': {
+#            'replication': {
+#                'strategy_class': 'SimpleStrategy',
+#                'replication_factor': 1
+#            }
+#        }
+#    }
 }
 
 

@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.http import HttpResponse
 
 #from cassandra.cqlengine import connection
@@ -8,6 +7,7 @@ from cassandra.auth import PlainTextAuthProvider
 from cassandra.query import tuple_factory
 
 # Create your views here.
+
 
 def index(request):
     auth = PlainTextAuthProvider(username='', password='')

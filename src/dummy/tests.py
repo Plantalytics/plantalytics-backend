@@ -11,9 +11,7 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         response = client.get('/dummy/')
-        expected = "Hello, Plantalytics World!! Welcome to the backend, where things ain't pretty, but they get stuff DONE!"
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, expected)
 
     def test_admin_redirect(self):
         setup_test_environment()

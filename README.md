@@ -34,8 +34,9 @@ Next activate the virtual environment, to ensure you have a clean environment fo
 ```
     source venv/bin/activate
 ```
-To turn the virtual environment off, simply type 'deactivate'
+To turn the virtual environment off, simply type `deactivate`
 Once the environment is on, install the required dependencies:
+(Patience please, this may take a few minutes..._literally_)
 ```
     pip install -r requirements.txt
 ```

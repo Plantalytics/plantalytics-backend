@@ -1,7 +1,10 @@
 from django.http import HttpResponse
 
+import cassy
+
 # Create your views here.
 
 
 def index(request):
-    return HttpResponse("Hello, Plantalytics World!! Welcome to the backend, where things ain't pretty, but they get stuff DONE!")
+    result = cassy.get_env_data()
+    return HttpResponse(result)

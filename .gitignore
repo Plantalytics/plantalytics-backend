@@ -3,3 +3,4 @@ src/.idea
 *.pyc
 venv/*
 .DS_Store
+src/cassy_config.yml

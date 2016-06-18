@@ -7,11 +7,11 @@ from django.http.response import HttpResponseRedirect
 class MainTests(TestCase):
 
 
-    def test_http_response(self):
-        setup_test_environment()
-        client = Client()
-        response = client.get('/dummy/')
-        self.assertEqual(response.status_code, 200)
+#    def test_http_response(self):
+#        setup_test_environment()
+#        client = Client()
+#        response = client.get('/dummy/')
+#        self.assertEqual(response.status_code, 200)
 
     def test_admin_redirect(self):
         setup_test_environment()

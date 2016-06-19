@@ -1,7 +1,10 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 
+import cassy
+
 # Create your views here.
 
 def index(request):
-    return HttpResponse("Here's your environmental data!!")
+    result = cassy.get_env_data()
+    return HttpResponse(result)

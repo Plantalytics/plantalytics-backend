@@ -1,6 +1,6 @@
 from cassandra.cluster import Cluster
 from cassandra.auth import PlainTextAuthProvider
-from cassandra.query import tuple_factory
+from cassandra.query import named_tuple_factory
 
 import yaml
 
@@ -14,6 +14,29 @@ def get_env_data(vineyard_id, variable_id):
     """
     Obtains temperature, humidity, and leaf wetness dataself.
     """
-    session.row_factory = tuple_factory
-    result = session.execute("SELECT * FROM " + config['TABLE'] + " LIMIT 1")
-    return result
+
+    # Dictionary to hold environmental variable id mappings
+    env_variables = {
+        '0': 'temperature',
+        '1': 'humidity',
+        '2': 'leafwetness',
+    }
+
+    variable = env_variables[variable_id]
+
+    session.row_factory = named_tuple_factory
+    rows = session.execute("SELECT " + variable + " FROM " + config['TABLE'] + " LIMIT 10")
+    result = []
+
+    if variable == 'temperature':
+        for row in rows:
+            result.append(row.temperature)
+        return result
+    elif variable == 'humidity':
+        for row in rows:
+            result.append(row.humidity)
+        return result
+    else:
+        for row in rows:
+            result.append(row.leafwetness)
+        return result

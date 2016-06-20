@@ -10,10 +10,10 @@ cluster = Cluster([config['HOST']], auth_provider=auth)
 session = cluster.connect(config['KEYSPACE'])
 
 
-def get_env_data():
+def get_env_data(vineyard_id, variable_id):
     """
     Obtains temperature, humidity, and leaf wetness dataself.
     """
     session.row_factory = tuple_factory
-    rows = session.execute("SELECT * FROM " + config['TABLE'])
-    return rows[0]
+    result = session.execute("SELECT * FROM " + config['TABLE'] + " LIMIT 1")
+    return result

@@ -28,8 +28,8 @@ def index(request, vineyard_id, variable_id):
         lat = random.uniform(0, 90)
         lon = random.uniform(0, 180)
         value = row
-        record = {"latitude":lat, "value":value, "longitude":lon}
+        record = {"latitude":lat, variable:value, "longitude":lon}
         response_records.append(record)
     response_dict["env_data"] = response_records
-    
+
     return HttpResponse(json.dumps(response_dict), content_type="application/json")

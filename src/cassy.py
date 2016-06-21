@@ -4,9 +4,9 @@ from cassandra.query import named_tuple_factory
 
 import os
 
-auth = PlainTextAuthProvider(username=os.environ.get('DB_USERNAME'), password=os.environ.get('DB_PASSWORD'))
-cluster = Cluster([os.environ.get('DB_HOST')], auth_provider=auth)
-session = cluster.connect(os.environ.get('DB_KEYSPACE'))
+auth = PlainTextAuthProvider(username=os.environ.get('DB_USERNAME', ''), password=os.environ.get('DB_PASSWORD', ''))
+cluster = Cluster([os.environ.get('DB_HOST', '')], auth_provider=auth)
+session = cluster.connect(os.environ.get('DB_KEYSPACE', ''))
 
 
 def get_env_data(vineyard_id, variable_id):
@@ -24,7 +24,7 @@ def get_env_data(vineyard_id, variable_id):
     variable = env_variables[variable_id]
 
     session.row_factory = named_tuple_factory
-    rows = session.execute("SELECT " + variable + " FROM " + os.environ.get('DB_TABLE') + " LIMIT 10")
+    rows = session.execute("SELECT " + variable + " FROM " + os.environ.get('DB_TABLE', '') + " LIMIT 10")
     result = []
 
     if variable == 'temperature':

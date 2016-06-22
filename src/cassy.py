@@ -9,24 +9,34 @@ cluster = Cluster([os.environ.get('DB_HOST')], auth_provider=auth)
 session = cluster.connect(os.environ.get('DB_KEYSPACE'))
 
 
-def get_env_data(vineyard_id, env_variable):
+def get_env_data(node_id, env_variable):
     """
     Obtains temperature, humidity, and leaf wetness dataself.
     """
 
+    node = str(node_id)
     session.row_factory = named_tuple_factory
-    rows = session.execute("SELECT " + env_variable + " FROM " + os.environ.get('DB_TABLE') + " LIMIT 10")
-    result = []
+    rows = session.execute("SELECT " + env_variable + " FROM " + os.environ.get('DB_ENV_TABLE') + " WHERE nodeid = " + node + " LIMIT 1")
 
     if env_variable == 'temperature':
-        for row in rows:
-            result.append(row.temperature)
-        return result
+        return rows[0].temperature
     elif env_variable == 'humidity':
-        for row in rows:
-            result.append(row.humidity)
-        return result
+        return rows[0].humidity
     else:
-        for row in rows:
-            result.append(row.leafwetness)
-        return result
+        return rows[0].leafwetness
+
+def get_node_coordinates(vineyard_id):
+    """
+    Obtains the latitude and longitude coordinates for the nodes of a vineyard.
+    """
+
+    session.row_factory = named_tuple_factory
+    rows = session.execute("SELECT nodeid, nodelat, nodelon FROM " + os.environ.get('DB_HW_TABLE') + " WHERE hubid = " + vineyard_id)
+    result = []
+    for row in rows:
+        location = {}
+        location["node_id"] = row.nodeid
+        location["lat"] = row.nodelat
+        location["lon"] = row.nodelon
+        result.append(location)
+    return result

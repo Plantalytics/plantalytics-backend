@@ -9,29 +9,20 @@ cluster = Cluster([os.environ.get('DB_HOST')], auth_provider=auth)
 session = cluster.connect(os.environ.get('DB_KEYSPACE'))
 
 
-def get_env_data(vineyard_id, variable_id):
+def get_env_data(vineyard_id, env_variable):
     """
     Obtains temperature, humidity, and leaf wetness dataself.
     """
 
-    # Dictionary to hold environmental variable id mappings
-    env_variables = {
-        '0': 'temperature',
-        '1': 'humidity',
-        '2': 'leafwetness',
-    }
-
-    variable = env_variables[variable_id]
-
     session.row_factory = named_tuple_factory
-    rows = session.execute("SELECT " + variable + " FROM " + os.environ.get('DB_TABLE') + " LIMIT 10")
+    rows = session.execute("SELECT " + env_variable + " FROM " + os.environ.get('DB_TABLE') + " LIMIT 10")
     result = []
 
-    if variable == 'temperature':
+    if env_variable == 'temperature':
         for row in rows:
             result.append(row.temperature)
         return result
-    elif variable == 'humidity':
+    elif env_variable == 'humidity':
         for row in rows:
             result.append(row.humidity)
         return result

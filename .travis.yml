@@ -9,6 +9,8 @@ before_install:
 script:
 - python src/manage.py test dummy
 - coverage run src/manage.py test dummy
+- python src/manage.py test env_data
+- coverage run src/manage.py test env_data
 after_success:
 - coveralls --verbose
 env:

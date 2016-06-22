@@ -1,5 +1,5 @@
 # plantalytics-backend
-[![Coverage Status](https://coveralls.io/repos/github/Plantalytics/plantalytics-backend/badge.svg?branch=master)](https://coveralls.io/github/Plantalytics/plantalytics-backend?branch=develop)
+[![Coverage Status](https://coveralls.io/repos/github/Plantalytics/plantalytics-backend/badge.svg?branch=develop)](https://coveralls.io/github/Plantalytics/plantalytics-backend?branch=develop)
 [![Build Status](https://travis-ci.org/Plantalytics/plantalytics-backend.svg?branch=develop)](https://travis-ci.org/Plantalytics/plantalytics-backend)
 
 ## License

@@ -23,7 +23,6 @@ def get_env_data(node_id, env_variable):
     """
     Obtains temperature, humidity, and leaf wetness dataself.
     """
-
     node = str(node_id)
     session.row_factory = named_tuple_factory
     rows = session.execute("SELECT " + env_variable
@@ -42,18 +41,17 @@ def get_node_coordinates(vineyard_id):
     """
     Obtains the latitude and longitude coordinates for the nodes of a vineyard.
     """
-
     coordinates = []
     session.row_factory = named_tuple_factory
-    rows = session.execute("SELECT nodeid, nodelat, nodelon"
+    rows = session.execute("SELECT nodeid, nodelocation"
                            + " FROM " + os.environ.get('DB_HW_TABLE')
-                           + " WHERE hubid = " + vineyard_id)
+                           + " WHERE vineid = " + vineyard_id)
 
     # Process node coordinates for requested vineyard.
     for node in rows:
         location = {}
         location["node_id"] = node.nodeid
-        location["lat"] = node.nodelat
-        location["lon"] = node.nodelon
+        location["lat"] = node.nodelocation[0]
+        location["lon"] = node.nodelocation[1]
         coordinates.append(location)
     return coordinates

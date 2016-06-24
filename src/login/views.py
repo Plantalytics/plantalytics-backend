@@ -18,6 +18,6 @@ def index(request, username, password):
 
     if (username == os.environ.get('LOGIN_USERNAME') and
             password == os.environ.get('LOGIN_PASSWORD')):
-        return HttpResponse("Success!")
+        return HttpResponse()
     else:
-        return HttpResponseForbidden("Fail!")
+        return HttpResponseForbidden()

@@ -7,8 +7,10 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
+from __future__ import unicode_literals
+
 from django.apps import AppConfig
 
 
-class DummyConfig(AppConfig):
-    name = 'dummy'
+class EnvDataConfig(AppConfig):
+    name = 'env_data'

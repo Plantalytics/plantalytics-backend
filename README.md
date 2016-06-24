@@ -1,6 +1,6 @@
 # plantalytics-backend
-[![Coverage Status](https://coveralls.io/repos/github/Plantalytics/plantalytics-backend/badge.svg?branch=master)](https://coveralls.io/github/Plantalytics/plantalytics-backend?branch=master)
-[![Build Status](https://travis-ci.org/Plantalytics/plantalytics-backend.svg?branch=master)](https://travis-ci.org/Plantalytics/plantalytics-backend)
+[![Coverage Status](https://coveralls.io/repos/github/Plantalytics/plantalytics-backend/badge.svg?branch=develop)](https://coveralls.io/github/Plantalytics/plantalytics-backend?branch=develop)
+[![Build Status](https://travis-ci.org/Plantalytics/plantalytics-backend.svg?branch=develop)](https://travis-ci.org/Plantalytics/plantalytics-backend)
 
 ## License
 
@@ -41,18 +41,16 @@ Once the environment is on, install the required dependencies:
     pip install -r requirements.txt
 ```
 
-Next, run the following command:
-
-```
-    python src/manage.py runserver
-```
-
 To run tests locally use the following:
 ```
     python src/manage.py test dummy
 ```
 where 'dummy' is the suits associated with the 'dummy' application page.
 
+Next, run the following command:
+```
+    python src/manage.py runserver
+```
 Once the development server is up and running, launch a web browser
 and go to the following URL:
 

@@ -7,8 +7,8 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
-from django.apps import AppConfig
+from __future__ import unicode_literals
 
+from django.db import models
 
-class DummyConfig(AppConfig):
-    name = 'dummy'
+# Create your models here.

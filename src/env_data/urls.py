@@ -7,8 +7,9 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
-from django.apps import AppConfig
+from django.conf.urls import url
+from . import views
 
-
-class DummyConfig(AppConfig):
-    name = 'dummy'
+urlpatterns = [
+    url(r'^(?P<vineyard_id>[0-9])/(?P<env_variable>\w+)/$', views.index, name='index')
+]

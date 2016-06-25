@@ -11,10 +11,13 @@ import os
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseForbidden
 
-def index(request, username, password):
+def index(request):
     """
     Mock auth endpoint to return success if correct user/pass are passed in.
     """
+
+    username = request.GET['username']
+    password = request.GET['password']
 
     if (username == os.environ.get('LOGIN_USERNAME') and
             password == os.environ.get('LOGIN_PASSWORD')):

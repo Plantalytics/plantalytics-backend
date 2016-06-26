@@ -15,11 +15,13 @@ from django.http import HttpResponse
 import cassy
 
 
-def index(request, vineyard_id, env_variable):
+def index(request):
     """
     Access database to response with requested environmental mapping data.
     """
 
+    vineyard_id = request.GET['vineyard_id']
+    env_variable = request.GET['env_variable']
     response = {}
     map_data = []
     coordinates = cassy.get_node_coordinates(vineyard_id)

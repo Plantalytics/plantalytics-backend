@@ -18,19 +18,25 @@ class MainTests(TestCase):
     def test_response_temperature_data(self):
         setup_test_environment()
         client = Client()
-        response = client.get('/env_data/0/temperature/')
+        response = client.get('/env_data/'
+                              + '?vineyard_id=0&'
+                              + 'env_variable=temperature')
         self.assertEqual(response.status_code, 200)
 
     def test_response_humidity_data(self):
         setup_test_environment()
         client = Client()
-        response = client.get('/env_data/0/humidity/')
+        response = client.get('/env_data/'
+                              + '?vineyard_id=0&'
+                              + 'env_variable=humidity')
         self.assertEqual(response.status_code, 200)
 
     def test_response_leafwetness_data(self):
         setup_test_environment()
         client = Client()
-        response = client.get('/env_data/0/leafwetness/')
+        response = client.get('/env_data/'
+                              + '?vineyard_id=0&'
+                              + 'env_variable=leafwetness')
         self.assertEqual(response.status_code, 200)
 
     def test_admin_redirect(self):

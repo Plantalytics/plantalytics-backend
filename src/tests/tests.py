@@ -93,7 +93,7 @@ class MainTests(TestCase):
             + '?vineyard_id=101&'
             + 'env_variable=temperature'
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 400)
 
     def test_response_invlaid_env_variable(self):
         setup_test_environment()
@@ -103,7 +103,17 @@ class MainTests(TestCase):
             + '?vineyard_id=0&'
             + 'env_variable=cheesiness'
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 400)
+
+    def test_response_invlaid_env_variable(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/env_data/'
+            + '?vineyard_id=101&'
+            + 'env_variable=cheesiness'
+        )
+        self.assertEqual(response.status_code, 400)
 
     def test_admin_redirect(self):
         setup_test_environment()

@@ -20,7 +20,7 @@ class MainTests(TestCase):
     def test_http_response(self):
         setup_test_environment()
         client = Client()
-        response = client.get('/dummy/')
+        response = client.get('/tests/')
         self.assertEqual(response.status_code, 200)
 
     def test_response_valid_login(self):
@@ -33,14 +33,14 @@ class MainTests(TestCase):
                               + os.environ.get('LOGIN_PASSWORD'))
         self.assertEqual(response.status_code, 200)
 
-#    def test_response_invalid_username(self):
-#        setup_test_environment()
-#        client = Client()
-#        response = client.get('/login/'
-#                              + '?username=mrawesome'
-#                              + '&password='
-#                              + os.environ.get('LOGIN_PASSWORD'))
-#        self.assertEqual(response.status_code, 403)
+    def test_response_invalid_username(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get('/login/'
+                              + '?username=mrawesome'
+                              + '&password='
+                              + os.environ.get('LOGIN_PASSWORD'))
+        self.assertEqual(response.status_code, 403)
 
     def test_response_invalid_password(self):
         setup_test_environment()

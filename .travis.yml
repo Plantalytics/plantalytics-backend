@@ -7,8 +7,8 @@ before_install:
 - pip install coveralls
 - pip install -r requirements.txt
 script:
-- python src/manage.py test dummy
-- coverage run src/manage.py test dummy
+- python src/manage.py test tests
+- coverage run src/manage.py test tests
 after_success:
 - coveralls --verbose
 env:

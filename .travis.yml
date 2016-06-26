@@ -11,6 +11,8 @@ script:
 - coverage run src/manage.py test dummy
 - python src/manage.py test env_data
 - coverage run src/manage.py test env_data
+- python src/manage.py test login
+- coverage run src/manage.py test login
 after_success:
 - coveralls --verbose
 env:

@@ -6,6 +6,7 @@
 #     Please see the file LICENSE in this distribution for license terms.
 # Contact: plantalytics.capstone@gmail.com
 #
+import os
 
 from django.test import TestCase, Client
 from django.test.utils import setup_test_environment
@@ -20,6 +21,58 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         response = client.get('/dummy/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_response_valid_login(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get('/login/'
+                              + '?username='
+                              + os.environ.get('LOGIN_USERNAME')
+                              + '&password='
+                              + os.environ.get('LOGIN_PASSWORD'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_response_invalid_username(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get('/login/'
+                              + '?username=mrawesome'
+                              + '&password='
+                              + os.environ.get('LOGIN_PASSWORD'))
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_invalid_password(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get('/login/'
+                              + '?username='
+                              + os.environ.get('LOGIN_USERNAME')
+                              + '&password=notcorrect')
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_temperature_data(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get('/env_data/'
+                              + '?vineyard_id=0&'
+                              + 'env_variable=temperature')
+        self.assertEqual(response.status_code, 200)
+
+    def test_response_humidity_data(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get('/env_data/'
+                              + '?vineyard_id=0&'
+                              + 'env_variable=humidity')
+        self.assertEqual(response.status_code, 200)
+
+    def test_response_leafwetness_data(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get('/env_data/'
+                              + '?vineyard_id=0&'
+                              + 'env_variable=leafwetness')
         self.assertEqual(response.status_code, 200)
 
     def test_admin_redirect(self):

@@ -16,7 +16,7 @@ class MainTests(TestCase):
     """
     Executes all of the unit tests for the 'login' endpoint.
     """
-    def test_response_login(self):
+    def test_response_valid_login(self):
         setup_test_environment()
         client = Client()
         response = client.get('/login/'
@@ -25,6 +25,14 @@ class MainTests(TestCase):
                               + '&password='
                               + os.environ.get('LOGIN_PASSWORD'))
         self.assertEqual(response.status_code, 200)
+
+    def test_response_invalid_login(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get('/login/'
+                              + '?username=mrawesome'
+                              + '&password=notcorrect')
+        self.assertEqual(response.status_code, 403)
 
     def test_admin_redirect(self):
         setup_test_environment()

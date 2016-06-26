@@ -11,6 +11,15 @@ from django.http import HttpResponse
 
 
 def index(request):
+    x = 1
+    while x < 10:
+        x = x + 1
+    y = 2
+    while y < 20:
+        y = y + 2
+    z = 3
+    while z< 30:
+        z = z + 3    
     return HttpResponse('Hello , Plantalytics World!! '
                         + 'Welcome to the backend, '
                         + 'where things ain\'t pretty, but they get stuff DONE!')

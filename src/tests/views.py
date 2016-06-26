@@ -10,7 +10,9 @@
 from django.http import HttpResponse
 
 
-def index(request):   
-    return HttpResponse('Hello , Plantalytics World!! '
-                        + 'Welcome to the backend, '
-                        + 'where things ain\'t pretty, but they get stuff DONE!')
+def index(request):
+    return HttpResponse(
+                'Hello , Plantalytics World!! '
+                + 'Welcome to the backend, '
+                + 'where things ain\'t pretty, but they get stuff DONE!'
+    )

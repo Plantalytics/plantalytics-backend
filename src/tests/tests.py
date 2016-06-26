@@ -6,6 +6,7 @@
 #     Please see the file LICENSE in this distribution for license terms.
 # Contact: plantalytics.capstone@gmail.com
 #
+
 import os
 
 from django.test import TestCase, Client
@@ -105,7 +106,7 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_response_invlaid_env_variable(self):
+    def test_response_invlaid_env_data_request(self):
         setup_test_environment()
         client = Client()
         response = client.get(

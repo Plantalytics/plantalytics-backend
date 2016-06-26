@@ -14,11 +14,12 @@ So you'd like to give this project a spin? You're in luck, follow these
 instructions for success! To start, you'll need to obtain the following:
 
 * **Python** (version 3 or greater)
-  * https://www.python.org/downloads/
+  * https://www.python.org
 * **Django** (version 1.9 or greater)
   * See below for installation.
-* **Text Editor** (or **IDE**, *PyCharm* is worth a try ;) )
-  * https://www.jetbrains.com/pycharm/download/#section=windows
+* **Text Editor** (**Atom** is great! Or an **IDE**, *PyCharm* is worth a try! ;) )
+  * https://atom.io
+  * https://www.jetbrains.com/pycharm/
 
 After successfully installing Python and/or your Text Editor/IDE, it's recommended you set up a virtual environment.
 
@@ -59,6 +60,6 @@ If successful, you should see the following message:
 
 * *Hello , Plantalytics World!! Welcome to the backend, where things ain't pretty, but they get stuff DONE!*
 
-**Did you see it? Congrats!! You're a *backend dev* now!**
+**Did you see it? Congrats!! You're a *backend dev* now! Let's dance.**
 
 <img src="http://cdn-assets.insomniac.com/images/news/GIF%20Dance%20Party.gif">

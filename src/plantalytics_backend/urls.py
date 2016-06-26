@@ -1,3 +1,12 @@
+#
+# Plantalytics
+#     Copyright (c) 2016 Sapphire Becker, Katy Brimm, Scott Ewing,
+#       Matt Fraser, Kelly Ledford, Michael Limb, Steven Ngo, Eric Turley
+#     This project is licensed under the MIT License.
+#     Please see the file LICENSE in this distribution for license terms.
+# Contact: plantalytics.capstone@gmail.com
+#
+
 """plantalytics_backend URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -13,6 +22,7 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+
 from django.conf.urls import include, url
 from django.contrib import admin
 

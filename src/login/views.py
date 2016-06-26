@@ -6,6 +6,7 @@
 #     Please see the file LICENSE in this distribution for license terms.
 # Contact: plantalytics.capstone@gmail.com
 #
+
 import os
 
 from django.shortcuts import render

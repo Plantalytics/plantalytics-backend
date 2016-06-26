@@ -13,9 +13,14 @@ from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster
 from cassandra.query import named_tuple_factory
 
-auth = PlainTextAuthProvider(username=os.environ.get('DB_USERNAME'),
-                             password=os.environ.get('DB_PASSWORD'))
-cluster = Cluster([os.environ.get('DB_HOST')], auth_provider=auth)
+auth = PlainTextAuthProvider(
+            username=os.environ.get('DB_USERNAME'),
+            password=os.environ.get('DB_PASSWORD')
+)
+cluster = Cluster(
+            [os.environ.get('DB_HOST')],
+            auth_provider=auth
+)
 session = cluster.connect(os.environ.get('DB_KEYSPACE'))
 
 
@@ -28,9 +33,11 @@ def get_env_data(node_id, env_variable):
     session.row_factory = named_tuple_factory
 
     try:
-        rows = session.execute('SELECT ' + env_variable
-                               + ' FROM ' + os.environ.get('DB_ENV_TABLE')
-                               + ' WHERE nodeid = ' + node + ' LIMIT 1;')
+        rows = session.execute(
+                    'SELECT ' + env_variable
+                    + ' FROM ' + os.environ.get('DB_ENV_TABLE')
+                    + ' WHERE nodeid = ' + node + ' LIMIT 1;'
+        )
 
         if not rows:
             raise Exception('Invalid Environmental Variable or Node ID')
@@ -54,9 +61,11 @@ def get_node_coordinates(vineyard_id):
     session.row_factory = named_tuple_factory
 
     try:
-        rows = session.execute('SELECT nodeid, nodelocation'
-                               + ' FROM ' + os.environ.get('DB_HW_TABLE')
-                               + ' WHERE vineid = ' + vineyard_id + ';')
+        rows = session.execute(
+                    'SELECT nodeid, nodelocation'
+                    + ' FROM ' + os.environ.get('DB_HW_TABLE')
+                    + ' WHERE vineid = ' + vineyard_id + ';'
+        )
 
         if not rows:
             raise Exception('Invalid Vineyard ID')
@@ -80,9 +89,11 @@ def get_user_password(username):
     session.row_factory = named_tuple_factory
 
     try:
-        rows = session.execute('SELECT password'
-                                + ' FROM ' + os.environ.get('DB_USER_TABLE')
-                                + ' WHERE username = \''+ username + '\';')
+        rows = session.execute(
+                    'SELECT password'
+                    + ' FROM ' + os.environ.get('DB_USER_TABLE')
+                    + ' WHERE username = \''+ username + '\';'
+        )
 
         if not rows:
             raise Exception('Invalid Username')

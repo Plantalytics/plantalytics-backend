@@ -40,4 +40,4 @@ def index(request):
         response['env_data'] = map_data
         return HttpResponse(json.dumps(response), content_type='application/json')
     except Exception as e:
-        return HttpResponseForbidden
+        return HttpResponseForbidden()

@@ -15,8 +15,9 @@ from django.http.response import HttpResponseRedirect
 
 class MainTests(TestCase):
     """
-    Executes all of the unit tests for the 'dummy' endpoint.
+    Executes all of the unit tests for plantalytics-backend.
     """
+
     def test_http_response(self):
         setup_test_environment()
         client = Client()
@@ -26,54 +27,83 @@ class MainTests(TestCase):
     def test_response_valid_login(self):
         setup_test_environment()
         client = Client()
-        response = client.get('/login/'
-                              + '?username='
-                              + os.environ.get('LOGIN_USERNAME')
-                              + '&password='
-                              + os.environ.get('LOGIN_PASSWORD'))
+        response = client.get(
+            '/login/?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
         self.assertEqual(response.status_code, 200)
 
     def test_response_invalid_username(self):
         setup_test_environment()
         client = Client()
-        response = client.get('/login/'
-                              + '?username=mrawesome'
-                              + '&password='
-                              + os.environ.get('LOGIN_PASSWORD'))
+        response = client.get(
+            '/login/?username=mrawesome'
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
         self.assertEqual(response.status_code, 403)
 
     def test_response_invalid_password(self):
         setup_test_environment()
         client = Client()
-        response = client.get('/login/'
-                              + '?username='
-                              + os.environ.get('LOGIN_USERNAME')
-                              + '&password=notcorrect')
+        response = client.get(
+            '/login/?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password=notcorrect'
+        )
         self.assertEqual(response.status_code, 403)
 
     def test_response_temperature_data(self):
         setup_test_environment()
         client = Client()
-        response = client.get('/env_data/'
-                              + '?vineyard_id=0&'
-                              + 'env_variable=temperature')
+        response = client.get(
+            '/env_data/'
+            + '?vineyard_id=0&'
+            + 'env_variable=temperature'
+        )
         self.assertEqual(response.status_code, 200)
 
     def test_response_humidity_data(self):
         setup_test_environment()
         client = Client()
-        response = client.get('/env_data/'
-                              + '?vineyard_id=0&'
-                              + 'env_variable=humidity')
+        response = client.get(
+            '/env_data/'
+            + '?vineyard_id=0&'
+            + 'env_variable=humidity'
+        )
         self.assertEqual(response.status_code, 200)
 
     def test_response_leafwetness_data(self):
         setup_test_environment()
         client = Client()
-        response = client.get('/env_data/'
-                              + '?vineyard_id=0&'
-                              + 'env_variable=leafwetness')
+        response = client.get(
+            '/env_data/'
+            + '?vineyard_id=0&'
+            + 'env_variable=leafwetness'
+        )
         self.assertEqual(response.status_code, 200)
+
+    def test_response_invlaid_vineyard(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/env_data/'
+            + '?vineyard_id=101&'
+            + 'env_variable=temperature'
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_invlaid_env_variable(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/env_data/'
+            + '?vineyard_id=0&'
+            + 'env_variable=cheesiness'
+        )
+        self.assertEqual(response.status_code, 403)
 
     def test_admin_redirect(self):
         setup_test_environment()

@@ -25,9 +25,9 @@ def get_env_data(node_id, env_variable):
     """
     node = str(node_id)
     session.row_factory = named_tuple_factory
-    rows = session.execute("SELECT " + env_variable
-                           + " FROM " + os.environ.get('DB_ENV_TABLE')
-                           + " WHERE nodeid = " + node + " LIMIT 1")
+    rows = session.execute('SELECT ' + env_variable
+                           + ' FROM ' + os.environ.get('DB_ENV_TABLE')
+                           + ' WHERE nodeid = ' + node + ' LIMIT 1;')
 
     # Exctract requested environmental variable.
     if env_variable == 'temperature':
@@ -43,16 +43,16 @@ def get_node_coordinates(vineyard_id):
     """
     coordinates = []
     session.row_factory = named_tuple_factory
-    rows = session.execute("SELECT nodeid, nodelocation"
-                           + " FROM " + os.environ.get('DB_HW_TABLE')
-                           + " WHERE vineid = " + vineyard_id)
+    rows = session.execute('SELECT nodeid, nodelocation'
+                           + ' FROM ' + os.environ.get('DB_HW_TABLE')
+                           + ' WHERE vineid = ' + vineyard_id + ';')
 
     # Process node coordinates for requested vineyard.
     for node in rows:
         location = {}
-        location["node_id"] = node.nodeid
-        location["lat"] = node.nodelocation[0]
-        location["lon"] = node.nodelocation[1]
+        location['node_id'] = node.nodeid
+        location['lat'] = node.nodelocation[0]
+        location['lon'] = node.nodelocation[1]
         coordinates.append(location)
     return coordinates
 

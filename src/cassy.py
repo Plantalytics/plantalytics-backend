@@ -55,3 +55,19 @@ def get_node_coordinates(vineyard_id):
         location["lon"] = node.nodelocation[1]
         coordinates.append(location)
     return coordinates
+
+def get_user_password(username):
+    """
+    Obtains password for the requested user.
+    """
+    session.row_factory = named_tuple_factory
+    try:
+        rows = session.execute('SELECT password'
+                                + ' FROM ' + os.environ.get('DB_USER_TABLE')
+                                + ' WHERE username = \''+ username + '\';')
+        if not rows:
+            raise Exception('Invlaid Username')
+        else:
+            return rows[0].password
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: ' + str(e))

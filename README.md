@@ -43,9 +43,8 @@ Once the environment is on, install the required dependencies:
 
 To run tests locally use the following:
 ```
-    python src/manage.py test dummy
+    python src/manage.py test tests
 ```
-where 'dummy' is the suits associated with the 'dummy' application page.
 
 Next, run the following command:
 ```
@@ -54,7 +53,7 @@ Next, run the following command:
 Once the development server is up and running, launch a web browser
 and go to the following URL:
 
-* http://localhost:8000/dummy/
+* http://localhost:8000/tests/
 
 If successful, you should see the following message:
 

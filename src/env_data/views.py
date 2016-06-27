@@ -10,24 +10,34 @@
 import json
 
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest
 
 import cassy
 
 
-def index(request, vineyard_id, env_variable):
+def index(request):
     """
     Access database to response with requested environmental mapping data.
     """
 
+    vineyard_id = request.GET['vineyard_id']
+    env_variable = request.GET['env_variable']
     response = {}
     map_data = []
-    coordinates = cassy.get_node_coordinates(vineyard_id)
 
-    # Build data structure to return as JSON response content.
-    for coordinate in coordinates:
-        value = cassy.get_env_data(coordinate['node_id'], env_variable)
-        map_data_point = {"latitude":coordinate['lat'], "longitude":coordinate['lon'], env_variable:value}
-        map_data.append(map_data_point)
-    response["env_data"] = map_data
-    return HttpResponse(json.dumps(response), content_type="application/json")
+    try:
+        coordinates = cassy.get_node_coordinates(vineyard_id)
+
+        # Build data structure to return as JSON response content.
+        for coordinate in coordinates:
+            value = cassy.get_env_data(coordinate['node_id'], env_variable)
+            map_data_point = {
+                'latitude':coordinate['lat'],
+                'longitude':coordinate['lon'],
+                env_variable:value
+            }
+            map_data.append(map_data_point)
+        response['env_data'] = map_data
+        return HttpResponse(json.dumps(response), content_type='application/json')
+    except Exception as e:
+        return HttpResponseBadRequest()

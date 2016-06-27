@@ -6,18 +6,26 @@
 #     Please see the file LICENSE in this distribution for license terms.
 # Contact: plantalytics.capstone@gmail.com
 #
+
 import os
 
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseForbidden
 
-def index(request, username, password):
+import cassy
+
+def index(request):
     """
     Mock auth endpoint to return success if correct user/pass are passed in.
     """
+    username = request.GET['username']
+    submitted_password = request.GET['password']
 
-    if (username == os.environ.get('LOGIN_USERNAME') and
-            password == os.environ.get('LOGIN_PASSWORD')):
-        return HttpResponse()
-    else:
+    try:
+        stored_password = cassy.get_user_password(username)
+        if stored_password == submitted_password:
+            return HttpResponse()
+        else:
+            return HttpResponseForbidden()
+    except Exception as e:
         return HttpResponseForbidden()

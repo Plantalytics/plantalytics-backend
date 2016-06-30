@@ -18,8 +18,8 @@ def index(request):
     """
     Mock auth endpoint to return success if correct user/pass are passed in.
     """
-    username = request.GET['username']
-    submitted_password = request.GET['password']
+    username = request.GET.get('username','')
+    submitted_password = request.GET.get('password','')
 
     try:
         stored_password = cassy.get_user_password(username)

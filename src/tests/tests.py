@@ -29,7 +29,7 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         response = client.get(
-            '/login/?username='
+            '/login?username='
             + os.environ.get('LOGIN_USERNAME')
             + '&password='
             + os.environ.get('LOGIN_PASSWORD')
@@ -40,7 +40,7 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         response = client.get(
-            '/login/?username=mrawesome'
+            '/login?username=mrawesome'
             + '&password='
             + os.environ.get('LOGIN_PASSWORD')
         )
@@ -50,7 +50,7 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         response = client.get(
-            '/login/?username='
+            '/login?username='
             + os.environ.get('LOGIN_USERNAME')
             + '&password=notcorrect'
         )
@@ -60,7 +60,7 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         response = client.get(
-            '/env_data/'
+            '/env_data'
             + '?vineyard_id=0&'
             + 'env_variable=temperature'
         )
@@ -70,7 +70,7 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         response = client.get(
-            '/env_data/'
+            '/env_data'
             + '?vineyard_id=0&'
             + 'env_variable=humidity'
         )
@@ -80,7 +80,7 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         response = client.get(
-            '/env_data/'
+            '/env_data'
             + '?vineyard_id=0&'
             + 'env_variable=leafwetness'
         )
@@ -90,7 +90,7 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         response = client.get(
-            '/env_data/'
+            '/env_data'
             + '?vineyard_id=101&'
             + 'env_variable=temperature'
         )
@@ -100,7 +100,7 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         response = client.get(
-            '/env_data/'
+            '/env_data'
             + '?vineyard_id=0&'
             + 'env_variable=cheesiness'
         )
@@ -110,7 +110,7 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         response = client.get(
-            '/env_data/'
+            '/env_data'
             + '?vineyard_id=101&'
             + 'env_variable=cheesiness'
         )

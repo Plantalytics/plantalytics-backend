@@ -20,9 +20,12 @@ def index(request):
     Access database to respond with requested vineyard metadata.
     """
     vineyard_id = request.GET.get('vineyard_id', '')
+    response = {}
 
     try:
-        response = cassy.get_vineyard_coordinates(vineyard_id)
-        return HttpResponse(json.dumps(response[0]), content_type='application/json')
+        coordinates = cassy.get_vineyard_coordinates(vineyard_id)
+        response['center'] = coordinates[0]
+        response['boundary'] = coordinates[1]
+        return HttpResponse(json.dumps(response), content_type='application/json')
     except Exception as e:
         return HttpResponseBadRequest()

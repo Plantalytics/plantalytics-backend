@@ -53,12 +53,16 @@ def get_env_data(node_id, env_variable):
         raise Exception('Transaction Error Occurred: ' + str(e))
 
 def get_vineyard_coordinates(vineyard_id):
+    """
+    Obtains the coordinates for center point and boundary of a vineyard.
+    """
 
-    center = []
+    coordinates = []
+    session.row_factory = named_tuple_factory
 
     try:
         rows = session.execute(
-                    'SELECT center'
+                    'SELECT boundaries, center'
                     + ' FROM ' + os.environ.get('DB_VINE_TABLE')
                     + ' WHERE vineid = ' + vineyard_id + ';'
         )
@@ -67,10 +71,20 @@ def get_vineyard_coordinates(vineyard_id):
             raise Exception('Invalid Vineyard ID')
         else:
             center_point = {}
+            boundary_points = []
+
             center_point['lat'] = rows[0].center[0]
             center_point['lon'] = rows[0].center[1]
-            center.append(center_point)
-            return center
+            coordinates.append(center_point)
+
+            for point in rows[0].boundaries:
+                boundary_point = {}
+                boundary_point['lat'] = point[0]
+                boundary_point['lon'] = point[1]
+                boundary_points.append(boundary_point)
+
+            coordinates.append(boundary_points)
+            return coordinates
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 

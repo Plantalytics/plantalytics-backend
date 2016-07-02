@@ -52,6 +52,28 @@ def get_env_data(node_id, env_variable):
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
+def get_vineyard_coordinates(vineyard_id):
+
+    center = []
+
+    try:
+        rows = session.execute(
+                    'SELECT center'
+                    + ' FROM ' + os.environ.get('DB_VINE_TABLE')
+                    + ' WHERE vineid = ' + vineyard_id + ';'
+        )
+
+        if not rows:
+            raise Exception('Invalid Vineyard ID')
+        else:
+            center_point = {}
+            center_point['lat'] = rows[0].center[0]
+            center_point['lon'] = rows[0].center[1]
+            center.append(center_point)
+            return center
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: ' + str(e))
+
 def get_node_coordinates(vineyard_id):
     """
     Obtains the latitude and longitude coordinates for the nodes of a vineyard.

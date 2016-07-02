@@ -17,7 +17,7 @@ import cassy
 
 def index(request):
     """
-    Access database to response with requested environmental mapping data.
+    Access database to respond with requested environmental mapping data.
     """
 
     vineyard_id = request.GET.get('vineyard_id', '')

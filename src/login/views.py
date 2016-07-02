@@ -8,6 +8,8 @@
 #
 
 import os
+import uuid
+import json
 
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseForbidden
@@ -16,15 +18,23 @@ import cassy
 
 def index(request):
     """
-    Mock auth endpoint to return success if correct user/pass are passed in.
+    Mock auth endpoint to return success with generated token
+    if correct user/pass are passed in.
     """
     username = request.GET.get('username','')
     submitted_password = request.GET.get('password','')
 
+    # Generate token and put into JSON object
+    token = str(uuid.uuid4())
+    token_object = {}
+    token_object['token'] = token
+
     try:
+        # Get stored password from database, and verify with password arg
         stored_password = cassy.get_user_password(username)
         if stored_password == submitted_password:
-            return HttpResponse()
+            # Return response with token object
+            return HttpResponse(json.dumps(token_object), content_type='application/json')
         else:
             return HttpResponseForbidden()
     except Exception as e:

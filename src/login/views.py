@@ -21,8 +21,8 @@ def index(request):
     Mock auth endpoint to return success with generated token
     if correct user/pass are passed in.
     """
-    username = request.GET.get('username','')
-    submitted_password = request.GET.get('password','')
+    username = request.GET.get('username', '')
+    submitted_password = request.GET.get('password', '')
 
     # Generate token and put into JSON object
     token = str(uuid.uuid4())

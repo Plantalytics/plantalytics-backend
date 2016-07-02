@@ -20,8 +20,8 @@ def index(request):
     Access database to response with requested environmental mapping data.
     """
 
-    vineyard_id = request.GET['vineyard_id']
-    env_variable = request.GET['env_variable']
+    vineyard_id = request.GET.get('vineyard_id', '')
+    env_variable = request.GET.get('env_variable', '')
     response = {}
     map_data = []
 

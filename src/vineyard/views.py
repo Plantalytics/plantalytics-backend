@@ -17,27 +17,15 @@ import cassy
 
 def index(request):
     """
-    Access database to respond with requested environmental mapping data.
+    Access database to respond with requested vineyard metadata.
     """
-
     vineyard_id = request.GET.get('vineyard_id', '')
-    env_variable = request.GET.get('env_variable', '')
     response = {}
-    map_data = []
 
     try:
-        coordinates = cassy.get_node_coordinates(vineyard_id)
-
-        # Build data structure to return as JSON response content.
-        for coordinate in coordinates:
-            value = cassy.get_env_data(coordinate['node_id'], env_variable)
-            map_data_point = {
-                'latitude':coordinate['lat'],
-                'longitude':coordinate['lon'],
-                env_variable:value
-            }
-            map_data.append(map_data_point)
-        response['env_data'] = map_data
+        coordinates = cassy.get_vineyard_coordinates(vineyard_id)
+        response['center'] = coordinates[0]
+        response['boundary'] = coordinates[1]
         return HttpResponse(json.dumps(response), content_type='application/json')
     except Exception as e:
         return HttpResponseBadRequest()

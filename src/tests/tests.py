@@ -56,6 +56,24 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
+    def test_response_vineyard_metadata(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/vineyard'
+            + '?vineyard_id=0&'
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_response_vinemeta_invlaid_vineyard(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/vineyard'
+            + '?vineyard_id=101&'
+        )
+        self.assertEqual(response.status_code, 400)
+
     def test_response_temperature_data(self):
         setup_test_environment()
         client = Client()

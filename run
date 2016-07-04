@@ -1,0 +1,41 @@
+#!/bin/bash
+
+# For live runs, run as user "plantalytics"
+# Running as root/sudo will do this automatically
+
+# Replace these three settings.
+PROJDIR="/home/plantalytics/backend/src"
+PROJECT=plantalytics_backend
+VENV=/home/plantalytics/backend/venv
+source /home/plantalytics/.envvars
+
+# Run uWSGI
+
+PIDFILE=/tmp/$PROJECT.pid
+
+if [ "$1" == "--stop" ]; then
+    uwsgi --stop $PIDFILE
+    rm $PIDFILE
+    exit 0
+fi
+
+curuser=`id -u`
+targetu=`id -u plantalytics`
+uidgid=
+# If running as root we can switch to user
+if [[ $curuser -ne $targetu ]]; then
+    if [[ $(/usr/bin/id -u) -eq 0 ]]; then
+        uidgid="--uid=$targetu --gid=$(id -g plantalytics)"
+    else
+        echo 'WARNING: Not running as user "plantalytics"'
+    fi
+fi
+
+"$VENV/bin/uwsgi" --chdir=$PROJDIR \
+    --module=$PROJECT.wsgi \
+    --pidfile=$PIDFILE \
+    --socket=127.0.0.1:49152 \
+    --processes=5 \
+    $uidgid \
+    --daemonize=/var/log/uwsgi/$PROJECT.log
+

@@ -34,7 +34,7 @@ fi
 "$VENV/bin/uwsgi" --chdir=$PROJDIR \
     --module=$PROJECT.wsgi \
     --pidfile=$PIDFILE \
-    --socket=127.0.0.1:49152 \
+    --http=:8000 \
     --processes=5 \
     $uidgid \
     --daemonize=/var/log/uwsgi/$PROJECT.log

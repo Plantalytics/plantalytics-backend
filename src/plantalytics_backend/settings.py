@@ -20,6 +20,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+import logging
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -133,3 +134,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
+
+if DEBUG:
+    # output to console
+    logging.basicConfig(
+        level = logging.DEBUG,
+        format = '%(asctime)s %(levelname)s %(message)s',
+    )

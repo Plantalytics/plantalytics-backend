@@ -15,7 +15,7 @@ logger = logging.getLogger('plantalytics_backend.tests')
 
 
 def index(request):
-    logger.info("Hello, Logging World!!")
+    logger.info('Hello, Logging World!!')
     return HttpResponse(
                 'Hello , Plantalytics World!! '
                 + 'Welcome to the backend, '

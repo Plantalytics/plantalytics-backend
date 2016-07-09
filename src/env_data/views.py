@@ -8,11 +8,14 @@
 #
 
 import json
+import logging
 
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseBadRequest
 
 import cassy
+
+logger = logging.getLogger('plantalytics_backend.env_data')
 
 
 def index(request):
@@ -26,6 +29,7 @@ def index(request):
     map_data = []
 
     try:
+        logger.info('Fetching ' + env_variable + ' data.')
         coordinates = cassy.get_node_coordinates(vineyard_id)
 
         # Build data structure to return as JSON response content.
@@ -38,6 +42,14 @@ def index(request):
             }
             map_data.append(map_data_point)
         response['env_data'] = map_data
+
+        logger.info('Successfully fetched ' + env_variable
+                    + ' data for vineyard ' + vineyard_id + '.'
+        )
         return HttpResponse(json.dumps(response), content_type='application/json')
     except Exception as e:
+        logger.error('Error occurred while fetching ' + env_variable
+                    + ' data for vineyard ' + vineyard_id + '.'
+                    + str(e)
+        )
         return HttpResponseBadRequest()

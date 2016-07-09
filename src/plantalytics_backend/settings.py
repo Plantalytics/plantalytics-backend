@@ -35,6 +35,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+LIVE = False
+BUILD = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '104.197.35.232']
 
@@ -135,17 +137,26 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# LOGGING SETTINGS
 if DEBUG:
     # output to console
     logging.basicConfig(
         level = logging.DEBUG,
         format = '%(asctime)s %(levelname)s %(message)s',
     )
-else:
+if LIVE:
     # output to logging file
     logging.basicConfig(
         level = logging.DEBUG,
         format = '%(asctime)s %(levelname)s %(message)s',
         filename = '/var/log/uwsgi/plantalytics_backend.log',
+        filemode = 'a'
+    )
+if BUILD:
+    # output to temp logging file
+    logging.basicConfig(
+        level = logging.DEBUG,
+        format = '%(asctime)s %(levelname)s %(message)s',
+        filename = '/tmp/plantalytics_backend.log',
         filemode = 'a'
     )

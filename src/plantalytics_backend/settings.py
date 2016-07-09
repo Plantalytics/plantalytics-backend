@@ -141,3 +141,11 @@ if DEBUG:
         level = logging.DEBUG,
         format = '%(asctime)s %(levelname)s %(message)s',
     )
+else:
+    # output to logging file
+    logging.basicConfig(
+        level = logging.DEBUG,
+        format = '%(asctime)s %(levelname)s %(message)s',
+        filename = '/var/log/uwsgi/plantalytics_backend.log',
+        filemode = 'a'
+    )

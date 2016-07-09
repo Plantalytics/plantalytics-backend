@@ -48,7 +48,7 @@ def index(request):
         )
         return HttpResponse(json.dumps(response), content_type='application/json')
     except Exception as e:
-        logger.error('Error occurred while fetching ' + env_variable
+        logger.exception('Error occurred while fetching ' + env_variable
                     + ' data for vineyard ' + vineyard_id + '.'
                     + str(e)
         )

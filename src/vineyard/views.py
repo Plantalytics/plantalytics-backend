@@ -34,7 +34,7 @@ def index(request):
         response['boundary'] = coordinates[1]
         return HttpResponse(json.dumps(response), content_type='application/json')
     except Exception as e:
-        logger.error('Error occurred while fetching vineyard data for '
+        logger.exception('Error occurred while fetching vineyard data for '
                     + 'vineyard id \'' + vineyard_id + ' \'.'
                     + str(e)
         )

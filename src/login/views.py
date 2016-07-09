@@ -50,7 +50,7 @@ def index(request):
             )
             return HttpResponseForbidden()
     except Exception as e:
-        logger.error('Error occurred while fetching password for user \''
+        logger.exception('Error occurred while fetching password for user \''
                     + username + ' \'.'
                     + str(e)
         )

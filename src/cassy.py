@@ -60,19 +60,20 @@ def post_env_data(env_data):
     query = 'BEGIN BATCH\n'
 
     try:
-        query = query + (
-                'INSERT INTO ' + os.environ.get('DB_ENV_TABLE') +
-                ' (nodeid, batchsent, datasent, hubid, ' +
-                'humidity, leafwetness, temperature, vineid)' +
-                ' VALUES(' + str(env_data['hub_data'][0]['node_id']) + ', ' +
-                str(env_data['batch_sent']) + ', ' +
-                str(env_data['hub_data'][0]['data_sent']) + ', ' +
-                str(env_data['hub_id']) + ', ' +
-                str(env_data['hub_data'][0]['humidity']) + ', ' +
-                str(env_data['hub_data'][0]['leafwetness']) + ', ' +
-                str(env_data['hub_data'][0]['temperature']) + ', ' +
-                str(env_data['vine_id']) + ');\n'
-        )
+        for data_point in env_data['hub_data']:
+            query = query + (
+                    'INSERT INTO ' + os.environ.get('DB_ENV_TABLE') +
+                    ' (nodeid, batchsent, datasent, hubid, ' +
+                    'humidity, leafwetness, temperature, vineid)' +
+                    ' VALUES(' + str(data_point['node_id']) + ', ' +
+                    str(env_data['batch_sent']) + ', ' +
+                    str(data_point['data_sent']) + ', ' +
+                    str(env_data['hub_id']) + ', ' +
+                    str(data_point['humidity']) + ', ' +
+                    str(data_point['leafwetness']) + ', ' +
+                    str(data_point['temperature']) + ', ' +
+                    str(env_data['vine_id']) + ');\n'
+            )
         query = query + 'APPLY BATCH;'
         session.execute(query)
     except Exception as e:

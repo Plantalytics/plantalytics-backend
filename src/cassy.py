@@ -52,6 +52,32 @@ def get_env_data(node_id, env_variable):
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
+def post_env_data(env_data):
+    """
+    Inserts data from hub into database.
+    """
+
+    query = 'BEGIN BATCH\n'
+
+    try:
+        query = query + (
+                'INSERT INTO ' + os.environ.get('DB_ENV_TABLE') +
+                ' (nodeid, batchsent, datasent, hubid, ' +
+                'humidity, leafwetness, temperature, vineid)' +
+                ' VALUES(' + str(env_data['hub_data'][0]['node_id']) + ', ' +
+                str(env_data['batch_sent']) + ', ' +
+                str(env_data['hub_data'][0]['data_sent']) + ', ' +
+                str(env_data['hub_id']) + ', ' +
+                str(env_data['hub_data'][0]['humidity']) + ', ' +
+                str(env_data['hub_data'][0]['leafwetness']) + ', ' +
+                str(env_data['hub_data'][0]['temperature']) + ', ' +
+                str(env_data['vine_id']) + ');\n'
+        )
+        query = query + 'APPLY BATCH;'
+        session.execute(query)
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: ' + str(e))
+
 def get_vineyard_coordinates(vineyard_id):
     """
     Obtains the coordinates for center point and boundary of a vineyard.

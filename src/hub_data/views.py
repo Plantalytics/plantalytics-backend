@@ -7,13 +7,32 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
+import json
 import logging
 
-from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse, HttpResponseBadRequest
+
+import cassy
 
 logger = logging.getLogger('plantalytics_backend.hub_data')
 
 
+@csrf_exempt
 def index(request):
-    logger.info('Hello, Hud Data World!!')
-    return HttpResponse('Hub Data Bro!')
+    """
+    Receive data from hub to insert into database.
+    """
+
+    data = json.loads(request.body.decode("utf-8"))
+
+    try:
+        logger.info('Inserting hub data.')
+        cassy.post_env_data(data)
+        logger.info('Successfully inserted hub data.')
+        return HttpResponse()
+    except Exception as e:
+        logger.exception('Error occurred while inserting hub data.'
+                         + str(e)
+        )
+        return HttpResponseBadRequest()

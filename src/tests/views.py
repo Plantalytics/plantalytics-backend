@@ -7,10 +7,15 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
+import logging
+
 from django.http import HttpResponse
+
+logger = logging.getLogger('plantalytics_backend.tests')
 
 
 def index(request):
+    logger.info('Hello, Logging World!!')
     return HttpResponse(
                 'Hello , Plantalytics World!! '
                 + 'Welcome to the backend, '

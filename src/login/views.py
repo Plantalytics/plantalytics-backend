@@ -10,11 +10,15 @@
 import os
 import uuid
 import json
+import logging
 
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseForbidden
 
 import cassy
+
+logger = logging.getLogger('plantalytics_backend.login')
+
 
 def index(request):
     """
@@ -31,11 +35,23 @@ def index(request):
 
     try:
         # Get stored password from database, and verify with password arg
+        logger.info('Fetching password for user \'' + username + '\'.')
         stored_password = cassy.get_user_password(username)
+        logger.info('Successfully fetched password for user \''
+                    + username + '\'.'
+        )
+
         if stored_password == submitted_password:
             # Return response with token object
             return HttpResponse(json.dumps(token_object), content_type='application/json')
         else:
+            logger.warning('Incorrect password supplied for user \''
+                           + username + '\'.'
+            )
             return HttpResponseForbidden()
     except Exception as e:
+        logger.exception('Error occurred while fetching password for user \''
+                    + username + ' \'.'
+                    + str(e)
+        )
         return HttpResponseForbidden()

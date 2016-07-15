@@ -6,9 +6,14 @@ python:
 before_install:
 - pip install coveralls
 - pip install -r requirements.txt
+before_script:
+- echo '' > /tmp/plantalytics_backend.log
+- printf '\n' > /tmp/plantalytics_backend.log
 script:
 - python src/manage.py test tests
 - coverage run src/manage.py test tests
+after_script:
+- rm /tmp/plantalytics_backend.log
 after_success:
 - coveralls --verbose
 env:

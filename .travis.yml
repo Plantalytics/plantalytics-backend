@@ -1,0 +1,21 @@
+language: python
+cache:
+  pip: true
+python:
+- '3.5'
+before_install:
+- pip install coveralls
+- pip install -r requirements.txt
+before_script:
+- echo '' > /tmp/plantalytics_backend.log
+- printf '\n' > /tmp/plantalytics_backend.log
+script:
+- python src/manage.py test tests
+- coverage run src/manage.py test tests
+after_script:
+- rm /tmp/plantalytics_backend.log
+after_success:
+- coveralls --verbose
+env:
+  matrix:
+    secure: c4+90JzySWQbKdCEPLnQ9bwuAkMqbeprtCzIjbVt/yrr+Mbsi1xv+82TRJWNM3lf6OJx9zvGVp42DPhKDgoWc2QVYCFMQfwAekb5titqWBVqiTwbdaPh0gc94KHyYheoDPcvKylZLda0naLC0fDxIT/cLrdgPTTwwOmW4yJ3VUGdF2qU92euJjajsyphfAjNXNqGu5SFALM8mErWJ9P1XWaoFEnlsnGDElP9cv9dZrcKbDYcBl9nPVa8IqxD/wLpR4doHoRAKU4xJ7OjlfmIexkw4d3NxK6FIW93HpN8GwJuQ04q6VW/6OTzsBm6pjJM2Ox3ms1ACrLZcvomOtb20DjAvQiR1LP2tDP1EOFB0neklAuRCHf4MamZk8E+xF4lphCvvNMOKCiJzJTDf3XxG+rhOLFB7/d0BSLJdbV2Wy+1c4F8ZmFCGB3InEBAHmdomG45XZRP3SwQYQ4XleyvrIjUi2PtadSGrQ50HYX78SN+HHw1RjeQSB+7D1sovEDJlhrv5rja3bSmBPqTHiIstByHFfOGoO9OLBpbxDjq0R/LdfHc5+CH878GKYXaOHgCeKZ16wQibaLf1XK7Q3X5V37r8/izELrV+TaKoBQvGI0xtmDpVM9ivMc7oxd42TWAb1Sv+66z6MV4bwB8y6V8/TMiCAh3c1smLp4MyETrsj0=

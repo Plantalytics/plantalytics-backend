@@ -56,6 +56,30 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
+    def test_response_valid_auth_token(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/validate?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_response_store_auth_token(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/store_token?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+            + '&securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
+        )
+        self.assertEqual(response.status_code, 200)
+
     def test_response_vineyard_metadata(self):
         setup_test_environment()
         client = Client()

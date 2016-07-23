@@ -138,6 +138,27 @@ def get_user_password(username):
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
+def get_user_auth_token(username, password):
+    """
+    Obtains password for the requested user.
+    """
+
+    session.row_factory = named_tuple_factory
+
+    try:
+        rows = session.execute(
+            'SELECT securitytoken'
+            + ' FROM ' + os.environ.get('DB_USER_TABLE')
+            + ' WHERE username = \'' + username + '\' AND password = \'' + password + '\';'
+        )
+
+        if not rows:
+            raise Exception('Invalid Username and/or Password')
+        else:
+            return rows[0].securitytoken
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: ' + str(e))
+
 def set_user_auth_token(username, password, securitytoken):
     """
     Stores the session authentication token for the requested user.

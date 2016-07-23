@@ -157,7 +157,10 @@ def get_user_auth_token(username, password):
     Obtains session authentication token for the requested user.
     """
 
-    bound = auth_stmt_get.bind(username, password)
+    values = {}
+    values['username'] = username
+    values['password'] = password
+    bound = auth_stmt_get.bind(values)
     session.row_factory = named_tuple_factory
 
     try:
@@ -176,7 +179,11 @@ def set_user_auth_token(username, password, securitytoken):
     Stores the session authentication token for the requested user.
     """
 
-    bound = auth_stmt_set.bind(username, password, securitytoken)
+    values = {}
+    values['username'] = username
+    values['password'] = password
+    values['securitytoken'] = securitytoken
+    bound = auth_stmt_set.bind(values)
 
     try:
         session.execute(bound)

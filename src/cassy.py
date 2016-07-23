@@ -137,3 +137,19 @@ def get_user_password(username):
             return rows[0].password
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
+
+def set_user_auth_token(username, password, securitytoken):
+    """
+    Stores the session authentication token for the requested user.
+    """
+
+    try:
+        session.execute(
+                    'INSERT INTO '
+                    + os.environ.get('DB_USER_TABLE')
+                    + ' (username, password, securitytoken)'
+                    + ' VALUES(\'' + username + '\',\'' + password + '\',\'' + securitytoken + '\');'
+        )
+
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: ' + str(e))

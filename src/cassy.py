@@ -11,7 +11,7 @@ import os
 
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster
-from cassandra.query import named_tuple_factory
+from cassandra.query import named_tuple_factory, BatchStatement
 
 auth = PlainTextAuthProvider(
             username=os.environ.get('DB_USERNAME'),
@@ -67,25 +67,30 @@ def post_env_data(env_data):
     Inserts data from hub into database.
     """
 
-    query = 'BEGIN BATCH\n'
+    insert_env_data = session.prepare(
+        'INSERT INTO ' + os.environ.get('DB_ENV_TABLE') +
+        ' (nodeid, batchsent, datasent, hubid,' +
+        ' humidity, leafwetness, temperature, vineid)' +
+        ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    )
+    batch = BatchStatement()
 
     try:
         for data_point in env_data['hub_data']:
-            query = query + (
-                    'INSERT INTO ' + os.environ.get('DB_ENV_TABLE') +
-                    ' (nodeid, batchsent, datasent, hubid, ' +
-                    'humidity, leafwetness, temperature, vineid)' +
-                    ' VALUES(' + str(data_point['node_id']) + ', ' +
-                    str(env_data['batch_sent']) + ', ' +
-                    str(data_point['data_sent']) + ', ' +
-                    str(env_data['hub_id']) + ', ' +
-                    str(data_point['humidity']) + ', ' +
-                    str(data_point['leafwetness']) + ', ' +
-                    str(data_point['temperature']) + ', ' +
-                    str(env_data['vine_id']) + ');\n'
+            batch.add(
+                insert_env_data,
+                (
+                    data_point['node_id'],
+                    env_data['batch_sent'],
+                    data_point['data_sent'],
+                    env_data['hub_id'],
+                    data_point['humidity'],
+                    data_point['leafwetness'],
+                    data_point['temperature'],
+                    env_data['vine_id']
+                )
             )
-        query = query + 'APPLY BATCH;'
-        session.execute(query)
+        session.execute(batch)
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 

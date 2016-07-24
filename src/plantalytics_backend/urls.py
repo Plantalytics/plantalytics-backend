@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'^tests/', include('tests.urls')),
     url(r'^vineyard', include('vineyard.urls')),
     url(r'^env_data', include('env_data.urls')),
+    url(r'^hub_data', include('hub_data.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^login', include('login.urls')),
     url(r'^validate', include('validate.urls')),

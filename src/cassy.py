@@ -11,7 +11,7 @@ import os
 
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster
-from cassandra.query import named_tuple_factory
+from cassandra.query import named_tuple_factory, BatchStatement
 
 auth = PlainTextAuthProvider(
             username=os.environ.get('DB_USERNAME'),
@@ -62,6 +62,37 @@ def get_env_data(node_id, env_variable):
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
+def post_env_data(env_data):
+    """
+    Inserts data from hub into database.
+    """
+
+    insert_env_data = session.prepare(
+        'INSERT INTO ' + os.environ.get('DB_ENV_TABLE') +
+        ' (nodeid, batchsent, datasent, hubid,' +
+        ' humidity, leafwetness, temperature, vineid)' +
+        ' VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    )
+    batch = BatchStatement()
+
+    try:
+        for data_point in env_data['hub_data']:
+            batch.add(
+                insert_env_data,
+                (
+                    data_point['node_id'],
+                    env_data['batch_sent'],
+                    data_point['data_sent'],
+                    env_data['hub_id'],
+                    data_point['humidity'],
+                    data_point['leafwetness'],
+                    data_point['temperature'],
+                    env_data['vine_id']
+                )
+            )
+        session.execute(batch)
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: ' + str(e))
 
 def get_vineyard_coordinates(vineyard_id):
     """

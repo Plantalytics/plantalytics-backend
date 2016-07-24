@@ -9,6 +9,7 @@
 
 import os
 
+from common.exceptions import PlantalyticsException
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster
 from cassandra.query import named_tuple_factory, BatchStatement
@@ -176,9 +177,13 @@ def get_user_password(username):
         )
 
         if not rows:
-            raise Exception('Invalid Username')
+            raise PlantalyticsException('Invalid Username')
         else:
             return rows[0].password
+    # Known exception
+    except PlantalyticsException as e:
+        raise e;
+    # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 

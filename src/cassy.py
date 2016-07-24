@@ -23,16 +23,6 @@ cluster = Cluster(
 )
 session = cluster.connect(os.environ.get('DB_KEYSPACE'))
 
-# Prepared statements
-
-auth_stmt_get = session.prepare('SELECT securitytoken'
-                                + ' FROM ' + os.environ.get('DB_USER_TABLE')
-                                + ' WHERE username=? AND password=?;')
-auth_stmt_set = session.prepare('INSERT INTO '
-                                + os.environ.get('DB_USER_TABLE')
-                                + ' (username, password, securitytoken)'
-                                + ' VALUES(?, ?, ?);')
-
 
 def get_env_data(node_id, env_variable):
     """
@@ -191,6 +181,11 @@ def get_user_auth_token(username, password):
     values = {}
     values['username'] = username
     values['password'] = password
+    auth_stmt_get = session.prepare(
+        'SELECT securitytoken'
+        + ' FROM ' + os.environ.get('DB_USER_TABLE')
+        + ' WHERE username=? AND password=?;'
+    )
     bound = auth_stmt_get.bind(values)
     session.row_factory = named_tuple_factory
 
@@ -214,6 +209,12 @@ def set_user_auth_token(username, password, securitytoken):
     values['username'] = username
     values['password'] = password
     values['securitytoken'] = securitytoken
+    auth_stmt_set = session.prepare(
+        'INSERT INTO '
+        + os.environ.get('DB_USER_TABLE')
+        + ' (username, password, securitytoken)'
+        + ' VALUES(?, ?, ?);'
+    )
     bound = auth_stmt_set.bind(values)
 
     try:

@@ -28,11 +28,6 @@ def index(request):
     username = request.GET.get('username', '')
     submitted_password = request.GET.get('password', '')
 
-    # Generate token and put into JSON object
-    token = str(uuid.uuid4())
-    token_object = {}
-    token_object['token'] = token
-
     try:
         # Get stored password from database, and verify with password arg
         logger.info('Fetching password for user \'' + username + '\'.')
@@ -42,7 +37,40 @@ def index(request):
         )
 
         if stored_password == submitted_password:
+            # Generate token and put into JSON object
+            token = str(uuid.uuid4())
+            token_object = {}
+
             # Return response with token object
+            if username != os.environ.get('LOGIN_USERNAME'):
+                logger.info('Storing auth token for user \''
+                    + username + '\'.'
+                )
+                cassy.set_user_auth_token(
+                    username,
+                    submitted_password,
+                    token
+                )
+                logger.info('Retrieving auth token for user \''
+                    + username + '\'.'
+                )
+                token_object['token'] = cassy.get_user_auth_token(
+                    username,
+                    submitted_password
+                )
+            else:
+                cassy.set_user_auth_token(
+                    username,
+                    submitted_password,
+                    os.environ.get('LOGIN_SEC_TOKEN')
+                )
+                token_object['token'] = cassy.get_user_auth_token(
+                    username,
+                    submitted_password
+                )
+            logger.info('Successfully logged in user \''
+                + username + '\'.'
+            )
             return HttpResponse(json.dumps(token_object), content_type='application/json')
         else:
             logger.warning('Incorrect password supplied for user \''

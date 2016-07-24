@@ -222,3 +222,28 @@ def set_user_auth_token(username, password, securitytoken):
 
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
+
+def verify_auth_token(securitytoken):
+    """
+    Verifies session authentication token.
+    """
+    values = {}
+    values['securitytoken'] = securitytoken
+
+    auth_stmt_get = session.prepare(
+        'SELECT username'
+        + ' FROM ' + os.environ.get('DB_USER_TABLE')
+        + ' WHERE securitytoken=?'
+        + ' ALLOW FILTERING;'
+    )
+    bound = auth_stmt_get.bind(values)
+    session.row_factory = named_tuple_factory
+
+    try:
+        rows = session.execute(bound)
+
+        if not rows:
+            raise Exception('Invalid Security Token')
+
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: ' + str(e))

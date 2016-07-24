@@ -143,6 +143,8 @@ class MainTests(TestCase):
         response = client.get(
             '/vineyard'
             + '?vineyard_id=0&'
+            + 'securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
         )
         self.assertEqual(response.status_code, 200)
 
@@ -152,6 +154,8 @@ class MainTests(TestCase):
         response = client.get(
             '/vineyard'
             + '?vineyard_id=101&'
+            + 'securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
         )
         self.assertEqual(response.status_code, 400)
 

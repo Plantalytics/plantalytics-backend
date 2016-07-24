@@ -11,7 +11,7 @@ import json
 import logging
 
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 
 import cassy
 
@@ -23,9 +23,21 @@ def index(request):
     Access database to respond with requested vineyard metadata.
     """
     vineyard_id = request.GET.get('vineyard_id', '')
+    securitytoken = request.GET.get('securitytoken', '')
     response = {}
 
     try:
+        logger.info('Validating securitytoken token for vineyard id \'' + vineyard_id + '\'.')
+        cassy.verify_auth_token(securitytoken)
+    except Exception as e:
+        logger.exception('Error occurred while security token for '
+                    + 'vineyard id \'' + vineyard_id + ' \'.'
+                    + str(e)
+        )
+        return HttpResponseForbidden()
+
+    try:
+
         logger.info('Fetching vineyard data for vineyard id \'' + vineyard_id + '\'.')
         coordinates = cassy.get_vineyard_coordinates(vineyard_id)
         logger.info('Successfully fetched vineyard data for vineyard id \'' + vineyard_id + '\'.')

@@ -23,6 +23,16 @@ cluster = Cluster(
 )
 session = cluster.connect(os.environ.get('DB_KEYSPACE'))
 
+# Prepared statements
+
+auth_stmt_get = session.prepare('SELECT securitytoken'
+                                + ' FROM ' + os.environ.get('DB_USER_TABLE')
+                                + ' WHERE username=? AND password=?;')
+auth_stmt_set = session.prepare('INSERT INTO '
+                                + os.environ.get('DB_USER_TABLE')
+                                + ' (username, password, securitytoken)'
+                                + ' VALUES(?, ?, ?);')
+
 
 def get_env_data(node_id, env_variable):
     """
@@ -34,9 +44,9 @@ def get_env_data(node_id, env_variable):
 
     try:
         rows = session.execute(
-                    'SELECT ' + env_variable
-                    + ' FROM ' + os.environ.get('DB_ENV_TABLE')
-                    + ' WHERE nodeid = ' + node + ' LIMIT 1;'
+            'SELECT ' + env_variable
+            + ' FROM ' + os.environ.get('DB_ENV_TABLE')
+            + ' WHERE nodeid = ' + node + ' LIMIT 1;'
         )
 
         if not rows:
@@ -52,6 +62,7 @@ def get_env_data(node_id, env_variable):
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
+
 def get_vineyard_coordinates(vineyard_id):
     """
     Obtains the coordinates for center point and boundary of a vineyard.
@@ -62,9 +73,9 @@ def get_vineyard_coordinates(vineyard_id):
 
     try:
         rows = session.execute(
-                    'SELECT boundaries, center'
-                    + ' FROM ' + os.environ.get('DB_VINE_TABLE')
-                    + ' WHERE vineid = ' + vineyard_id + ';'
+            'SELECT boundaries, center'
+            + ' FROM ' + os.environ.get('DB_VINE_TABLE')
+            + ' WHERE vineid = ' + vineyard_id + ';'
         )
 
         if not rows:
@@ -88,6 +99,7 @@ def get_vineyard_coordinates(vineyard_id):
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
+
 def get_node_coordinates(vineyard_id):
     """
     Obtains the latitude and longitude coordinates for the nodes of a vineyard.
@@ -98,9 +110,9 @@ def get_node_coordinates(vineyard_id):
 
     try:
         rows = session.execute(
-                    'SELECT nodeid, nodelocation'
-                    + ' FROM ' + os.environ.get('DB_HW_TABLE')
-                    + ' WHERE vineid = ' + vineyard_id + ';'
+            'SELECT nodeid, nodelocation'
+            + ' FROM ' + os.environ.get('DB_HW_TABLE')
+            + ' WHERE vineid = ' + vineyard_id + ';'
         )
 
         if not rows:
@@ -117,6 +129,7 @@ def get_node_coordinates(vineyard_id):
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
+
 def get_user_password(username):
     """
     Obtains password for the requested user.
@@ -126,14 +139,54 @@ def get_user_password(username):
 
     try:
         rows = session.execute(
-                    'SELECT password'
-                    + ' FROM ' + os.environ.get('DB_USER_TABLE')
-                    + ' WHERE username = \''+ username + '\';'
+            'SELECT password'
+            + ' FROM ' + os.environ.get('DB_USER_TABLE')
+            + ' WHERE username = \'' + username + '\';'
         )
 
         if not rows:
             raise Exception('Invalid Username')
         else:
             return rows[0].password
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: ' + str(e))
+
+
+def get_user_auth_token(username, password):
+    """
+    Obtains session authentication token for the requested user.
+    """
+
+    values = {}
+    values['username'] = username
+    values['password'] = password
+    bound = auth_stmt_get.bind(values)
+    session.row_factory = named_tuple_factory
+
+    try:
+        rows = session.execute(bound)
+
+        if not rows:
+            raise Exception('Invalid Username and/or Password')
+        else:
+            return rows[0].securitytoken
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: ' + str(e))
+
+
+def set_user_auth_token(username, password, securitytoken):
+    """
+    Stores the session authentication token for the requested user.
+    """
+
+    values = {}
+    values['username'] = username
+    values['password'] = password
+    values['securitytoken'] = securitytoken
+    bound = auth_stmt_set.bind(values)
+
+    try:
+        session.execute(bound)
+
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))

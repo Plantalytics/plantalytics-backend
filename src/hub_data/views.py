@@ -7,6 +7,7 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
+import os
 import json
 import logging
 
@@ -25,16 +26,17 @@ def index(request):
     """
 
     data = json.loads(request.body.decode("utf-8"))
-    securitytoken = data['token']
+    hub_key = data['key']
 
     try:
         logger.info(
-            'Validating securitytoken token for hub id \''
+            'Validating key for hub id \''
             + str(data['hub_id']) + '\'.'
         )
-        cassy.verify_auth_token(securitytoken)
+        if hub_key != os.environ.get('HUB_KEY'):
+            raise Exception('Invalid Hub Key')
     except Exception as e:
-        logger.exception('Error occurred while security token for '
+        logger.exception('Error occurred while verifying hub key for '
                     + 'hub id \'' + str(data['hub_id']) + ' \'.'
                     + str(e)
         )

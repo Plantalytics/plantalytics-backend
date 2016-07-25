@@ -90,7 +90,7 @@ class MainTests(TestCase):
         client = Client()
 
         payload = {}
-        payload['key'] = '12345'
+        payload['key'] = os.environ.get('HUB_KEY')
         payload['vine_id'] = 0
         payload['hub_id'] = 0
         hub_data = []
@@ -106,7 +106,6 @@ class MainTests(TestCase):
             i = i + 1
         payload['hub_data'] = hub_data
         payload['batch_sent'] = int(time.time()*1000)
-        payload['token'] = os.environ.get('LOGIN_SEC_TOKEN')
 
         response = client.post(
             '/hub_data',
@@ -120,7 +119,7 @@ class MainTests(TestCase):
         client = Client()
 
         payload = {}
-        payload['key'] = '12345'
+        payload['key'] = os.environ.get('HUB_KEY')
         payload['vine_id'] = 0
         payload['hub_id'] = 0
         hub_data = []
@@ -133,7 +132,6 @@ class MainTests(TestCase):
             i = i + 1
         payload['hub_data'] = hub_data
         payload['batch_sent'] = int(time.time()*1000)
-        payload['token'] = os.environ.get('LOGIN_SEC_TOKEN')
 
         response = client.post(
             '/hub_data',
@@ -142,7 +140,7 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_response_hub_data_invalid_token(self):
+    def test_response_hub_data_invalid_key(self):
         setup_test_environment()
         client = Client()
 
@@ -163,7 +161,6 @@ class MainTests(TestCase):
             i = i + 1
         payload['hub_data'] = hub_data
         payload['batch_sent'] = int(time.time()*1000)
-        payload['token'] = 'ChesterCheetah'
 
         response = client.post(
             '/hub_data',

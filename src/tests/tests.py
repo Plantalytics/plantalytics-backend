@@ -7,13 +7,11 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
-import os
 import json
 import time
 
 from django.test import TestCase, Client
 from django.test.utils import setup_test_environment
-from unittest.mock import MagicMock, Mock
 from unittest.mock import patch
 from cassy import *
 

@@ -154,29 +154,48 @@ class MainTests(TestCase):
             + os.environ.get('LOGIN_PASSWORD')
         )
         self.assertEqual(response.status_code, 403)
-"""
-    class TestCreateAndGetObject(TestCase):
-        def test_exception_throwing(self):
-            with patch.object(Manager, 'get_or_create') as mock_method:
-                mock_method.side_effect = Exception("test error")
 
-                result = create_and_get_object('test', 'test')
-                self.assertIsNone(result)
+    @patch('cassy.get_user_auth_token')
+    def test_response_auth_token_get_user_auth_token_exception(self, mock_requests):
+        '''
+        Tests the validate endpoint if cassy.get_user_auth_token throws Exception
+        Args:
+            mock_requests:
 
-"""
+        Returns:
 
-    def test_response_auth_token_get_user_exception(self):
-        setup_test_environment()
+        '''
         client = Client()
-        with patch.object(Manager, 'get_user_auth_token') as mock_method:
-            mock_method.side_effect = Exception("Test Error")
-            response = client.get(
-                '/validate?username='
-                + os.environ.get('LOGIN_USERNAME')
-                + '&password='
-                + os.environ.get('LOGIN_PASSWORD')
-            )
-            self.assertEqual(response.status_code, 403)
+        setup_test_environment()
+        get_user_auth_token = MagicMock(side_effect=Exception('Test exception'))
+        response = client.get(
+            '/validate?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        self.assertEqual(response.status_code, 403)
+
+    @patch('cassy.get_user_password')
+    def test_response_auth_token_get_user_password_exception(self, mock_requests):
+        '''
+        Tests the validate endpoint if cassy.get_user_password throws Exception
+        Args:
+            mock_requests:
+
+        Returns:
+
+        '''
+        client = Client()
+        setup_test_environment()
+        get_user_password = MagicMock(side_effect=Exception('Test exception'))
+        response = client.get(
+            '/validate?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        self.assertEqual(response.status_code, 403)
 
     def test_response_store_auth_token(self):
         setup_test_environment()
@@ -199,6 +218,29 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 200)
         token = response.content.decode('utf-8')
         self.assertEqual(token, '"' + os.environ.get('LOGIN_SEC_TOKEN') + '"')
+
+    @patch('cassy.get_user_password')
+    def test_response_store_auth_token_get_user_password_exception(self, mock_requests):
+        '''
+        Tests the store_token endpoint for the case when cassy.get_user_password throws Exception
+        Args:
+            mock_requests:
+
+        Returns:
+
+        '''
+        setup_test_environment()
+        client = Client()
+        get_user_password = MagicMock(side_effect=Exception('Test Exception'))
+        response = client.get(
+            '/store_token?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+            + '&securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
+        )
+        self.assertEqual(response.status_code, 403)
 
     def test_response_store_auth_token_bad_username(self):
         setup_test_environment()

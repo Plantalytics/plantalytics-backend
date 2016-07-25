@@ -103,6 +103,7 @@ class MainTests(TestCase):
             i = i + 1
         payload['hub_data'] = hub_data
         payload['batch_sent'] = int(time.time()*1000)
+        payload['token'] = os.environ.get('LOGIN_SEC_TOKEN')
 
         response = client.post(
             '/hub_data',
@@ -129,6 +130,7 @@ class MainTests(TestCase):
             i = i + 1
         payload['hub_data'] = hub_data
         payload['batch_sent'] = int(time.time()*1000)
+        payload['token'] = os.environ.get('LOGIN_SEC_TOKEN')
 
         response = client.post(
             '/hub_data',

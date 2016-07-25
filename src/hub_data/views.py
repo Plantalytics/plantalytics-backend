@@ -11,7 +11,7 @@ import json
 import logging
 
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 
 import cassy
 
@@ -25,6 +25,20 @@ def index(request):
     """
 
     data = json.loads(request.body.decode("utf-8"))
+    securitytoken = data['token']
+
+    try:
+        logger.info(
+            'Validating securitytoken token for hub id \''
+            + str(data['hub_id']) + '\'.'
+        )
+        cassy.verify_auth_token(securitytoken)
+    except Exception as e:
+        logger.exception('Error occurred while security token for '
+                    + 'hub id \'' + str(data['hub_id']) + ' \'.'
+                    + str(e)
+        )
+        return HttpResponseForbidden()
 
     try:
         logger.info('Inserting hub data.')

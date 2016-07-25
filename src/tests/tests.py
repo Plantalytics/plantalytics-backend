@@ -460,6 +460,15 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
+    def test_response_vinemeta_invalid_vineyard_non_integer(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/vineyard'
+            + '?vineyard_id=abc'
+        )
+        self.assertEqual(response.status_code, 400)
+
     def test_response_temperature_data(self):
         setup_test_environment()
         client = Client()

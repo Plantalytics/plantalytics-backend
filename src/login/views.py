@@ -12,6 +12,7 @@ import uuid
 import json
 import logging
 
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseForbidden
 
@@ -19,14 +20,16 @@ import cassy
 
 logger = logging.getLogger('plantalytics_backend.login')
 
-
+@csrf_exempt
 def index(request):
     """
     Mock auth endpoint to return success with generated token
     if correct user/pass are passed in.
     """
-    username = request.GET.get('username', '')
-    submitted_password = request.GET.get('password', '')
+
+    data = json.loads(request.body.decode("utf-8"))
+    username = data['username']
+    submitted_password = data['password']
 
     try:
         # Get stored password from database, and verify with password arg

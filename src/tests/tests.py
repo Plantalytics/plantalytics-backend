@@ -30,31 +30,39 @@ class MainTests(TestCase):
     def test_response_valid_login(self):
         setup_test_environment()
         client = Client()
-        response = client.get(
-            '/login?username='
-            + os.environ.get('LOGIN_USERNAME')
-            + '&password='
-            + os.environ.get('LOGIN_PASSWORD')
+        payload = {}
+        payload['username'] = os.environ.get('LOGIN_USERNAME')
+        payload['password'] = os.environ.get('LOGIN_PASSWORD')
+        response = client.post(
+            '/login',
+            data=json.dumps(payload),
+            content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
 
     def test_response_invalid_username(self):
         setup_test_environment()
         client = Client()
-        response = client.get(
-            '/login?username=mrawesome'
-            + '&password='
-            + os.environ.get('LOGIN_PASSWORD')
+        payload = {}
+        payload['username'] = 'mrawesome'
+        payload['password'] = os.environ.get('LOGIN_PASSWORD')
+        response = client.post(
+            '/login',
+            data=json.dumps(payload),
+            content_type='application/json'
         )
         self.assertEqual(response.status_code, 403)
 
     def test_response_invalid_password(self):
         setup_test_environment()
         client = Client()
-        response = client.get(
-            '/login?username='
-            + os.environ.get('LOGIN_USERNAME')
-            + '&password=notcorrect'
+        payload = {}
+        payload['username'] = os.environ.get('LOGIN_USERNAME')
+        payload['password'] = 'notcorrect'
+        response = client.post(
+            '/login',
+            data=json.dumps(payload),
+            content_type='application/json'
         )
         self.assertEqual(response.status_code, 403)
 

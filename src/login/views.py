@@ -46,13 +46,16 @@ def index(request):
             logger.warning('Incorrect password supplied for user \''
                            + username + '\'.'
                            )
-            error = custom_error('auth_err', 'Incorrect username or password')
+            error = custom_error('login_err')
             return HttpResponseForbidden(error, content_type='application/json')
+
+    # Invalid username -- expected exception
     except PlantalyticsException:
         logger.warning('Unknown username \''
                        + username + '\'.')
-        error = custom_error('auth_err', 'Incorrect username or password')
+        error = custom_error('login_err')
         return HttpResponseForbidden(error, content_type='application/json')
+    # Unexpected exception
     except Exception as e:
         logger.exception('Error occurred while fetching password for user \''
                          + username + ' \'.'

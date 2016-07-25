@@ -95,6 +95,7 @@ def post_env_data(env_data):
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
+
 def get_vineyard_coordinates(vineyard_id):
     """
     Obtains the coordinates for center point and boundary of a vineyard.
@@ -111,7 +112,7 @@ def get_vineyard_coordinates(vineyard_id):
         )
 
         if not rows:
-            raise Exception('Invalid Vineyard ID')
+            raise PlantalyticsException('Invalid Vineyard ID')
         else:
             center_point = {}
             boundary_points = []
@@ -128,6 +129,10 @@ def get_vineyard_coordinates(vineyard_id):
 
             coordinates.append(boundary_points)
             return coordinates
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
@@ -146,7 +151,6 @@ def get_node_coordinates(vineyard_id):
             + ' FROM ' + os.environ.get('DB_HW_TABLE')
             + ' WHERE vineid = ' + vineyard_id + ';'
         )
-
         if not rows:
             raise Exception('Invalid Vineyard ID')
         else:
@@ -182,7 +186,7 @@ def get_user_password(username):
             return rows[0].password
     # Known exception
     except PlantalyticsException as e:
-        raise e;
+        raise e
     # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))

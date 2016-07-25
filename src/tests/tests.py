@@ -164,7 +164,7 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         response = client.get(
-            '/validate?username'
+            '/validate?username='
             + os.environ.get('LOGIN_USERNAME')
             + '&password='
             + os.environ.get('LOGIN_PASSWORD')

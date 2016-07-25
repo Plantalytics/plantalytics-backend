@@ -229,9 +229,11 @@ def get_user_auth_token(username, password):
         rows = session.execute(bound)
 
         if not rows:
-            raise PlantalyticsLoginException('Invalid Username and/or Password')
+            raise PlantalyticsAuthException('Error retrieving auth token.')
         else:
             return rows[0].securitytoken
+    except PlantalyticsException as e:
+        raise e
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 

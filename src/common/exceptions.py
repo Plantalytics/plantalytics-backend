@@ -9,3 +9,7 @@ class PlantalyticsVineyardException(PlantalyticsException):
 
 class PlantalyticsLoginException(PlantalyticsException):
     pass
+
+
+class PlantalyticsAuthException(PlantalyticsException):
+    pass

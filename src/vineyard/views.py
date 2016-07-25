@@ -39,8 +39,8 @@ def index(request):
         return HttpResponseBadRequest(error, content_type='application/json')
     except Exception as e:
         logger.exception('Error occurred while fetching vineyard data for '
-                    + 'vineyard id \'' + vineyard_id + ' \'.'
+                    + 'vineyard id \'' + vineyard_id + '\'. '
                     + str(e)
         )
-        error = custom_error('unknown', + str(e))
+        error = custom_error('unknown', str(e))
         return HttpResponseBadRequest(error, content_type='application/json')

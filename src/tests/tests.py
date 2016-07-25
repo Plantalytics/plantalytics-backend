@@ -13,10 +13,8 @@ import time
 
 from django.test import TestCase, Client
 from django.test.utils import setup_test_environment
-from django.http.response import HttpResponseRedirect
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock
 from unittest.mock import patch
-from django.db.models.manager import Manager
 from cassy import *
 
 
@@ -78,6 +76,27 @@ class MainTests(TestCase):
         response = client.get(
             '/login?username='
             + os.environ.get('LOGIN_USERNAME')
+        )
+        self.assertEqual(response.status_code, 403)
+
+    @patch('cassy.get_user_password')
+    def test_login_get_user_password_exception(self, password_mock):
+        '''
+        Tests the login endpoint when get_user_password throws Exception
+        Args:
+            mock_requests:
+
+        Returns:
+
+        '''
+        setup_test_environment()
+        client = Client()
+        password_mock.side_effect = Exception('Test exception')
+        response = client.get(
+            '/login?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
         )
         self.assertEqual(response.status_code, 403)
 
@@ -156,7 +175,7 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 403)
 
     @patch('cassy.get_user_auth_token')
-    def test_response_auth_token_get_user_auth_token_exception(self, mock_requests):
+    def test_response_auth_token_get_user_auth_token_exception(self, user_auth):
         '''
         Tests the validate endpoint if cassy.get_user_auth_token throws Exception
         Args:
@@ -167,7 +186,7 @@ class MainTests(TestCase):
         '''
         client = Client()
         setup_test_environment()
-        get_user_auth_token = MagicMock(side_effect=Exception('Test exception'))
+        user_auth.side_effect = Exception('Test Exception')
         response = client.get(
             '/validate?username='
             + os.environ.get('LOGIN_USERNAME')
@@ -177,7 +196,7 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 403)
 
     @patch('cassy.get_user_password')
-    def test_response_auth_token_get_user_password_exception(self, mock_requests):
+    def test_response_auth_token_get_user_password_exception(self, password_mock):
         '''
         Tests the validate endpoint if cassy.get_user_password throws Exception
         Args:
@@ -188,7 +207,7 @@ class MainTests(TestCase):
         '''
         client = Client()
         setup_test_environment()
-        get_user_password = MagicMock(side_effect=Exception('Test exception'))
+        password_mock.side_effect = Exception('Test Exception')
         response = client.get(
             '/validate?username='
             + os.environ.get('LOGIN_USERNAME')
@@ -220,7 +239,7 @@ class MainTests(TestCase):
         self.assertEqual(token, '"' + os.environ.get('LOGIN_SEC_TOKEN') + '"')
 
     @patch('cassy.get_user_password')
-    def test_response_store_auth_token_get_user_password_exception(self, mock_requests):
+    def test_response_store_auth_token_get_user_password_exception(self, password_mock):
         '''
         Tests the store_token endpoint for the case when cassy.get_user_password throws Exception
         Args:
@@ -231,7 +250,7 @@ class MainTests(TestCase):
         '''
         setup_test_environment()
         client = Client()
-        get_user_password = MagicMock(side_effect=Exception('Test Exception'))
+        password_mock.side_effect = Exception('Test Exception')
         response = client.get(
             '/store_token?username='
             + os.environ.get('LOGIN_USERNAME')
@@ -401,9 +420,28 @@ class MainTests(TestCase):
         client = Client()
         response = client.get(
             '/vineyard'
-            + '?vineyard_id=0&'
+            + '?vineyard_id=0'
         )
         self.assertEqual(response.status_code, 200)
+
+    @patch('cassy.get_vineyard_coordinates')
+    def test_response_vineyard_metadata_exception(self, vineyard_mock):
+        '''
+        Tests vineyard endpoint when cassy.get_vineyard_coordinates throws Exception
+        Args:
+            vineyard_mock:
+
+        Returns:
+
+        '''
+        setup_test_environment()
+        client = Client()
+        vineyard_mock.side_effect =Exception('Test exception')
+        response = client.get(
+            '/vineyard'
+            + '?vineyard_id=0'
+        )
+        self.assertEqual(response.status_code, 400)
 
     def test_response_vinemeta_invalid_vineyard(self):
         setup_test_environment()
@@ -431,6 +469,26 @@ class MainTests(TestCase):
             + 'env_variable=temperature'
         )
         self.assertEqual(response.status_code, 200)
+
+    @patch('cassy.get_env_data')
+    def test_response_env_data_exception(self, env_data_mock):
+        '''
+        Test env_data endpoint when get_env_data throws Exception
+        Args:
+            env_data_mock:
+
+        Returns:
+
+        '''
+        setup_test_environment()
+        client = Client()
+        env_data_mock.side_effect = Exception('Test exception')
+        response = client.get(
+            '/env_data'
+            + '?vineyard_id=0&'
+            + 'env_variable=temperature'
+        )
+        self.assertEqual(response.status_code, 400)
 
     def test_response_humidity_data(self):
         setup_test_environment()

@@ -219,6 +219,7 @@ def set_user_auth_token(username, password, securitytoken):
 
     try:
         session.execute(bound)
+        return True
 
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))

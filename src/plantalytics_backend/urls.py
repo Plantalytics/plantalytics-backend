@@ -32,7 +32,5 @@ urlpatterns = [
     url(r'^env_data', include('env_data.urls')),
     url(r'^hub_data', include('hub_data.urls')),
     url(r'^admin/', admin.site.urls),
-    url(r'^login', include('login.urls')),
-    url(r'^validate', include('validate.urls')),
-    url(r'^store_token', include('store_token.urls'))
+    url(r'^login', include('login.urls'))
 ]

@@ -15,6 +15,8 @@ from django.test import TestCase, Client
 from django.test.utils import setup_test_environment
 from django.http.response import HttpResponseRedirect
 
+import cassy
+
 
 class MainTests(TestCase):
     """
@@ -66,29 +68,22 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
-    def test_response_valid_auth_token(self):
+    def test_get_auth_token(self):
         setup_test_environment()
-        client = Client()
-        response = client.get(
-            '/validate?username='
-            + os.environ.get('LOGIN_USERNAME')
-            + '&password='
-            + os.environ.get('LOGIN_PASSWORD')
+        rows = cassy.get_user_auth_token(
+            os.environ.get('LOGIN_USERNAME'),
+            os.environ.get('LOGIN_PASSWORD')
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(rows != None, True)
 
     def test_response_store_auth_token(self):
         setup_test_environment()
-        client = Client()
-        response = client.get(
-            '/store_token?username='
-            + os.environ.get('LOGIN_USERNAME')
-            + '&password='
-            + os.environ.get('LOGIN_PASSWORD')
-            + '&securitytoken='
-            + os.environ.get('LOGIN_SEC_TOKEN')
+        result = cassy.set_user_auth_token(
+            os.environ.get('LOGIN_USERNAME'),
+            os.environ.get('LOGIN_PASSWORD'),
+            os.environ.get('LOGIN_SEC_TOKEN')
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(result, True)
 
     def test_response_valid_hub_data(self):
         setup_test_environment()

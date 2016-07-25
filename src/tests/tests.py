@@ -170,7 +170,8 @@ class MainTests(TestCase):
             + os.environ.get('LOGIN_PASSWORD')
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.content), os.environ.get('LOGIN_SEC_TOKEN'))
+        token = response.content.decode('utf-8')
+        self.assertEqual(token, os.environ.get('LOGIN_SEC_TOKEN'))
 
     def test_response_store_auth_token_bad_username(self):
         setup_test_environment()

@@ -165,7 +165,9 @@ class MainTests(TestCase):
         response = client.get(
             '/env_data'
             + '?vineyard_id=0&'
-            + 'env_variable=temperature'
+            + 'env_variable=temperature&'
+            + 'securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
         )
         self.assertEqual(response.status_code, 200)
 
@@ -175,7 +177,9 @@ class MainTests(TestCase):
         response = client.get(
             '/env_data'
             + '?vineyard_id=0&'
-            + 'env_variable=humidity'
+            + 'env_variable=humidity&'
+            + 'securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
         )
         self.assertEqual(response.status_code, 200)
 
@@ -185,7 +189,9 @@ class MainTests(TestCase):
         response = client.get(
             '/env_data'
             + '?vineyard_id=0&'
-            + 'env_variable=leafwetness'
+            + 'env_variable=leafwetness&'
+            + 'securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
         )
         self.assertEqual(response.status_code, 200)
 
@@ -195,7 +201,9 @@ class MainTests(TestCase):
         response = client.get(
             '/env_data'
             + '?vineyard_id=101&'
-            + 'env_variable=temperature'
+            + 'env_variable=temperature&'
+            + 'securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
         )
         self.assertEqual(response.status_code, 400)
 
@@ -205,7 +213,9 @@ class MainTests(TestCase):
         response = client.get(
             '/env_data'
             + '?vineyard_id=0&'
-            + 'env_variable=cheesiness'
+            + 'env_variable=cheesiness&'
+            + 'securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
         )
         self.assertEqual(response.status_code, 400)
 
@@ -215,7 +225,9 @@ class MainTests(TestCase):
         response = client.get(
             '/env_data'
             + '?vineyard_id=101&'
-            + 'env_variable=cheesiness'
+            + 'env_variable=cheesiness&'
+            + 'securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
         )
         self.assertEqual(response.status_code, 400)
 

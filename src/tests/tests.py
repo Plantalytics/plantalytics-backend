@@ -14,6 +14,10 @@ import time
 from django.test import TestCase, Client
 from django.test.utils import setup_test_environment
 from django.http.response import HttpResponseRedirect
+from unittest.mock import MagicMock
+from unittest.mock import patch
+from django.db.models.manager import Manager
+from cassy import *
 
 
 class MainTests(TestCase):
@@ -150,6 +154,29 @@ class MainTests(TestCase):
             + os.environ.get('LOGIN_PASSWORD')
         )
         self.assertEqual(response.status_code, 403)
+"""
+    class TestCreateAndGetObject(TestCase):
+        def test_exception_throwing(self):
+            with patch.object(Manager, 'get_or_create') as mock_method:
+                mock_method.side_effect = Exception("test error")
+
+                result = create_and_get_object('test', 'test')
+                self.assertIsNone(result)
+
+"""
+
+    def test_response_auth_token_get_user_exception(self):
+        setup_test_environment()
+        client = Client()
+        with patch.object(Manager, 'get_user_auth_token') as mock_method:
+            mock_method.side_effect = Exception("Test Error")
+            response = client.get(
+                '/validate?username='
+                + os.environ.get('LOGIN_USERNAME')
+                + '&password='
+                + os.environ.get('LOGIN_PASSWORD')
+            )
+            self.assertEqual(response.status_code, 403)
 
     def test_response_store_auth_token(self):
         setup_test_environment()

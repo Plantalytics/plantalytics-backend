@@ -217,6 +217,7 @@ def get_user_password(username):
 def get_user_auth_token(username, password):
     """
     Obtains session authentication token for the requested user.
+    Assuming the username and password have already been validated prior to calling this function.
     """
 
     values = {}
@@ -241,6 +242,7 @@ def get_user_auth_token(username, password):
 def set_user_auth_token(username, password, securitytoken):
     """
     Stores the session authentication token for the requested user.
+    Assuming username and password have already been validated prior to calling this function.
     """
 
     values = {}
@@ -249,6 +251,8 @@ def set_user_auth_token(username, password, securitytoken):
     values['securitytoken'] = securitytoken
     bound = auth_stmt_set.bind(values)
 
+    if securitytoken == '':
+        raise PlantalyticsAuthException('Invalid security token. Can not be empty.')
     try:
         session.execute(bound)
 

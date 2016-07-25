@@ -163,6 +163,113 @@ class MainTests(TestCase):
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
         self.assertEqual(response.status_code, 200)
+        response = client.get(
+            '/validate?username'
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.body, os.environ.get('LOGIN_SEC_TOKEN'))
+
+    def test_response_store_auth_token_bad_username(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/store_token?username='
+            + 'badusername'
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+            + '&securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_store_auth_token_empty_username(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/store_token?username='
+            + ''
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+            + '&securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_store_auth_token_missing_username(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/store_token?'
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+            + '&securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_store_auth_token_bad_password(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/store_token?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + 'badpassword'
+            + '&securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_store_auth_token_empty_password(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/store_token?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + ''
+            + '&securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_store_auth_token_missing_password(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/store_token?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_store_auth_token_empty_token(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/store_token?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+            + '&securitytoken='
+            + ''
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_store_auth_token_missing_token(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/store_token?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        self.assertEqual(response.status_code, 403)
 
     def test_response_valid_hub_data(self):
         setup_test_environment()

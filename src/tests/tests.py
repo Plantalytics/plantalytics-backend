@@ -146,7 +146,7 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    def test_response_vinemeta_invlaid_vineyard(self):
+    def test_response_vinemeta_invalid_vineyard(self):
         setup_test_environment()
         client = Client()
         response = client.get(
@@ -185,7 +185,7 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    def test_response_invlaid_vineyard(self):
+    def test_response_invalid_vineyard(self):
         setup_test_environment()
         client = Client()
         response = client.get(
@@ -195,7 +195,7 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_response_invlaid_env_variable(self):
+    def test_response_invalid_env_variable(self):
         setup_test_environment()
         client = Client()
         response = client.get(
@@ -205,13 +205,41 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_response_invlaid_env_data_request(self):
+    def test_response_invalid_env_data_request(self):
         setup_test_environment()
         client = Client()
         response = client.get(
             '/env_data'
             + '?vineyard_id=101&'
             + 'env_variable=cheesiness'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_response_invalid_env_data_request_missing_vineyard(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/env_data'
+            + '?env_variable=cheesiness'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_response_invalid_env_data_request_missing_env_variable(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/env_data'
+            + '?vineyard_id=0'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_response_invalid_env_data_request_non_integer_id(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/env_data'
+            + '?vineyard_id=asdf'
+            + 'env_variable=temperature'
         )
         self.assertEqual(response.status_code, 400)
 

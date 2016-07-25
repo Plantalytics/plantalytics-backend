@@ -60,10 +60,11 @@ def index(request):
     except PlantalyticsException as e:
         logger.warn('Invalid username. ' + str(e))
         error = custom_error('auth_err', str(e))
-        HttpResponseForbidden(error, content_type='application/json')
+        return HttpResponseForbidden(error, content_type='application/json')
     except Exception as e:
         logger.exception('Error occurred while fetching password for user \''
                          + username + ' \'.'
                          + str(e)
                          )
-        return HttpResponseForbidden()
+        error = custom_error('auth_err', str(e))
+        return HttpResponseForbidden(error, content_type='application/json')

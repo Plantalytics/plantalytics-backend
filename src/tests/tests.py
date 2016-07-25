@@ -48,6 +48,16 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
+    def test_response_invalid_username_missing(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/login?'
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        self.assertEqual(response.status_code, 403)
+
     def test_response_invalid_password(self):
         setup_test_environment()
         client = Client()
@@ -55,6 +65,15 @@ class MainTests(TestCase):
             '/login?username='
             + os.environ.get('LOGIN_USERNAME')
             + '&password=notcorrect'
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_invalid_password_missing(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/login?username='
+            + os.environ.get('LOGIN_USERNAME')
         )
         self.assertEqual(response.status_code, 403)
 
@@ -68,6 +87,69 @@ class MainTests(TestCase):
             + os.environ.get('LOGIN_PASSWORD')
         )
         self.assertEqual(response.status_code, 200)
+
+    def test_response_auth_token_invalid_password(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/validate?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + 'asdf'
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_auth_token_empty_password(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/validate?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + ''
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_auth_token_missing_password(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/validate?username='
+            + os.environ.get('LOGIN_USERNAME')
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_auth_token_invalid_username(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/validate?username='
+            + 'invalidusername'
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_auth_token_empty_username(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/validate?username='
+            + ''
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_auth_token_missing_username(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/validate?'
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        self.assertEqual(response.status_code, 403)
 
     def test_response_store_auth_token(self):
         setup_test_environment()
@@ -152,6 +234,14 @@ class MainTests(TestCase):
         response = client.get(
             '/vineyard'
             + '?vineyard_id=101&'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_response_vinemeta_invalid_vineyard_missing(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/vineyard'
         )
         self.assertEqual(response.status_code, 400)
 

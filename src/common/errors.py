@@ -10,7 +10,8 @@
 from json import dumps
 
 responses = {
-    'auth_err': 'Authorization error: ',
+    'auth_error_no_token': 'Missing auth token in request.',
+    'auth_error_unknown': 'Unexpected error occurred during authorization.',
     'env_data_invalid': 'Request for invalid environmental data. Must be one of leafwetness, humidity, or temperature.',
     'env_data_not_found': 'The request resulted in no environmental data.',
     'env_data_unknown': 'An expected error occurred gathering the requested data.',

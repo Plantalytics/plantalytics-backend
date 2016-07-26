@@ -253,7 +253,7 @@ def set_user_auth_token(username, password, securitytoken):
     bound = auth_stmt_set.bind(values)
 
     if securitytoken == '':
-        raise PlantalyticsAuthException('Invalid security token. Can not be empty.')
+        raise PlantalyticsAuthException('auth_error_no_token')
     try:
         session.execute(bound)
 

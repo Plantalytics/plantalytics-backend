@@ -47,7 +47,7 @@ def index(request):
             + ' data for vineyard ' + vineyard_id + '.'
         )
         return HttpResponse(json.dumps(response), content_type='application/json')
-    except PlantalyticsVineyardException as e:
+    except PlantalyticsException as e:
         logger.warn('Invalid vineyard_id or env_variable. Error code: ' + str(e))
         error = custom_error(str(e))
         return HttpResponseBadRequest(error, content_type='application/json')

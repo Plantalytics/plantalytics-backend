@@ -46,7 +46,7 @@ def index(request):
                 )
                 # Return response with security token object
                 return HttpResponse(json.dumps(stored_token), content_type='application/json')
-            except Exception as e:
+            except PlantalyticsException as e:
                 logger.exception(
                     'Error occurred while fetching security token for user \''
                     + username + ' \'.'
@@ -71,5 +71,5 @@ def index(request):
             + username + ' \'.'
             + str(e)
         )
-        error = custom_error('unknown', str(e))
+        error = custom_error('auth_error_unknown', str(e))
         return HttpResponseForbidden(error, content_type='application/json')

@@ -46,6 +46,8 @@ class MainTests(TestCase):
             + '&password='
             + os.environ.get('LOGIN_PASSWORD')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_invalid_username_missing(self):
@@ -66,6 +68,8 @@ class MainTests(TestCase):
             + os.environ.get('LOGIN_USERNAME')
             + '&password=notcorrect'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_invalid_password_missing(self):
@@ -75,6 +79,8 @@ class MainTests(TestCase):
             '/login?username='
             + os.environ.get('LOGIN_USERNAME')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
     @patch('cassy.get_user_password')
@@ -96,6 +102,8 @@ class MainTests(TestCase):
             + '&password='
             + os.environ.get('LOGIN_PASSWORD')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_unknown' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_valid_auth_token(self):
@@ -118,6 +126,8 @@ class MainTests(TestCase):
             + '&password='
             + 'asdf'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_auth_token_empty_password(self):
@@ -129,6 +139,8 @@ class MainTests(TestCase):
             + '&password='
             + ''
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_auth_token_missing_password(self):
@@ -138,6 +150,8 @@ class MainTests(TestCase):
             '/validate?username='
             + os.environ.get('LOGIN_USERNAME')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_auth_token_invalid_username(self):
@@ -149,6 +163,8 @@ class MainTests(TestCase):
             + '&password='
             + os.environ.get('LOGIN_PASSWORD')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_auth_token_empty_username(self):
@@ -160,6 +176,8 @@ class MainTests(TestCase):
             + '&password='
             + os.environ.get('LOGIN_PASSWORD')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_auth_token_missing_username(self):
@@ -170,6 +188,8 @@ class MainTests(TestCase):
             + '&password='
             + os.environ.get('LOGIN_PASSWORD')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
     @patch('cassy.get_user_auth_token')
@@ -191,6 +211,31 @@ class MainTests(TestCase):
             + '&password='
             + os.environ.get('LOGIN_PASSWORD')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('auth_error_unknown' in error)
+        self.assertEqual(response.status_code, 403)
+
+    @patch('cassy.get_user_auth_token')
+    def test_response_auth_token_get_user_auth_token_plantalytics_exception(self, user_auth):
+        '''
+        Tests the validate endpoint if cassy.get_user_auth_token throws Plantalytics Exception
+        Args:
+            mock_requests:
+
+        Returns:
+
+        '''
+        client = Client()
+        setup_test_environment()
+        user_auth.side_effect = PlantalyticsAuthException('auth_error_not_found')
+        response = client.get(
+            '/validate?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('auth_error_not_found' in error)
         self.assertEqual(response.status_code, 403)
 
     @patch('cassy.get_user_password')
@@ -212,6 +257,8 @@ class MainTests(TestCase):
             + '&password='
             + os.environ.get('LOGIN_PASSWORD')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('auth_error_unknown' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_store_auth_token(self):
@@ -257,6 +304,8 @@ class MainTests(TestCase):
             + '&securitytoken='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('auth_error_unknown' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_store_auth_token_bad_username(self):
@@ -270,6 +319,8 @@ class MainTests(TestCase):
             + '&securitytoken='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_store_auth_token_empty_username(self):
@@ -283,6 +334,8 @@ class MainTests(TestCase):
             + '&securitytoken='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_store_auth_token_missing_username(self):
@@ -295,6 +348,8 @@ class MainTests(TestCase):
             + '&securitytoken='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_store_auth_token_bad_password(self):
@@ -308,6 +363,8 @@ class MainTests(TestCase):
             + '&securitytoken='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_store_auth_token_empty_password(self):
@@ -321,6 +378,8 @@ class MainTests(TestCase):
             + '&securitytoken='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_store_auth_token_missing_password(self):
@@ -332,6 +391,8 @@ class MainTests(TestCase):
             + '&securitytoken='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_store_auth_token_empty_token(self):
@@ -345,6 +406,8 @@ class MainTests(TestCase):
             + '&securitytoken='
             + ''
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('auth_error_no_token' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_store_auth_token_missing_token(self):
@@ -356,6 +419,8 @@ class MainTests(TestCase):
             + '&password='
             + os.environ.get('LOGIN_PASSWORD')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('auth_error_no_token' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_valid_hub_data(self):
@@ -439,6 +504,8 @@ class MainTests(TestCase):
             '/vineyard'
             + '?vineyard_id=0'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_unknown' in error)
         self.assertEqual(response.status_code, 400)
 
     def test_response_vinemeta_invalid_vineyard(self):
@@ -448,6 +515,8 @@ class MainTests(TestCase):
             '/vineyard'
             + '?vineyard_id=101&'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_id_not_found' in error)
         self.assertEqual(response.status_code, 400)
 
     def test_response_vinemeta_invalid_vineyard_missing(self):
@@ -456,6 +525,8 @@ class MainTests(TestCase):
         response = client.get(
             '/vineyard'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_no_id' in error)
         self.assertEqual(response.status_code, 400)
 
     def test_response_vinemeta_invalid_vineyard_non_integer(self):
@@ -465,6 +536,8 @@ class MainTests(TestCase):
             '/vineyard'
             + '?vineyard_id=abc'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_bad_id' in error)
         self.assertEqual(response.status_code, 400)
 
     def test_response_temperature_data(self):
@@ -495,6 +568,8 @@ class MainTests(TestCase):
             + '?vineyard_id=0&'
             + 'env_variable=temperature'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('env_data_unknown' in error)
         self.assertEqual(response.status_code, 400)
 
     def test_response_humidity_data(self):
@@ -525,6 +600,8 @@ class MainTests(TestCase):
             + '?vineyard_id=101&'
             + 'env_variable=temperature'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_id_not_found' in error)
         self.assertEqual(response.status_code, 400)
 
     def test_response_invalid_env_variable(self):
@@ -535,6 +612,8 @@ class MainTests(TestCase):
             + '?vineyard_id=0&'
             + 'env_variable=cheesiness'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('env_data_invalid' in error)
         self.assertEqual(response.status_code, 400)
 
     def test_response_invalid_env_data_request(self):
@@ -545,6 +624,8 @@ class MainTests(TestCase):
             + '?vineyard_id=101&'
             + 'env_variable=cheesiness'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_id_not_found' in error)
         self.assertEqual(response.status_code, 400)
 
     def test_response_invalid_env_data_request_missing_vineyard(self):
@@ -554,6 +635,8 @@ class MainTests(TestCase):
             '/env_data'
             + '?env_variable=cheesiness'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_no_id' in error)
         self.assertEqual(response.status_code, 400)
 
     def test_response_invalid_env_data_request_missing_env_variable(self):
@@ -563,6 +646,8 @@ class MainTests(TestCase):
             '/env_data'
             + '?vineyard_id=0'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('env_data_invalid' in error)
         self.assertEqual(response.status_code, 400)
 
     def test_response_invalid_env_data_request_non_integer_id(self):
@@ -573,6 +658,8 @@ class MainTests(TestCase):
             + '?vineyard_id=asdf'
             + 'env_variable=temperature'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_bad_id' in error)
         self.assertEqual(response.status_code, 400)
 
     def test_admin_redirect(self):

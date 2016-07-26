@@ -12,7 +12,10 @@ from json import dumps
 responses = {
     'auth_err': 'Authorization error: ',
     'login_err': 'Login Error: Invalid username or password',
-    'vin_err': 'Vineyard error: ',
+    'vineyard_no_id': 'A vineyard must have a valid ID.',
+    'vineyard_bad_id': 'A vineyard ID must be a positive integer.',
+    'vineyard_id_not_found': 'The vineyard ID was not found.',
+    'vineyard_unknown': 'An unexpected error occurred while fetching the vineyard ID.',
     'unknown': 'An unknown error occurred: '
 }
 
@@ -25,7 +28,7 @@ def custom_error(code, additional_message=None):
     """
     valid_code = code if code in responses else 'unknown'
     message = responses[valid_code]
-    message = message + additional_message if additional_message else message
+    message = message + ' ' + additional_message if additional_message else message
     result = {'errors':
         {
             valid_code: message

@@ -29,18 +29,23 @@ def index(request):
     try:
         logger.info('Fetching vineyard data for vineyard id \'' + vineyard_id + '\'.')
         coordinates = cassy.get_vineyard_coordinates(vineyard_id)
+
         logger.info('Successfully fetched vineyard data for vineyard id \'' + vineyard_id + '\'.')
         response['center'] = coordinates[0]
         response['boundary'] = coordinates[1]
+
         return HttpResponse(json.dumps(response), content_type='application/json')
     except PlantalyticsException as e:
-        logger.warn('Invalid vineyard ID while fetching vineyard data. \'' + vineyard_id + '\'')
-        error = custom_error('vin_err', str(e))
+        logger.warn('Invalid vineyard ID while fetching vineyard data: \'' + vineyard_id + '\'')
+        error = custom_error(str(e))
+
         return HttpResponseBadRequest(error, content_type='application/json')
     except Exception as e:
-        logger.exception('Error occurred while fetching vineyard data for '
-                    + 'vineyard id \'' + vineyard_id + '\'. '
-                    + str(e)
+        logger.exception(
+            'Error occurred while fetching vineyard data for '
+            + 'vineyard id \'' + vineyard_id + '\'. '
+            + str(e)
         )
-        error = custom_error('unknown', str(e))
+        error = custom_error('vineyard_unknown', str(e))
+
         return HttpResponseBadRequest(error, content_type='application/json')

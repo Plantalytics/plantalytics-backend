@@ -69,6 +69,7 @@ def get_env_data(node_id, env_variable):
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
+
 def post_env_data(env_data):
     """
     Inserts data from hub into database.
@@ -112,7 +113,7 @@ def get_vineyard_coordinates(vineyard_id):
 
     try:
         if vineyard_id == '':
-            raise PlantalyticsVineyardException('Invalid Vineyard ID')
+            raise PlantalyticsVineyardException('vineyard_no_id')
         # Ensures vineyard_id is integer
         int(vineyard_id)
         rows = session.execute(
@@ -122,7 +123,7 @@ def get_vineyard_coordinates(vineyard_id):
         )
 
         if not rows:
-            raise PlantalyticsVineyardException('Invalid Vineyard ID')
+            raise PlantalyticsVineyardException('vineyard_id_not_found')
         else:
             center_point = {}
             boundary_points = []
@@ -143,7 +144,7 @@ def get_vineyard_coordinates(vineyard_id):
     except PlantalyticsException as e:
         raise e
     except ValueError as e:
-        raise PlantalyticsVineyardException('Invalid Vineyard ID')
+        raise PlantalyticsVineyardException('vineyard_bad_id')
     # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
@@ -158,7 +159,7 @@ def get_node_coordinates(vineyard_id):
 
     try:
         if vineyard_id == '':
-            raise PlantalyticsVineyardException('Invalid Vineyard ID')
+            raise PlantalyticsVineyardException('vineyard_no_id')
         # Confirms vineyard_id is a string representation of an integer
         # Raises ValueError if not
         int(vineyard_id)
@@ -168,7 +169,7 @@ def get_node_coordinates(vineyard_id):
             + ' WHERE vineid = ' + vineyard_id + ';'
         )
         if not rows:
-            raise PlantalyticsVineyardException('Invalid Vineyard ID')
+            raise PlantalyticsVineyardException('vineyard_id_not_found')
         else:
             # Process node coordinates for requested vineyard.
             for node in rows:
@@ -181,7 +182,7 @@ def get_node_coordinates(vineyard_id):
     except PlantalyticsException as e:
         raise e
     except ValueError as e:
-        raise PlantalyticsVineyardException('Invalid Vineyard ID')
+        raise PlantalyticsVineyardException('vineyard_bad_id')
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 

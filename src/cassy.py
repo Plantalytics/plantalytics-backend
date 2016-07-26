@@ -196,7 +196,7 @@ def get_user_password(username):
 
     try:
         if username == '':
-            raise PlantalyticsLoginException('Invalid Username')
+            raise PlantalyticsLoginException('login_error')
         rows = session.execute(
             'SELECT password'
             + ' FROM ' + os.environ.get('DB_USER_TABLE')
@@ -204,7 +204,7 @@ def get_user_password(username):
         )
 
         if not rows:
-            raise PlantalyticsLoginException('Invalid Username')
+            raise PlantalyticsLoginException('login_error')
         else:
             return rows[0].password
     # Known exception

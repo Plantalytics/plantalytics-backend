@@ -35,9 +35,10 @@ def index(request):
         # Get stored password from database, and verify with password arg
         logger.info('Fetching password for user \'' + username + '\'.')
         stored_password = cassy.get_user_password(username)
-        logger.info('Successfully fetched password for user \''
-                    + username + '\'.'
-                    )
+        logger.info(
+            'Successfully fetched password for user \''
+            + username + '\'.'
+        )
 
         if stored_password == submitted_password:
             # Return response with token object
@@ -46,14 +47,14 @@ def index(request):
             logger.warning('Incorrect password supplied for user \''
                            + username + '\'.'
                            )
-            error = custom_error('login_err')
+            error = custom_error('login_error')
             return HttpResponseForbidden(error, content_type='application/json')
 
     # Invalid username -- expected exception
-    except PlantalyticsException:
+    except PlantalyticsException as e:
         logger.warning('Unknown username \''
                        + username + '\'.')
-        error = custom_error('login_err')
+        error = custom_error(str(e))
         return HttpResponseForbidden(error, content_type='application/json')
     # Unexpected exception
     except Exception as e:
@@ -61,5 +62,5 @@ def index(request):
                          + username + ' \'.'
                          + str(e)
                          )
-        error = custom_error('unknown', str(e))
+        error = custom_error('login_unknown', str(e))
         return HttpResponseForbidden(error, content_type='application/json')

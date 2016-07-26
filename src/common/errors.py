@@ -11,7 +11,8 @@ from json import dumps
 
 responses = {
     'auth_err': 'Authorization error: ',
-    'login_err': 'Login Error: Invalid username or password',
+    'login_error': 'Login Error: Invalid username or password.',
+    'login_unknown': 'An unexpected error occurred during login.',
     'vineyard_no_id': 'A vineyard must have a valid ID.',
     'vineyard_bad_id': 'A vineyard ID must be a positive integer.',
     'vineyard_id_not_found': 'The vineyard ID was not found.',

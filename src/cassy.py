@@ -44,7 +44,7 @@ def get_env_data(node_id, env_variable):
     session.row_factory = named_tuple_factory
 
     if env_variable not in ['leafwetness', 'humidity', 'temperature']:
-        raise PlantalyticsVineyardException('Invalid environmental variable')
+        raise PlantalyticsDataException('env_data_invalid')
 
     try:
         rows = session.execute(
@@ -54,7 +54,7 @@ def get_env_data(node_id, env_variable):
         )
 
         if not rows:
-            raise Exception('No environmental data found for ' + node_id + ' and ' + env_variable + '.')
+            raise PlantalyticsDataException('env_data_not_found')
         else:
             # Extract requested environmental variable.
             if env_variable == 'temperature':
@@ -65,7 +65,7 @@ def get_env_data(node_id, env_variable):
                 return rows[0].leafwetness
             else:
                 # Shouldn't get to this point, but here for completeness
-                raise Exception('Unknown environmental variable: ' + env_variable)
+                raise PlantalyticsDataException('env_data_unknown')
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 

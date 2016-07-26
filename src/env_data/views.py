@@ -28,7 +28,6 @@ def index(request):
     response = {}
     map_data = []
     try:
-
         logger.info('Fetching ' + env_variable + ' data.')
         coordinates = cassy.get_node_coordinates(vineyard_id)
 
@@ -43,18 +42,20 @@ def index(request):
             map_data.append(map_data_point)
         response['env_data'] = map_data
 
-        logger.info('Successfully fetched ' + env_variable
-                    + ' data for vineyard ' + vineyard_id + '.'
+        logger.info(
+            'Successfully fetched ' + env_variable
+            + ' data for vineyard ' + vineyard_id + '.'
         )
         return HttpResponse(json.dumps(response), content_type='application/json')
     except PlantalyticsVineyardException as e:
-        logger.warn('Invalid vineyard_id or env_variable: ' + str(e))
-        error = custom_error('vin_err', str(e))
+        logger.warn('Invalid vineyard_id or env_variable. Error code: ' + str(e))
+        error = custom_error(str(e))
         return HttpResponseBadRequest(error, content_type='application/json')
     except Exception as e:
-        logger.exception('Error occurred while fetching ' + env_variable
-                    + ' data for vineyard ' + vineyard_id + '.'
-                    + str(e)
+        logger.exception(
+            'Error occurred while fetching ' + env_variable
+            + ' data for vineyard ' + vineyard_id + '.'
+            + str(e)
         )
-        error = custom_error('unknown', str(e))
+        error = custom_error('env_data_unknown', str(e))
         return HttpResponseBadRequest(error, content_type='application/json')

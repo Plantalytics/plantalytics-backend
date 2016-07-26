@@ -11,6 +11,9 @@ from json import dumps
 
 responses = {
     'auth_err': 'Authorization error: ',
+    'env_data_invalid': 'Request for invalid environmental data. Must be one of leafwetness, humidity, or temperature.',
+    'env_data_not_found': 'The request resulted in no environmental data.',
+    'env_data_unknown': 'An expected error occurred gathering the requested data.',
     'login_error': 'Login Error: Invalid username or password.',
     'login_unknown': 'An unexpected error occurred during login.',
     'vineyard_no_id': 'A vineyard must have a valid ID.',

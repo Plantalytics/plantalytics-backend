@@ -13,3 +13,7 @@ class PlantalyticsLoginException(PlantalyticsException):
 
 class PlantalyticsAuthException(PlantalyticsException):
     pass
+
+
+class PlantalyticsDataException(PlantalyticsException):
+    pass

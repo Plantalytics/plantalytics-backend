@@ -13,6 +13,7 @@ responses = {
     'auth_error_no_token': 'Missing auth token in request.',
     'auth_error_unknown': 'Unexpected error occurred during authorization.',
     'env_data_invalid': 'Request for invalid environmental data. Must be one of leafwetness, humidity, or temperature.',
+    'auth_error_not_found': 'Auth token not found.',
     'env_data_not_found': 'The request resulted in no environmental data.',
     'env_data_unknown': 'An expected error occurred gathering the requested data.',
     'login_error': 'Login Error: Invalid username or password.',
@@ -21,7 +22,7 @@ responses = {
     'vineyard_bad_id': 'A vineyard ID must be a positive integer.',
     'vineyard_id_not_found': 'The vineyard ID was not found.',
     'vineyard_unknown': 'An unexpected error occurred while fetching the vineyard ID.',
-    'unknown': 'An unknown error occurred: '
+    'unknown': 'An unknown error occurred.'
 }
 
 

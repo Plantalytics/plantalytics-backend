@@ -231,7 +231,7 @@ def get_user_auth_token(username, password):
         rows = session.execute(bound)
 
         if not rows:
-            raise PlantalyticsAuthException('Error retrieving auth token.')
+            raise PlantalyticsAuthException('auth_error_not_found')
         else:
             return rows[0].securitytoken
     except PlantalyticsException as e:

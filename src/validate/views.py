@@ -31,40 +31,45 @@ def index(request):
         # Get stored password from database, and verify with password arg
         logger.info('Fetching password for user \'' + username + '\'.')
         stored_password = cassy.get_user_password(username)
-        logger.info('Successfully fetched password for user \''
-                    + username + '\'.'
-                    )
+        logger.info(
+            'Successfully fetched password for user \''
+            + username + '\'.'
+        )
         if stored_password == submitted_password:
             try:
                 # Get stored security token from database
                 logger.info('Fetching security token for user \'' + username + '\'.')
                 stored_token = cassy.get_user_auth_token(username, submitted_password)
-                logger.info('Successfully fetched security token for user \''
-                            + username + '\'.'
-                            )
+                logger.info(
+                    'Successfully fetched security token for user \''
+                    + username + '\'.'
+                )
                 # Return response with security token object
                 return HttpResponse(json.dumps(stored_token), content_type='application/json')
             except Exception as e:
-                logger.exception('Error occurred while fetching security token for user \''
-                                 + username + ' \'.'
-                                 + str(e)
-                                 )
-                error = custom_error('auth_err', str(e))
+                logger.exception(
+                    'Error occurred while fetching security token for user \''
+                    + username + ' \'.'
+                    + str(e)
+                )
+                error = custom_error(str(e))
                 return HttpResponseForbidden(error, content_type='application/json')
         else:
-            logger.warning('Incorrect password supplied for user \''
-                           + username + '\'.'
-                           )
-            error = custom_error('login_err')
+            logger.warning(
+                'Incorrect password supplied for user \''
+                + username + '\'.'
+            )
+            error = custom_error('login_error')
             return HttpResponseForbidden(error, content_type='application/json')
     except PlantalyticsException as e:
         logger.warn('Invalid username: ' + username)
-        error = custom_error('login_err')
+        error = custom_error('login_error')
         return HttpResponseForbidden(error, content_type='application/json')
     except Exception as e:
-        logger.exception('Error occurred while fetching password for user \''
-                         + username + ' \'.'
-                         + str(e)
-                         )
+        logger.exception(
+            'Error occurred while fetching password for user \''
+            + username + ' \'.'
+            + str(e)
+        )
         error = custom_error('unknown', str(e))
         return HttpResponseForbidden(error, content_type='application/json')

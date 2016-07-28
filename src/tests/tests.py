@@ -7,13 +7,13 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
-import os
 import json
 import time
 
 from django.test import TestCase, Client
 from django.test.utils import setup_test_environment
-from django.http.response import HttpResponseRedirect
+from unittest.mock import patch
+from cassy import *
 
 
 class MainTests(TestCase):
@@ -46,6 +46,18 @@ class MainTests(TestCase):
             + '&password='
             + os.environ.get('LOGIN_PASSWORD')
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_invalid_username_missing(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/login?'
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
         self.assertEqual(response.status_code, 403)
 
     def test_response_invalid_password(self):
@@ -56,6 +68,42 @@ class MainTests(TestCase):
             + os.environ.get('LOGIN_USERNAME')
             + '&password=notcorrect'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_invalid_password_missing(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/login?username='
+            + os.environ.get('LOGIN_USERNAME')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
+        self.assertEqual(response.status_code, 403)
+
+    @patch('cassy.get_user_password')
+    def test_login_get_user_password_exception(self, password_mock):
+        '''
+        Tests the login endpoint when get_user_password throws Exception
+        Args:
+            mock_requests:
+
+        Returns:
+
+        '''
+        setup_test_environment()
+        client = Client()
+        password_mock.side_effect = Exception('Test exception')
+        response = client.get(
+            '/login?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_unknown' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_valid_auth_token(self):
@@ -69,6 +117,150 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    def test_response_auth_token_invalid_password(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/validate?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + 'asdf'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_auth_token_empty_password(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/validate?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + ''
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_auth_token_missing_password(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/validate?username='
+            + os.environ.get('LOGIN_USERNAME')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_auth_token_invalid_username(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/validate?username='
+            + 'invalidusername'
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_auth_token_empty_username(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/validate?username='
+            + ''
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_auth_token_missing_username(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/validate?'
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
+        self.assertEqual(response.status_code, 403)
+
+    @patch('cassy.get_user_auth_token')
+    def test_response_auth_token_get_user_auth_token_exception(self, user_auth):
+        '''
+        Tests the validate endpoint if cassy.get_user_auth_token throws Exception
+        Args:
+            mock_requests:
+
+        Returns:
+
+        '''
+        client = Client()
+        setup_test_environment()
+        user_auth.side_effect = Exception('Test Exception')
+        response = client.get(
+            '/validate?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('auth_error_unknown' in error)
+        self.assertEqual(response.status_code, 403)
+
+    @patch('cassy.get_user_auth_token')
+    def test_response_auth_token_get_user_auth_token_plantalytics_exception(self, user_auth):
+        '''
+        Tests the validate endpoint if cassy.get_user_auth_token throws Plantalytics Exception
+        Args:
+            mock_requests:
+
+        Returns:
+
+        '''
+        client = Client()
+        setup_test_environment()
+        user_auth.side_effect = PlantalyticsAuthException('auth_error_not_found')
+        response = client.get(
+            '/validate?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('auth_error_not_found' in error)
+        self.assertEqual(response.status_code, 403)
+
+    @patch('cassy.get_user_password')
+    def test_response_auth_token_get_user_password_exception(self, password_mock):
+        '''
+        Tests the validate endpoint if cassy.get_user_password throws Exception
+        Args:
+            mock_requests:
+
+        Returns:
+
+        '''
+        client = Client()
+        setup_test_environment()
+        password_mock.side_effect = Exception('Test Exception')
+        response = client.get(
+            '/validate?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('auth_error_unknown' in error)
+        self.assertEqual(response.status_code, 403)
+
     def test_response_store_auth_token(self):
         setup_test_environment()
         client = Client()
@@ -81,6 +273,155 @@ class MainTests(TestCase):
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
         self.assertEqual(response.status_code, 200)
+        response = client.get(
+            '/validate?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        self.assertEqual(response.status_code, 200)
+        token = response.content.decode('utf-8')
+        self.assertEqual(token, '"' + os.environ.get('LOGIN_SEC_TOKEN') + '"')
+
+    @patch('cassy.get_user_password')
+    def test_response_store_auth_token_get_user_password_exception(self, password_mock):
+        '''
+        Tests the store_token endpoint for the case when cassy.get_user_password throws Exception
+        Args:
+            mock_requests:
+
+        Returns:
+
+        '''
+        setup_test_environment()
+        client = Client()
+        password_mock.side_effect = Exception('Test Exception')
+        response = client.get(
+            '/store_token?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+            + '&securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('auth_error_unknown' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_store_auth_token_bad_username(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/store_token?username='
+            + 'badusername'
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+            + '&securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_store_auth_token_empty_username(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/store_token?username='
+            + ''
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+            + '&securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_store_auth_token_missing_username(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/store_token?'
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+            + '&securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_store_auth_token_bad_password(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/store_token?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + 'badpassword'
+            + '&securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_store_auth_token_empty_password(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/store_token?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + ''
+            + '&securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_store_auth_token_missing_password(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/store_token?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&securitytoken='
+            + os.environ.get('LOGIN_SEC_TOKEN')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('login_error' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_store_auth_token_empty_token(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/store_token?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+            + '&securitytoken='
+            + ''
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('auth_error_no_token' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_store_auth_token_missing_token(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/store_token?username='
+            + os.environ.get('LOGIN_USERNAME')
+            + '&password='
+            + os.environ.get('LOGIN_PASSWORD')
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('auth_error_no_token' in error)
+        self.assertEqual(response.status_code, 403)
 
     def test_response_valid_hub_data(self):
         setup_test_environment()
@@ -142,17 +483,61 @@ class MainTests(TestCase):
         client = Client()
         response = client.get(
             '/vineyard'
-            + '?vineyard_id=0&'
+            + '?vineyard_id=0'
         )
         self.assertEqual(response.status_code, 200)
 
-    def test_response_vinemeta_invlaid_vineyard(self):
+    @patch('cassy.get_vineyard_coordinates')
+    def test_response_vineyard_metadata_exception(self, vineyard_mock):
+        '''
+        Tests vineyard endpoint when cassy.get_vineyard_coordinates throws Exception
+        Args:
+            vineyard_mock:
+
+        Returns:
+
+        '''
+        setup_test_environment()
+        client = Client()
+        vineyard_mock.side_effect =Exception('Test exception')
+        response = client.get(
+            '/vineyard'
+            + '?vineyard_id=0'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_unknown' in error)
+        self.assertEqual(response.status_code, 400)
+
+    def test_response_vinemeta_invalid_vineyard(self):
         setup_test_environment()
         client = Client()
         response = client.get(
             '/vineyard'
             + '?vineyard_id=101&'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_id_not_found' in error)
+        self.assertEqual(response.status_code, 400)
+
+    def test_response_vinemeta_invalid_vineyard_missing(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/vineyard'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_no_id' in error)
+        self.assertEqual(response.status_code, 400)
+
+    def test_response_vinemeta_invalid_vineyard_non_integer(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/vineyard'
+            + '?vineyard_id=abc'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_bad_id' in error)
         self.assertEqual(response.status_code, 400)
 
     def test_response_temperature_data(self):
@@ -164,6 +549,28 @@ class MainTests(TestCase):
             + 'env_variable=temperature'
         )
         self.assertEqual(response.status_code, 200)
+
+    @patch('cassy.get_env_data')
+    def test_response_env_data_exception(self, env_data_mock):
+        '''
+        Test env_data endpoint when get_env_data throws Exception
+        Args:
+            env_data_mock:
+
+        Returns:
+
+        '''
+        setup_test_environment()
+        client = Client()
+        env_data_mock.side_effect = Exception('Test exception')
+        response = client.get(
+            '/env_data'
+            + '?vineyard_id=0&'
+            + 'env_variable=temperature'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('env_data_unknown' in error)
+        self.assertEqual(response.status_code, 400)
 
     def test_response_humidity_data(self):
         setup_test_environment()
@@ -185,7 +592,7 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    def test_response_invlaid_vineyard(self):
+    def test_response_invalid_vineyard(self):
         setup_test_environment()
         client = Client()
         response = client.get(
@@ -193,9 +600,11 @@ class MainTests(TestCase):
             + '?vineyard_id=101&'
             + 'env_variable=temperature'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_id_not_found' in error)
         self.assertEqual(response.status_code, 400)
 
-    def test_response_invlaid_env_variable(self):
+    def test_response_invalid_env_variable(self):
         setup_test_environment()
         client = Client()
         response = client.get(
@@ -203,9 +612,11 @@ class MainTests(TestCase):
             + '?vineyard_id=0&'
             + 'env_variable=cheesiness'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('env_data_invalid' in error)
         self.assertEqual(response.status_code, 400)
 
-    def test_response_invlaid_env_data_request(self):
+    def test_response_invalid_env_data_request(self):
         setup_test_environment()
         client = Client()
         response = client.get(
@@ -213,6 +624,42 @@ class MainTests(TestCase):
             + '?vineyard_id=101&'
             + 'env_variable=cheesiness'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_id_not_found' in error)
+        self.assertEqual(response.status_code, 400)
+
+    def test_response_invalid_env_data_request_missing_vineyard(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/env_data'
+            + '?env_variable=cheesiness'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_no_id' in error)
+        self.assertEqual(response.status_code, 400)
+
+    def test_response_invalid_env_data_request_missing_env_variable(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/env_data'
+            + '?vineyard_id=0'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('env_data_invalid' in error)
+        self.assertEqual(response.status_code, 400)
+
+    def test_response_invalid_env_data_request_non_integer_id(self):
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/env_data'
+            + '?vineyard_id=asdf'
+            + 'env_variable=temperature'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_bad_id' in error)
         self.assertEqual(response.status_code, 400)
 
     def test_admin_redirect(self):

@@ -10,7 +10,8 @@
 import json
 import logging
 
-from django.shortcuts import render
+from common.exceptions import *
+from common.errors import *
 from django.http import HttpResponse, HttpResponseBadRequest
 
 import cassy
@@ -22,12 +23,10 @@ def index(request):
     """
     Access database to respond with requested environmental mapping data.
     """
-
     vineyard_id = request.GET.get('vineyard_id', '')
     env_variable = request.GET.get('env_variable', '')
     response = {}
     map_data = []
-
     try:
         logger.info('Fetching ' + env_variable + ' data.')
         coordinates = cassy.get_node_coordinates(vineyard_id)
@@ -43,13 +42,20 @@ def index(request):
             map_data.append(map_data_point)
         response['env_data'] = map_data
 
-        logger.info('Successfully fetched ' + env_variable
-                    + ' data for vineyard ' + vineyard_id + '.'
+        logger.info(
+            'Successfully fetched ' + env_variable
+            + ' data for vineyard ' + vineyard_id + '.'
         )
         return HttpResponse(json.dumps(response), content_type='application/json')
+    except PlantalyticsException as e:
+        logger.warn('Invalid vineyard_id or env_variable. Error code: ' + str(e))
+        error = custom_error(str(e))
+        return HttpResponseBadRequest(error, content_type='application/json')
     except Exception as e:
-        logger.exception('Error occurred while fetching ' + env_variable
-                    + ' data for vineyard ' + vineyard_id + '.'
-                    + str(e)
+        logger.exception(
+            'Error occurred while fetching ' + env_variable
+            + ' data for vineyard ' + vineyard_id + '.'
+            + str(e)
         )
-        return HttpResponseBadRequest()
+        error = custom_error(ENV_DATA_UNKNOWN, str(e))
+        return HttpResponseBadRequest(error, content_type='application/json')

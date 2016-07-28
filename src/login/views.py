@@ -7,15 +7,14 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
-import os
-import uuid
 import json
 import logging
-
-from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseForbidden
+import uuid
 
 import cassy
+from common.exceptions import PlantalyticsException
+from common.errors import *
+from django.http import HttpResponse, HttpResponseForbidden
 
 logger = logging.getLogger('plantalytics_backend.login')
 
@@ -30,15 +29,15 @@ def index(request):
 
     # Generate token and put into JSON object
     token = str(uuid.uuid4())
-    token_object = {}
-    token_object['token'] = token
+    token_object = {'token': token}
 
     try:
         # Get stored password from database, and verify with password arg
         logger.info('Fetching password for user \'' + username + '\'.')
         stored_password = cassy.get_user_password(username)
-        logger.info('Successfully fetched password for user \''
-                    + username + '\'.'
+        logger.info(
+            'Successfully fetched password for user \''
+            + username + '\'.'
         )
 
         if stored_password == submitted_password:
@@ -47,11 +46,21 @@ def index(request):
         else:
             logger.warning('Incorrect password supplied for user \''
                            + username + '\'.'
-            )
-            return HttpResponseForbidden()
+                           )
+            error = custom_error(LOGIN_ERROR)
+            return HttpResponseForbidden(error, content_type='application/json')
+
+    # Invalid username -- expected exception
+    except PlantalyticsException as e:
+        logger.warning('Unknown username \''
+                       + username + '\'.')
+        error = custom_error(str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
+    # Unexpected exception
     except Exception as e:
         logger.exception('Error occurred while fetching password for user \''
-                    + username + ' \'.'
-                    + str(e)
-        )
-        return HttpResponseForbidden()
+                         + username + ' \'.'
+                         + str(e)
+                         )
+        error = custom_error(LOGIN_UNKNOWN, str(e))
+        return HttpResponseForbidden(error, content_type='application/json')

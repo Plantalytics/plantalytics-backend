@@ -11,7 +11,7 @@ import json
 import logging
 
 from common.exceptions import PlantalyticsException
-from common.errors import custom_error
+from common.errors import *
 from django.http import HttpResponse, HttpResponseBadRequest
 
 import cassy
@@ -46,6 +46,6 @@ def index(request):
             + 'vineyard id \'' + vineyard_id + '\'. '
             + str(e)
         )
-        error = custom_error('vineyard_unknown', str(e))
+        error = custom_error(VINEYARD_UNKNOWN, str(e))
 
         return HttpResponseBadRequest(error, content_type='application/json')

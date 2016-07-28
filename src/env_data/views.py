@@ -11,7 +11,7 @@ import json
 import logging
 
 from common.exceptions import *
-from common.errors import custom_error
+from common.errors import *
 from django.http import HttpResponse, HttpResponseBadRequest
 
 import cassy
@@ -57,5 +57,5 @@ def index(request):
             + ' data for vineyard ' + vineyard_id + '.'
             + str(e)
         )
-        error = custom_error('env_data_unknown', str(e))
+        error = custom_error(ENV_DATA_UNKNOWN, str(e))
         return HttpResponseBadRequest(error, content_type='application/json')

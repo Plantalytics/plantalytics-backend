@@ -13,7 +13,7 @@ import uuid
 
 import cassy
 from common.exceptions import PlantalyticsException
-from common.errors import custom_error
+from common.errors import *
 from django.http import HttpResponse, HttpResponseForbidden
 
 logger = logging.getLogger('plantalytics_backend.login')
@@ -47,7 +47,7 @@ def index(request):
             logger.warning('Incorrect password supplied for user \''
                            + username + '\'.'
                            )
-            error = custom_error('login_error')
+            error = custom_error(LOGIN_ERROR)
             return HttpResponseForbidden(error, content_type='application/json')
 
     # Invalid username -- expected exception
@@ -62,5 +62,5 @@ def index(request):
                          + username + ' \'.'
                          + str(e)
                          )
-        error = custom_error('login_unknown', str(e))
+        error = custom_error(LOGIN_UNKNOWN, str(e))
         return HttpResponseForbidden(error, content_type='application/json')

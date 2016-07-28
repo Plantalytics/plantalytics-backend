@@ -10,7 +10,7 @@
 import json
 import logging
 
-from common.errors import custom_error
+from common.errors import *
 from common.exceptions import *
 from django.http import HttpResponse, HttpResponseForbidden
 
@@ -59,11 +59,11 @@ def index(request):
                 'Incorrect password supplied for user \''
                 + username + '\'.'
             )
-            error = custom_error('login_error')
+            error = custom_error(LOGIN_ERROR)
             return HttpResponseForbidden(error, content_type='application/json')
     except PlantalyticsException as e:
         logger.warn('Invalid username: ' + username)
-        error = custom_error('login_error')
+        error = custom_error(LOGIN_ERROR)
         return HttpResponseForbidden(error, content_type='application/json')
     except Exception as e:
         logger.exception(
@@ -71,5 +71,5 @@ def index(request):
             + username + ' \'.'
             + str(e)
         )
-        error = custom_error('auth_error_unknown', str(e))
+        error = custom_error(AUTH_UNKNOWN, str(e))
         return HttpResponseForbidden(error, content_type='application/json')

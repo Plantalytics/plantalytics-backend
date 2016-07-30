@@ -12,7 +12,8 @@ import logging
 
 from common.exceptions import *
 from common.errors import *
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.shortcuts import render
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 
 import cassy
 
@@ -25,8 +26,23 @@ def index(request):
     """
     vineyard_id = request.GET.get('vineyard_id', '')
     env_variable = request.GET.get('env_variable', '')
+    auth_token = request.GET.get('auth_token', '')
     response = {}
     map_data = []
+
+    try:
+        logger.info(
+            'Validating auth token token for vineyard id \''
+            + vineyard_id + '\'.'
+        )
+        cassy.verify_auth_token(auth_token)
+    except Exception as e:
+        logger.exception('Error occurred while auth token for '
+                    + 'vineyard id \'' + vineyard_id + ' \'.'
+                    + str(e)
+        )
+        return HttpResponseForbidden()
+
     try:
         logger.info('Fetching ' + env_variable + ' data.')
         coordinates = cassy.get_node_coordinates(vineyard_id)

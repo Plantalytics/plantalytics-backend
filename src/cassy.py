@@ -205,6 +205,37 @@ def get_user_password(username):
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
+def get_user_email(username):
+    """
+    Obtains email for the requested user.
+    """
+
+    values = {}
+    values['username'] = username
+    auth_stmt_get = session.prepare(
+        'SELECT email'
+        + ' FROM ' + os.environ.get('DB_USER_TABLE')
+        + ' WHERE username=?'
+    )
+    bound = auth_stmt_get.bind(values)
+    session.row_factory = named_tuple_factory
+
+    try:
+        if username == '':
+            raise PlantalyticsLoginException(EMAIL_ERROR)
+        rows = session.execute(bound)
+
+        if not rows:
+            raise PlantalyticsLoginException(EMAIL_ERROR)
+        else:
+            return rows[0].email
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: ' + str(e))
+
 
 def get_user_auth_token(username, password):
     """

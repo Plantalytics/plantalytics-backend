@@ -12,7 +12,7 @@ import logging
 
 from common.exceptions import PlantalyticsException
 from common.errors import *
-from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 
 import cassy
@@ -20,12 +20,17 @@ import cassy
 logger = logging.getLogger('plantalytics_backend.vineyard')
 
 
+@csrf_exempt
 def index(request):
     """
     Access database to respond with requested vineyard metadata.
     """
-    vineyard_id = request.GET.get('vineyard_id', '')
-    auth_token = request.GET.get('auth_token', '')
+    if request.method != "POST":
+        return HttpResponseBadRequest()
+
+    data = json.loads(request.body.decode('utf-8'))
+    vineyard_id = data.get('vineyard_id', '')
+    auth_token = data.get('auth_token', '')
     response = {}
 
     try:

@@ -309,12 +309,15 @@ class MainTests(TestCase):
     def test_response_temperature_data(self):
         setup_test_environment()
         client = Client()
-        response = client.get(
-            '/env_data'
-            + '?vineyard_id=0&'
-            + 'env_variable=temperature&'
-            + 'auth_token='
-            + os.environ.get('LOGIN_SEC_TOKEN')
+        body = {
+            'vineyard_id': '0',
+            'env_variable': 'temperature',
+            'auth_token': os.environ.get('LOGIN_SEC_TOKEN')
+        }
+        response = client.post(
+            '/env_data',
+            data=json.dumps(body),
+            content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
 
@@ -331,12 +334,15 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         env_data_mock.side_effect = Exception('Test exception')
-        response = client.get(
-            '/env_data'
-            + '?vineyard_id=0&'
-            + 'env_variable=temperature&'
-            + 'auth_token='
-            + os.environ.get('LOGIN_SEC_TOKEN')
+        body = {
+            'vineyard_id': '0',
+            'env_variable': 'temperature',
+            'auth_token': os.environ.get('LOGIN_SEC_TOKEN')
+        }
+        response = client.post(
+            '/env_data',
+            data=json.dumps(body),
+            content_type='application/json'
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
         self.assertTrue('env_data_unknown' in error)
@@ -345,36 +351,45 @@ class MainTests(TestCase):
     def test_response_humidity_data(self):
         setup_test_environment()
         client = Client()
-        response = client.get(
-            '/env_data'
-            + '?vineyard_id=0&'
-            + 'env_variable=humidity&'
-            + 'auth_token='
-            + os.environ.get('LOGIN_SEC_TOKEN')
+        body = {
+            'vineyard_id': '0',
+            'env_variable': 'humidity',
+            'auth_token': os.environ.get('LOGIN_SEC_TOKEN')
+        }
+        response = client.post(
+            '/env_data',
+            data=json.dumps(body),
+            content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
 
     def test_response_leafwetness_data(self):
         setup_test_environment()
         client = Client()
-        response = client.get(
-            '/env_data'
-            + '?vineyard_id=0&'
-            + 'env_variable=leafwetness&'
-            + 'auth_token='
-            + os.environ.get('LOGIN_SEC_TOKEN')
+        body = {
+            'vineyard_id': '0',
+            'env_variable': 'leafwetness',
+            'auth_token': os.environ.get('LOGIN_SEC_TOKEN')
+        }
+        response = client.post(
+            '/env_data',
+            data=json.dumps(body),
+            content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
 
     def test_response_invalid_vineyard(self):
         setup_test_environment()
         client = Client()
-        response = client.get(
-            '/env_data'
-            + '?vineyard_id=101&'
-            + 'env_variable=temperature&'
-            + 'auth_token='
-            + os.environ.get('LOGIN_SEC_TOKEN')
+        body = {
+            'vineyard_id': '-1',
+            'env_variable': 'temperature',
+            'auth_token': os.environ.get('LOGIN_SEC_TOKEN')
+        }
+        response = client.post(
+            '/env_data',
+            data=json.dumps(body),
+            content_type='application/json'
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
         self.assertTrue('vineyard_id_not_found' in error)
@@ -383,39 +398,31 @@ class MainTests(TestCase):
     def test_response_invalid_env_variable(self):
         setup_test_environment()
         client = Client()
-        response = client.get(
-            '/env_data'
-            + '?vineyard_id=0&'
-            + 'env_variable=cheesiness&'
-            + 'auth_token='
-            + os.environ.get('LOGIN_SEC_TOKEN')
+        body = {
+            'vineyard_id': '0',
+            'env_variable': 'cheesiness',
+            'auth_token': os.environ.get('LOGIN_SEC_TOKEN')
+        }
+        response = client.post(
+            '/env_data',
+            data=json.dumps(body),
+            content_type='application/json'
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
         self.assertTrue('env_data_invalid' in error)
         self.assertEqual(response.status_code, 400)
 
-    def test_response_invalid_env_data_request(self):
-        setup_test_environment()
-        client = Client()
-        response = client.get(
-            '/env_data'
-            + '?vineyard_id=101&'
-            + 'env_variable=cheesiness&'
-            + 'auth_token='
-            + os.environ.get('LOGIN_SEC_TOKEN')
-        )
-        error = json.loads(response.content.decode('utf-8'))['errors']
-        self.assertTrue('vineyard_id_not_found' in error)
-        self.assertEqual(response.status_code, 400)
-
     def test_response_invalid_env_data_request_missing_vineyard(self):
         setup_test_environment()
         client = Client()
-        response = client.get(
-            '/env_data'
-            + '?env_variable=cheesiness&'
-            + 'auth_token='
-            + os.environ.get('LOGIN_SEC_TOKEN')
+        body = {
+            'env_variable': 'temperature',
+            'auth_token': os.environ.get('LOGIN_SEC_TOKEN')
+        }
+        response = client.post(
+            '/env_data',
+            data=json.dumps(body),
+            content_type='application/json'
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
         self.assertTrue('vineyard_no_id' in error)
@@ -424,11 +431,14 @@ class MainTests(TestCase):
     def test_response_invalid_env_data_request_missing_env_variable(self):
         setup_test_environment()
         client = Client()
-        response = client.get(
-            '/env_data'
-            + '?vineyard_id=0&'
-            + 'auth_token='
-            + os.environ.get('LOGIN_SEC_TOKEN')
+        body = {
+            'vineyard_id': '0',
+            'auth_token': os.environ.get('LOGIN_SEC_TOKEN')
+        }
+        response = client.post(
+            '/env_data',
+            data=json.dumps(body),
+            content_type='application/json'
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
         self.assertTrue('env_data_invalid' in error)
@@ -437,12 +447,15 @@ class MainTests(TestCase):
     def test_response_invalid_env_data_request_non_integer_id(self):
         setup_test_environment()
         client = Client()
-        response = client.get(
-            '/env_data'
-            + '?vineyard_id=asdf&'
-            + 'env_variable=temperature&'
-            + 'auth_token='
-            + os.environ.get('LOGIN_SEC_TOKEN')
+        body = {
+            'vineyard_id': 'asdf',
+            'env_variable': 'temperature',
+            'auth_token': os.environ.get('LOGIN_SEC_TOKEN')
+        }
+        response = client.post(
+            '/env_data',
+            data=json.dumps(body),
+            content_type='application/json'
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
         self.assertTrue('vineyard_bad_id' in error)
@@ -451,11 +464,15 @@ class MainTests(TestCase):
     def test_response_env_data_invalid_token(self):
         setup_test_environment()
         client = Client()
-        response = client.get(
-            '/env_data'
-            + '?vineyard_id=101&'
-            + 'env_variable=cheesiness&'
-            + 'auth_token=ChesterCheetah'
+        body = {
+            'vineyard_id': '0',
+            'env_variable': 'temperature',
+            'auth_token': 'chestercheetah'
+        }
+        response = client.post(
+            '/env_data',
+            data=json.dumps(body),
+            content_type='application/json'
         )
         self.assertEqual(response.status_code, 403)
 

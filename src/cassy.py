@@ -9,6 +9,8 @@
 
 import os
 
+from common.exceptions import *
+from common.errors import *
 from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster
 from cassandra.query import named_tuple_factory, BatchStatement
@@ -32,6 +34,9 @@ def get_env_data(node_id, env_variable):
     node = str(node_id)
     session.row_factory = named_tuple_factory
 
+    if env_variable not in ['leafwetness', 'humidity', 'temperature']:
+        raise PlantalyticsDataException(ENV_DATA_INVALID)
+
     try:
         rows = session.execute(
             'SELECT ' + env_variable
@@ -40,17 +45,21 @@ def get_env_data(node_id, env_variable):
         )
 
         if not rows:
-            raise Exception('Invalid Environmental Variable or Node ID')
+            raise PlantalyticsDataException(ENV_DATA_NOT_FOUND)
         else:
-            # Exctract requested environmental variable.
+            # Extract requested environmental variable.
             if env_variable == 'temperature':
                 return rows[0].temperature
             elif env_variable == 'humidity':
                 return rows[0].humidity
-            else:
+            elif env_variable == 'leafwetness':
                 return rows[0].leafwetness
+            else:
+                # Shouldn't get to this point, but here for completeness
+                raise PlantalyticsDataException(ENV_DATA_UNKNOWN)
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
+
 
 def post_env_data(env_data):
     """
@@ -84,6 +93,7 @@ def post_env_data(env_data):
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
+
 def get_vineyard_coordinates(vineyard_id):
     """
     Obtains the coordinates for center point and boundary of a vineyard.
@@ -93,6 +103,10 @@ def get_vineyard_coordinates(vineyard_id):
     session.row_factory = named_tuple_factory
 
     try:
+        if vineyard_id == '':
+            raise PlantalyticsVineyardException(VINEYARD_NO_ID)
+        # Ensures vineyard_id is integer
+        int(vineyard_id)
         rows = session.execute(
             'SELECT boundaries, center'
             + ' FROM ' + os.environ.get('DB_VINE_TABLE')
@@ -100,7 +114,7 @@ def get_vineyard_coordinates(vineyard_id):
         )
 
         if not rows:
-            raise Exception('Invalid Vineyard ID')
+            raise PlantalyticsVineyardException(VINEYARD_ID_NOT_FOUND)
         else:
             center_point = {}
             boundary_points = []
@@ -117,6 +131,12 @@ def get_vineyard_coordinates(vineyard_id):
 
             coordinates.append(boundary_points)
             return coordinates
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    except ValueError as e:
+        raise PlantalyticsVineyardException(VINEYARD_BAD_ID)
+    # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
@@ -125,19 +145,22 @@ def get_node_coordinates(vineyard_id):
     """
     Obtains the latitude and longitude coordinates for the nodes of a vineyard.
     """
-
     coordinates = []
     session.row_factory = named_tuple_factory
 
     try:
+        if vineyard_id == '':
+            raise PlantalyticsVineyardException(VINEYARD_NO_ID)
+        # Confirms vineyard_id is a string representation of an integer
+        # Raises ValueError if not
+        int(vineyard_id)
         rows = session.execute(
             'SELECT nodeid, nodelocation'
             + ' FROM ' + os.environ.get('DB_HW_TABLE')
             + ' WHERE vineid = ' + vineyard_id + ';'
         )
-
         if not rows:
-            raise Exception('Invalid Vineyard ID')
+            raise PlantalyticsVineyardException(VINEYARD_ID_NOT_FOUND)
         else:
             # Process node coordinates for requested vineyard.
             for node in rows:
@@ -147,6 +170,10 @@ def get_node_coordinates(vineyard_id):
                 location['lon'] = node.nodelocation[1]
                 coordinates.append(location)
             return coordinates
+    except PlantalyticsException as e:
+        raise e
+    except ValueError as e:
+        raise PlantalyticsVineyardException(VINEYARD_BAD_ID)
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
@@ -159,6 +186,8 @@ def get_user_password(username):
     session.row_factory = named_tuple_factory
 
     try:
+        if username == '':
+            raise PlantalyticsLoginException(LOGIN_ERROR)
         rows = session.execute(
             'SELECT password'
             + ' FROM ' + os.environ.get('DB_USER_TABLE')
@@ -166,9 +195,13 @@ def get_user_password(username):
         )
 
         if not rows:
-            raise Exception('Invalid Username')
+            raise PlantalyticsLoginException(LOGIN_ERROR)
         else:
             return rows[0].password
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
@@ -176,6 +209,7 @@ def get_user_password(username):
 def get_user_auth_token(username, password):
     """
     Obtains session authentication token for the requested user.
+    Assuming the username and password have already been validated prior to calling this function.
     """
 
     values = {}
@@ -193,9 +227,11 @@ def get_user_auth_token(username, password):
         rows = session.execute(bound)
 
         if not rows:
-            raise Exception('Invalid Username and/or Password')
+            raise PlantalyticsAuthException(AUTH_NOT_FOUND)
         else:
             return rows[0].securitytoken
+    except PlantalyticsException as e:
+        raise e
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
@@ -203,6 +239,7 @@ def get_user_auth_token(username, password):
 def set_user_auth_token(username, password, securitytoken):
     """
     Stores the session authentication token for the requested user.
+    Assuming username and password have already been validated prior to calling this function.
     """
 
     values = {}
@@ -217,6 +254,8 @@ def set_user_auth_token(username, password, securitytoken):
     )
     bound = auth_stmt_set.bind(values)
 
+    if securitytoken == '':
+        raise PlantalyticsAuthException(AUTH_NO_TOKEN)
     try:
         session.execute(bound)
         return True

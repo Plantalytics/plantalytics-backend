@@ -10,6 +10,8 @@
 import json
 import logging
 
+from common.exceptions import PlantalyticsException
+from common.errors import *
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 
@@ -40,14 +42,23 @@ def index(request):
 
         logger.info('Fetching vineyard data for vineyard id \'' + vineyard_id + '\'.')
         coordinates = cassy.get_vineyard_coordinates(vineyard_id)
-        logger.info('Successfully fetched vineyard data for vineyard id \'' + vineyard_id + '\'.')
 
+        logger.info('Successfully fetched vineyard data for vineyard id \'' + vineyard_id + '\'.')
         response['center'] = coordinates[0]
         response['boundary'] = coordinates[1]
+
         return HttpResponse(json.dumps(response), content_type='application/json')
+    except PlantalyticsException as e:
+        logger.warn('Invalid vineyard ID while fetching vineyard data: \'' + vineyard_id + '\'')
+        error = custom_error(str(e))
+
+        return HttpResponseBadRequest(error, content_type='application/json')
     except Exception as e:
-        logger.exception('Error occurred while fetching vineyard data for '
-                    + 'vineyard id \'' + vineyard_id + ' \'.'
-                    + str(e)
+        logger.exception(
+            'Error occurred while fetching vineyard data for '
+            + 'vineyard id \'' + vineyard_id + '\'. '
+            + str(e)
         )
-        return HttpResponseBadRequest()
+        error = custom_error(VINEYARD_UNKNOWN, str(e))
+
+        return HttpResponseBadRequest(error, content_type='application/json')

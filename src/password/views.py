@@ -31,12 +31,11 @@ def change(request):
 
     data = json.loads(request.body.decode('utf-8'))
 
-    '''
     username = data.get('username', '')
     new_password = data.get('password', '')
     old_password = data.get('old', '')
     auth_token = data.get('token', '')
-    '''
+
     return HttpResponse()
 
 @csrf_exempt

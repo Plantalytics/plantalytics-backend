@@ -34,13 +34,11 @@ def index(request):
     response = {}
 
     try:
-        logger.info('Validating auth_token token for vineyard id \'' + vineyard_id + '\'.')
+        logger.info('Validating auth_token token for vineyard id {}.'.format(vineyard_id))
         cassy.verify_auth_token(auth_token)
     except Exception as e:
-        logger.exception('Error occurred while auth token for '
-                    + 'vineyard id \'' + vineyard_id + ' \'.'
-                    + str(e)
-        )
+        message = 'Error occurred while auth token for vineyard id {}.'.format(vineyard_id)
+        logger.exception(message + '\n'+ str(e))
         return HttpResponseForbidden()
 
     try:

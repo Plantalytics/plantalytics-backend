@@ -7,11 +7,12 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
+import os
 import json
 import logging
 
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 
 import cassy
 
@@ -25,6 +26,21 @@ def index(request):
     """
 
     data = json.loads(request.body.decode("utf-8"))
+    hub_key = data.get('key', '')
+
+    try:
+        logger.info(
+            'Validating key for hub id \''
+            + str(data['hub_id']) + '\'.'
+        )
+        if hub_key != os.environ.get('HUB_KEY'):
+            raise Exception('Invalid Hub Key')
+    except Exception as e:
+        logger.exception('Error occurred while verifying hub key for '
+                    + 'hub id \'' + str(data['hub_id']) + ' \'.'
+                    + str(e)
+        )
+        return HttpResponseForbidden()
 
     try:
         logger.info('Inserting hub data.')

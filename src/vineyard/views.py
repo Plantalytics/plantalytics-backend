@@ -12,7 +12,8 @@ import logging
 
 from common.exceptions import PlantalyticsException
 from common.errors import *
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.shortcuts import render
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 
 import cassy
 
@@ -24,9 +25,21 @@ def index(request):
     Access database to respond with requested vineyard metadata.
     """
     vineyard_id = request.GET.get('vineyard_id', '')
+    auth_token = request.GET.get('auth_token', '')
     response = {}
 
     try:
+        logger.info('Validating auth_token token for vineyard id \'' + vineyard_id + '\'.')
+        cassy.verify_auth_token(auth_token)
+    except Exception as e:
+        logger.exception('Error occurred while auth token for '
+                    + 'vineyard id \'' + vineyard_id + ' \'.'
+                    + str(e)
+        )
+        return HttpResponseForbidden()
+
+    try:
+
         logger.info('Fetching vineyard data for vineyard id \'' + vineyard_id + '\'.')
         coordinates = cassy.get_vineyard_coordinates(vineyard_id)
 

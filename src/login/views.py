@@ -31,8 +31,8 @@ def index(request):
     """
 
     data = json.loads(request.body.decode("utf-8"))
-    username = data['username']
-    submitted_password = data['password']
+    username = data.get('username', '')
+    submitted_password = data.get('password', '')
 
     try:
         # Get stored password from database, and verify with password arg

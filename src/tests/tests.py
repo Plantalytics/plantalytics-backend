@@ -230,7 +230,7 @@ class MainTests(TestCase):
         response = client.get(
             '/vineyard'
             + '?vineyard_id=0&'
-            + 'securitytoken='
+            + 'auth_token='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
         self.assertEqual(response.status_code, 200)
@@ -251,7 +251,7 @@ class MainTests(TestCase):
         response = client.get(
             '/vineyard'
             + '?vineyard_id=0&'
-            + 'securitytoken='
+            + 'auth_token='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
@@ -264,7 +264,7 @@ class MainTests(TestCase):
         response = client.get(
             '/vineyard'
             + '?vineyard_id=101&'
-            + 'securitytoken='
+            + 'auth_token='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
@@ -276,7 +276,7 @@ class MainTests(TestCase):
         client = Client()
         response = client.get(
             '/vineyard'
-            + '?securitytoken='
+            + '?auth_token='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
@@ -289,7 +289,7 @@ class MainTests(TestCase):
         response = client.get(
             '/vineyard'
             + '?vineyard_id=abc&'
-            + 'securitytoken='
+            + 'auth_token='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
@@ -302,7 +302,7 @@ class MainTests(TestCase):
         response = client.get(
             '/vineyard'
             + '?vineyard_id=0&'
-            + 'securitytoken=ChesterCheetah'
+            + 'auth_token=ChesterCheetah'
         )
         self.assertEqual(response.status_code, 403)
 
@@ -313,7 +313,7 @@ class MainTests(TestCase):
             '/env_data'
             + '?vineyard_id=0&'
             + 'env_variable=temperature&'
-            + 'securitytoken='
+            + 'auth_token='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
         self.assertEqual(response.status_code, 200)
@@ -335,7 +335,7 @@ class MainTests(TestCase):
             '/env_data'
             + '?vineyard_id=0&'
             + 'env_variable=temperature&'
-            + 'securitytoken='
+            + 'auth_token='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
@@ -349,7 +349,7 @@ class MainTests(TestCase):
             '/env_data'
             + '?vineyard_id=0&'
             + 'env_variable=humidity&'
-            + 'securitytoken='
+            + 'auth_token='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
         self.assertEqual(response.status_code, 200)
@@ -361,7 +361,7 @@ class MainTests(TestCase):
             '/env_data'
             + '?vineyard_id=0&'
             + 'env_variable=leafwetness&'
-            + 'securitytoken='
+            + 'auth_token='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
         self.assertEqual(response.status_code, 200)
@@ -373,7 +373,7 @@ class MainTests(TestCase):
             '/env_data'
             + '?vineyard_id=101&'
             + 'env_variable=temperature&'
-            + 'securitytoken='
+            + 'auth_token='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
@@ -387,7 +387,7 @@ class MainTests(TestCase):
             '/env_data'
             + '?vineyard_id=0&'
             + 'env_variable=cheesiness&'
-            + 'securitytoken='
+            + 'auth_token='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
@@ -401,7 +401,7 @@ class MainTests(TestCase):
             '/env_data'
             + '?vineyard_id=101&'
             + 'env_variable=cheesiness&'
-            + 'securitytoken='
+            + 'auth_token='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
@@ -414,7 +414,7 @@ class MainTests(TestCase):
         response = client.get(
             '/env_data'
             + '?env_variable=cheesiness&'
-            + 'securitytoken='
+            + 'auth_token='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
@@ -427,7 +427,7 @@ class MainTests(TestCase):
         response = client.get(
             '/env_data'
             + '?vineyard_id=0&'
-            + 'securitytoken='
+            + 'auth_token='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
@@ -441,7 +441,7 @@ class MainTests(TestCase):
             '/env_data'
             + '?vineyard_id=asdf&'
             + 'env_variable=temperature&'
-            + 'securitytoken='
+            + 'auth_token='
             + os.environ.get('LOGIN_SEC_TOKEN')
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
@@ -455,7 +455,7 @@ class MainTests(TestCase):
             '/env_data'
             + '?vineyard_id=101&'
             + 'env_variable=cheesiness&'
-            + 'securitytoken=ChesterCheetah'
+            + 'auth_token=ChesterCheetah'
         )
         self.assertEqual(response.status_code, 403)
 

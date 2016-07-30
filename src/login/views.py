@@ -45,8 +45,8 @@ def index(request):
 
         if stored_password == submitted_password:
             # Generate token and put into JSON object
-            token = str(uuid.uuid4())
-            token_object = {}
+            auth_token = str(uuid.uuid4())
+            auth_token_object = {}
 
             # Return response with token object
             if username != os.environ.get('LOGIN_USERNAME'):
@@ -56,12 +56,12 @@ def index(request):
                 cassy.set_user_auth_token(
                     username,
                     submitted_password,
-                    token
+                    auth_token
                 )
                 logger.info('Retrieving auth token for user \''
                     + username + '\'.'
                 )
-                token_object['token'] = cassy.get_user_auth_token(
+                auth_token_object['auth_token'] = cassy.get_user_auth_token(
                     username,
                     submitted_password
                 )
@@ -71,14 +71,14 @@ def index(request):
                     submitted_password,
                     os.environ.get('LOGIN_SEC_TOKEN')
                 )
-                token_object['token'] = cassy.get_user_auth_token(
+                auth_token_object['auth_token'] = cassy.get_user_auth_token(
                     username,
                     submitted_password
                 )
             logger.info('Successfully logged in user \''
                 + username + '\'.'
             )
-            return HttpResponse(json.dumps(token_object), content_type='application/json')
+            return HttpResponse(json.dumps(auth_token_object), content_type='application/json')
         else:
             logger.warning('Incorrect password supplied for user \''
                            + username + '\'.'

@@ -26,7 +26,7 @@ def index(request):
     """
 
     data = json.loads(request.body.decode("utf-8"))
-    hub_key = data['key']
+    hub_key = data.get('key', '')
 
     try:
         logger.info(

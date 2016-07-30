@@ -25,14 +25,14 @@ def index(request):
     Access database to respond with requested vineyard metadata.
     """
     vineyard_id = request.GET.get('vineyard_id', '')
-    securitytoken = request.GET.get('securitytoken', '')
+    auth_token = request.GET.get('auth_token', '')
     response = {}
 
     try:
-        logger.info('Validating securitytoken token for vineyard id \'' + vineyard_id + '\'.')
-        cassy.verify_auth_token(securitytoken)
+        logger.info('Validating auth_token token for vineyard id \'' + vineyard_id + '\'.')
+        cassy.verify_auth_token(auth_token)
     except Exception as e:
-        logger.exception('Error occurred while security token for '
+        logger.exception('Error occurred while auth token for '
                     + 'vineyard id \'' + vineyard_id + ' \'.'
                     + str(e)
         )

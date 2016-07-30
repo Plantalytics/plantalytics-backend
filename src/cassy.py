@@ -236,7 +236,7 @@ def get_user_auth_token(username, password):
         raise Exception('Transaction Error Occurred: ' + str(e))
 
 
-def set_user_auth_token(username, password, securitytoken):
+def set_user_auth_token(username, password, auth_token):
     """
     Stores the session authentication token for the requested user.
     Assuming username and password have already been validated prior to calling this function.
@@ -245,7 +245,7 @@ def set_user_auth_token(username, password, securitytoken):
     values = {}
     values['username'] = username
     values['password'] = password
-    values['securitytoken'] = securitytoken
+    values['securitytoken'] = auth_token
     auth_stmt_set = session.prepare(
         'INSERT INTO '
         + os.environ.get('DB_USER_TABLE')
@@ -254,7 +254,7 @@ def set_user_auth_token(username, password, securitytoken):
     )
     bound = auth_stmt_set.bind(values)
 
-    if securitytoken == '':
+    if auth_token == '':
         raise PlantalyticsAuthException(AUTH_NO_TOKEN)
     try:
         session.execute(bound)
@@ -263,12 +263,12 @@ def set_user_auth_token(username, password, securitytoken):
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
-def verify_auth_token(securitytoken):
+def verify_auth_token(auth_token):
     """
     Verifies session authentication token.
     """
     values = {}
-    values['securitytoken'] = securitytoken
+    values['securitytoken'] = auth_token
 
     auth_stmt_get = session.prepare(
         'SELECT username'
@@ -283,7 +283,7 @@ def verify_auth_token(securitytoken):
         rows = session.execute(bound)
 
         if not rows:
-            raise Exception('Invalid Security Token')
+            raise Exception('Invalid Auth Token')
 
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))

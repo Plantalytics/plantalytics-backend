@@ -12,7 +12,7 @@ import logging
 
 from common.exceptions import *
 from common.errors import *
-from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 
 import cassy
@@ -20,13 +20,18 @@ import cassy
 logger = logging.getLogger('plantalytics_backend.env_data')
 
 
+@csrf_exempt
 def index(request):
     """
     Access database to respond with requested environmental mapping data.
     """
-    vineyard_id = request.GET.get('vineyard_id', '')
-    env_variable = request.GET.get('env_variable', '')
-    auth_token = request.GET.get('auth_token', '')
+    if request.method != 'POST':
+        return HttpResponseBadRequest()
+
+    request_data = json.loads(request.body.decode('utf-8'))
+    auth_token = request_data.get('auth_token', '')
+    vineyard_id = request_data.get('vineyard_id', '')
+    env_variable = request_data.get('env_variable', '')
     response = {}
     map_data = []
 

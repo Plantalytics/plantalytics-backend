@@ -9,7 +9,6 @@
 
 import json
 import logging
-import uuid
 
 import cassy
 from django.views.decorators.csrf import csrf_exempt
@@ -85,6 +84,7 @@ def change(request):
         return HttpResponseForbidden(error, content_type='application/json')
 
     return HttpResponse()
+
 
 @csrf_exempt
 def reset(request):

@@ -9,7 +9,6 @@ before_install:
 before_script:
 - echo '' > /tmp/plantalytics_backend.log
 - printf '\n' > /tmp/plantalytics_backend.log
-- pwd
 - cd src
 script:
 - python manage.py test

@@ -19,6 +19,7 @@ from unittest.mock import patch
 class MainTests(TestCase):
     """
     Executes all of the unit tests for plantalytics-backend.
+    Mocking change_user_password since we don't want to change a password on the DB in most cases in tests
     """
 
     @patch('cassy.change_user_password')
@@ -159,3 +160,42 @@ class MainTests(TestCase):
         error = json.loads(response.content.decode('utf-8'))['errors']
         self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
+
+    def test_password_change_using_get(self):
+        """
+         Tests the case where user is logged in, requests a new password but supplies incorrect old password
+        """
+        setup_test_environment()
+        client = Client()
+        response = client.get(
+            '/password/change'
+            + '?auth_token=' + os.environ.get('LOGIN_SEC_TOKEN')
+            + '&old=badpass'
+            + '&password=newpass'
+        )
+        self.assertEqual(response.status_code, 400)
+
+    @patch('cassy.change_user_password')
+    def test_password_change_with_unknown_exception(self, cassy_mock):
+        """
+        Tests the case where a user logs in after having gotten a password reset email.
+        """
+        setup_test_environment()
+        client = Client()
+        cassy_mock.side_effect = Exception('Mock exception')
+        username = os.environ.get('LOGIN_USERNAME')
+        new_password = 'newpass'
+        body = {
+            'token': os.environ.get('LOGIN_SEC_TOKEN'),
+            'username': username,
+            'password': new_password
+        }
+        response = client.post(
+            '/password/change',
+            data=json.dumps(body),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('unknown' in error)
+        cassy_mock.assert_called_once_with(username, new_password)
+        self.assertEqual(response.status_code, 500)

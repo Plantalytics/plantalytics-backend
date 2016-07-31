@@ -14,7 +14,7 @@ import cassy
 from django.views.decorators.csrf import csrf_exempt
 from common.exceptions import *
 from common.errors import *
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseServerError
 
 logger = logging.getLogger('plantalytics_backend.login')
 
@@ -92,7 +92,7 @@ def change(request):
             'Unknown error occurred while attempting to reset password:'
         )
         error = custom_error(UNKNOWN, str(e))
-        return HttpResponseForbidden(error, content_type='application/json')
+        return HttpResponseServerError(error, content_type='application/json')
 
     return HttpResponse()
 

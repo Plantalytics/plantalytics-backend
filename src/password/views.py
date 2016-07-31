@@ -9,12 +9,15 @@
 
 import json
 import logging
+import uuid
 
 import cassy
 from django.views.decorators.csrf import csrf_exempt
 from common.exceptions import *
 from common.errors import *
+from django.conf import settings
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseServerError
+from django.core.mail import send_mail
 
 logger = logging.getLogger('plantalytics_backend.login')
 
@@ -111,6 +114,21 @@ def reset(request):
     try:
         email_object = {}
         email_object['email'] = cassy.get_user_email(username)
+
+        reset_token = str(uuid.uuid4())
+        reset_token_object = {}
+        logger.info('Emailing reset token for user \''
+            + username + '\'.'
+        )
+
+        send_mail(
+            'Plantalytics Password Reset',
+            reset_token,
+            settings.EMAIL_HOST_USER,
+            ['plantalytics@gmail.com'],
+            fail_silently=False,
+        )
+
         return HttpResponse(json.dumps(email_object), content_type='application/json')
     # Invalid username -- expected exception
     except PlantalyticsException as e:

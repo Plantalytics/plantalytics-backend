@@ -13,7 +13,7 @@ import uuid
 
 import cassy
 from django.views.decorators.csrf import csrf_exempt
-from common.exceptions import PlantalyticsException
+from common.exceptions import *
 from common.errors import *
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 
@@ -31,10 +31,58 @@ def change(request):
 
     data = json.loads(request.body.decode('utf-8'))
 
+    auth_token = data.get('auth_token', '')
     username = data.get('username', '')
     new_password = data.get('password', '')
     old_password = data.get('old', '')
-    auth_token = data.get('token', '')
+    reset_token = data.get('token', '')
+
+    logger.info('Request to change password.')
+    try:
+        # User forgot password and reset token is given via email link
+        if reset_token:
+            logger.info('Attempting password reset using reset_token.')
+            reset_name = cassy.verify_auth_token(reset_token)
+            if reset_name != username:
+                logger.warn(
+                    "Username associated with reset token (\'{}\') ".format(reset_name)
+                    + "does not match supplied username (\'{}\').".format(username)
+                )
+                raise PlantalyticsLoginException(LOGIN_ERROR)
+
+            cassy.change_user_password(username, new_password)
+            logger.info('Password for \'{}\' successfully changed.'.format(username))
+        # Else, password being reset by admin or logged-in user
+        else:
+            logger.info('Attempting password reset using auth_token.')
+            verified_name = cassy.verify_auth_token(auth_token)
+
+            # if the auth token is associated with the admin user,
+            if verified_name == 'admin':
+                logger.info('Admin resetting password for {}'.format(username))
+                cassy.change_user_password(username, new_password)
+            else:
+                logger.info('User \'{}\' attempting to reset password.'.format(verified_name))
+                stored_password = cassy.get_user_password(verified_name)
+                if stored_password != old_password:
+                    logger.warn('Old password does not match supplied password.')
+                    raise PlantalyticsLoginException(LOGIN_ERROR)
+
+                cassy.change_user_password(username, new_password)
+
+    except PlantalyticsException as e:
+        logger.warn(
+            'Error attempting to change password. Error code: {}'
+            .format(str(e))
+        )
+        error = custom_error(str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
+    except Exception as e:
+        logger.exception(
+            'Unknown error occurred while attempting to reset password:'
+        )
+        error = custom_error(UNKNOWN, str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
 
     return HttpResponse()
 

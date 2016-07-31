@@ -19,6 +19,7 @@ ENV_DATA_UNKNOWN = 'env_data_unknown'
 EMAIL_ERROR = 'email_error'
 LOGIN_ERROR = 'login_error'
 LOGIN_UNKNOWN = 'login_unknown'
+RESET_ERROR = 'reset_error'
 VINEYARD_NO_ID = 'vineyard_no_id'
 VINEYARD_BAD_ID = 'vineyard_bad_id'
 VINEYARD_ID_NOT_FOUND = 'vineyard_id_not_found'
@@ -35,6 +36,7 @@ responses = {
     EMAIL_ERROR: 'Email Error: Invalid username.',
     LOGIN_ERROR: 'Login Error: Invalid username or password.',
     LOGIN_UNKNOWN: 'An unexpected error occurred during login.',
+    RESET_ERROR: 'An error occurred while resetting your password',
     VINEYARD_NO_ID: 'A vineyard must have a valid ID.',
     VINEYARD_BAD_ID: 'A vineyard ID must be a positive integer.',
     VINEYARD_ID_NOT_FOUND: 'The vineyard ID was not found.',

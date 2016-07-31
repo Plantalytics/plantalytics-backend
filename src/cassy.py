@@ -312,9 +312,17 @@ def verify_auth_token(auth_token):
 
     try:
         rows = session.execute(bound)
-
         if not rows:
-            raise Exception('Invalid Auth Token')
+            raise PlantalyticsAuthException(AUTH_NOT_FOUND)
 
+        return rows[0].username
+
+    except PlantalyticsException as e:
+        raise e
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
+
+
+def change_user_password(username, password):
+    # todo
+    raise NotImplementedError

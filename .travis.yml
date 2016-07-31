@@ -10,8 +10,9 @@ before_script:
 - echo '' > /tmp/plantalytics_backend.log
 - printf '\n' > /tmp/plantalytics_backend.log
 script:
-- python src/manage.py test tests
-- coverage run src/manage.py test tests
+- cd src
+- python manage.py test
+- coverage run manage.py test
 after_script:
 - rm /tmp/plantalytics_backend.log
 after_success:

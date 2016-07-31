@@ -71,15 +71,22 @@ def change(request):
                     logger.warn('Old password does not match supplied password.')
                     raise PlantalyticsLoginException(LOGIN_ERROR)
 
-                cassy.change_user_password(username, new_password)
+                cassy.change_user_password(verified_name, new_password)
 
-    except PlantalyticsException as e:
+    except (PlantalyticsAuthException, PlantalyticsLoginException) as e:
         logger.warn(
             'Error attempting to change password. Error code: {}'
             .format(str(e))
         )
         error = custom_error(str(e))
         return HttpResponseForbidden(error, content_type='application/json')
+    except PlantalyticsException as e:
+        logger.warn(
+            'Error attempting to change password. Error code: {}'
+            .format(str(e))
+        )
+        error = custom_error(str(e))
+        return HttpResponseBadRequest(error, content_type='application/json')
     except Exception as e:
         logger.exception(
             'Unknown error occurred while attempting to reset password:'

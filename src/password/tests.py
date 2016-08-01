@@ -399,3 +399,36 @@ class MainTests(TestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
+
+    def test_password_reset_invalid_method(self):
+        """
+        Tests the password reset endpoint with unsupported HTTP method.
+        """
+        setup_test_environment()
+        client = Client()
+        response = client.get('/password/reset')
+        self.assertEqual(response.status_code, 405)
+
+    def test_password_reset_link_invalid_method(self):
+        """
+        Tests the password reset endpoint with unsupported HTTP method.
+        """
+        setup_test_environment()
+        client = Client()
+        response = client.post('/password/password_reset')
+        self.assertEqual(response.status_code, 405)
+
+    def test_password_reset_link_invalid_reset_token(self):
+        """
+        Tests the password reset endpoint with invalid reset token.
+        """
+        setup_test_environment()
+        client = Client()
+        invalid_reset_token = 'IveGotAGoldenTicket'
+        final_response = client.get(
+            '/password/password_reset?id=' +
+            invalid_reset_token
+        )
+        error = json.loads(final_response.content.decode('utf-8'))['errors']
+        self.assertTrue('auth_error_not_found' in error)
+        self.assertEqual(final_response.status_code, 403)

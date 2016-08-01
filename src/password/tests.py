@@ -15,7 +15,11 @@ import random
 
 from django.test import TestCase, Client
 from django.test.utils import setup_test_environment
+from common.exceptions import *
+from common.errors import *
 from unittest.mock import patch
+
+import cassy
 
 
 class MainTests(TestCase):
@@ -125,6 +129,20 @@ class MainTests(TestCase):
         cassy_mock.assert_called_once_with(username, new_password, old_password)
         cassy_auth.assert_called_once_with(auth_token)
         self.assertEqual(response.status_code, 200)
+
+    def test_password_change_with_invalid_user(self):
+        """
+        Tests the case where an admin resets someone's password
+        for a user that does not exist.
+        """
+        setup_test_environment()
+        username = 'ChesterCheetah'
+        old_password = 'TheCheesiest'
+        new_password = 'NotGonnaDooooIt'
+        try:
+            rows = cassy.change_user_password(username, new_password, old_password)
+        except PlantalyticsException as e:
+            self.assertEqual('reset_error_username', str(e))
 
     def test_password_email_reset_mismatched_username(self):
         """
@@ -432,3 +450,54 @@ class MainTests(TestCase):
         error = json.loads(final_response.content.decode('utf-8'))['errors']
         self.assertTrue('auth_error_not_found' in error)
         self.assertEqual(final_response.status_code, 403)
+
+    def test_set_auth_token_with_no_token(self):
+        """
+        Tests the case where a user's auth token is being set and no
+        token is supplied.
+        """
+        setup_test_environment()
+        username = 'ChesterCheetah'
+        password = 'TheCheesiest'
+        auth_token = ''
+        try:
+            rows = cassy.set_user_auth_token(username, password, auth_token)
+        except PlantalyticsException as e:
+            self.assertEqual('auth_error_no_token', str(e))
+
+    def test_get_auth_token_with_invalid_user(self):
+        """
+        Tests the case where a user's auth token is being retrieved and an
+        invalid username is supplied.
+        """
+        setup_test_environment()
+        username = 'ChesterCheetah'
+        password = 'TheCheesiest'
+        try:
+            rows = cassy.get_user_auth_token(username, password)
+        except PlantalyticsException as e:
+            self.assertEqual('auth_error_not_found', str(e))
+
+    def test_get_user_email_with_no_username(self):
+        """
+        Tests the case where a user's email is being retrieved and no
+        username is supplied.
+        """
+        setup_test_environment()
+        username = ''
+        try:
+            rows = cassy.get_user_email(username)
+        except PlantalyticsException as e:
+            self.assertEqual('email_error', str(e))
+
+    def test_get_user_email_with_invalid_user(self):
+        """
+        Tests the case where a user's email is being retrieved and an
+        invalid username is supplied.
+        """
+        setup_test_environment()
+        username = 'ChesterCheetah'
+        try:
+            rows = cassy.get_user_email(username)
+        except PlantalyticsException as e:
+            self.assertEqual('email_error', str(e))

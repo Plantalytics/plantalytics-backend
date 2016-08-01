@@ -164,9 +164,9 @@ class MainTests(TestCase):
         self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
-    def test_password_change_using_get(self):
+    def test_password_change_using_invalid_method(self):
         """
-         Tests the case where user is logged in, requests a new password but supplies incorrect old password
+         Tests attempting a password change with unsupported method.
         """
         setup_test_environment()
         client = Client()
@@ -176,7 +176,7 @@ class MainTests(TestCase):
             + '&old=badpass'
             + '&password=newpass'
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 405)
 
     @patch('cassy.change_user_password')
     def test_password_change_with_unknown_exception(self, cassy_mock):
@@ -224,7 +224,10 @@ class MainTests(TestCase):
             data=json.dumps(body),
             content_type='application/json'
         )
-        self.assertEqual(response.status_code, 403)
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        cassy_mock.assert_not_called()
+        self.assertTrue('reset_error_password' in error)
+        self.assertEqual(response.status_code, 400)
 
     @patch('cassy.change_user_password')
     def test_password_change_with_mail_token_invalid_same_old_and_new(self, cassy_mock):
@@ -246,7 +249,10 @@ class MainTests(TestCase):
             data=json.dumps(body),
             content_type='application/json'
         )
-        self.assertEqual(response.status_code, 403)
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        cassy_mock.assert_not_called()
+        self.assertTrue('reset_error_password' in error)
+        self.assertEqual(response.status_code, 400)
 
     @patch('cassy.change_user_password')
     @patch('cassy.verify_auth_token')
@@ -272,53 +278,60 @@ class MainTests(TestCase):
             data=json.dumps(body),
             content_type='application/json'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        cassy_mock.assert_not_called()
         cassy_auth.assert_called_once_with(auth_token)
-        self.assertEqual(response.status_code, 403)
+        self.assertTrue('reset_error_password' in error)
+        self.assertEqual(response.status_code, 400)
 
-    def test_password_reset_valid_username(self):
+    @patch('cassy.get_user_email')
+    def test_password_reset_valid_username(self, cassy_mock):
         """
         Tests the password reset endpoint.
         """
         setup_test_environment()
         client = Client()
+        username = 'welches'
         body = {
-            'username': 'welches',
-        }
-        reset_response = client.post(
-            '/password/reset',
-            data=json.dumps(body),
-            content_type='application/json'
-        )
-        response_body = json.loads(reset_response.content.decode('utf-8'))
-        reset_token = response_body.get('reset_token', '')
-        final_response = client.get(
-            '/password/password_reset?id=' +
-            reset_token
-        )
-        self.assertEqual(final_response.status_code, 200)
-
-    def test_password_reset_invalid_username(self):
-        """
-        Tests the password reset endpoint with invalid username.
-        """
-        setup_test_environment()
-        client = Client()
-        body = {
-            'username': 'ChesterCheetah',
+            'username': username,
         }
         response = client.post(
             '/password/reset',
             data=json.dumps(body),
             content_type='application/json'
         )
+        cassy_mock.assert_called_once_with(username)
+        self.assertEqual(response.status_code, 200)
+
+    @patch('cassy.get_user_email')
+    def test_password_reset_invalid_username(self, cassy_mock):
+        """
+        Tests the password reset endpoint with invalid username.
+        """
+        setup_test_environment()
+        client = Client()
+        username = 'ChesterCheetah'
+        body = {
+            'username': username,
+        }
+        response = client.post(
+            '/password/reset',
+            data=json.dumps(body),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        cassy_mock.assert_called_once_with(username)
+        self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
-    def test_password_reset_invalid_reset_token(self):
+    @patch('cassy.get_user_email')
+    def test_password_reset_invalid_reset_token(self, cassy_mock):
         """
         Tests the password reset endpoint with invalid reset token.
         """
         setup_test_environment()
         client = Client()
+        username = 'welches'
         body = {
             'username': 'welches',
         }
@@ -327,9 +340,12 @@ class MainTests(TestCase):
             data=json.dumps(body),
             content_type='application/json'
         )
-        reset_token = 'IveGotAGoldenTicket'
+        invalid_reset_token = 'IveGotAGoldenTicket'
         final_response = client.get(
             '/password/password_reset?id=' +
-            reset_token
+            invalid_reset_token
         )
+        error = json.loads(final_response.content.decode('utf-8'))['errors']
+        cassy_mock.assert_called_once_with(username)
+        self.assertTrue('auth_error_not_found' in error)
         self.assertEqual(final_response.status_code, 403)

@@ -18,7 +18,7 @@ from django.views.decorators.csrf import csrf_exempt
 from common.exceptions import *
 from common.errors import *
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseServerError, HttpResponseNotAllowed
 from django.core.mail import send_mail
 
 logger = logging.getLogger('plantalytics_backend.login')
@@ -31,7 +31,7 @@ def change(request):
     if correct user/pass are passed in.
     """
     if request.method != 'POST':
-        return HttpResponseBadRequest()
+        return HttpResponseNotAllowed(['POST'])
 
     data = json.loads(request.body.decode('utf-8'))
 
@@ -56,7 +56,7 @@ def change(request):
                 raise PlantalyticsLoginException(LOGIN_ERROR)
             if new_password == stored_password:
                 logger.warn('Invalid new password.')
-                raise PlantalyticsLoginException(LOGIN_ERROR)
+                raise PlantalyticsPasswordException(CHANGE_ERROR_PASSWORD)
 
             cassy.change_user_password(username, new_password, stored_password)
             logger.info('Password for \'{}\' successfully changed.'.format(username))
@@ -70,7 +70,7 @@ def change(request):
                     stored_password = cassy.get_user_password(username)
                     if new_password == stored_password:
                         logger.warn('Invalid new password.')
-                        raise PlantalyticsLoginException(LOGIN_ERROR)
+                        raise PlantalyticsPasswordException(CHANGE_ERROR_PASSWORD)
                     logger.info('Admin resetting password for {}'.format(username))
                     cassy.change_user_password(username, new_password, stored_password)
                 else:
@@ -81,7 +81,7 @@ def change(request):
                 stored_password = cassy.get_user_password(verified_name)
                 if new_password == stored_password:
                     logger.warn('Invalid new password.')
-                    raise PlantalyticsLoginException(LOGIN_ERROR)
+                    raise PlantalyticsPasswordException(CHANGE_ERROR_PASSWORD)
                 if stored_password != old_password:
                     logger.warn('Old password does not match supplied password.')
                     raise PlantalyticsLoginException(LOGIN_ERROR)
@@ -117,7 +117,7 @@ def reset(request):
     Endpoint to email a password reset token to the requested user.
     """
     if request.method != 'POST':
-        return HttpResponseBadRequest()
+        return HttpResponseNotAllowed(['POST'])
 
     data = json.loads(request.body.decode('utf-8'))
     username = data.get('username', '')
@@ -146,7 +146,7 @@ def reset(request):
             fail_silently=False,
         )
 
-        return HttpResponse(json.dumps(reset_token_object), content_type='application/json')
+        return HttpResponse(content_type='application/json')
     # Invalid username -- expected exception
     except PlantalyticsException as e:
         logger.warning('Unknown username \''
@@ -171,31 +171,25 @@ def password_reset(request):
     Endpoint to reset password for user with the requested token.
     """
     if request.method != 'GET':
-        return HttpResponseBadRequest()
+        return HttpResponseNotAllowed(['Get'])
 
     reset_token = request.GET.get('id', '')
 
     try:
+        logger.info(
+            'Verifying reset token.'
+        )
         verified = cassy.verify_auth_token(reset_token)
         if not verified:
             raise PlantalyticsAuthException(AUTH_NOT_FOUND)
-        logger.info('Resetting password for user \''
-            + str(verified) + '\'.'
+        return HttpResponse()
+    except (PlantalyticsAuthException, PlantalyticsLoginException) as e:
+        logger.warn(
+            'Error occurred while resetting password. Error code: {}'
+            .format(str(e))
         )
-        old_password = cassy.get_user_password(verified)
-        new_password = ''.join(
-            random.choice(
-                string.ascii_letters +
-                string.digits
-            )
-            for _ in range(6)
-        )
-        cassy.change_user_password(verified, new_password, old_password)
-
-        new_password_object = {}
-        new_password_object['new_password'] = new_password
-
-        return HttpResponse(json.dumps(new_password_object), content_type='application/json')
+        error = custom_error(str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
     # Invalid username -- expected exception
     except PlantalyticsException as e:
         logger.warning('Error occurred while resetting password')
@@ -209,6 +203,5 @@ def password_reset(request):
                          )
         error = custom_error(EMAIL_ERROR, str(e))
         return HttpResponseForbidden(error, content_type='application/json')
-
 
     return HttpResponse()

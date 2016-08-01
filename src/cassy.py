@@ -223,11 +223,11 @@ def get_user_email(username):
 
     try:
         if username == '':
-            raise PlantalyticsLoginException(EMAIL_ERROR)
+            raise PlantalyticsEmailException(EMAIL_ERROR)
         rows = session.execute(bound)
 
         if not rows:
-            raise PlantalyticsLoginException(EMAIL_ERROR)
+            raise PlantalyticsEmailException(EMAIL_ERROR)
         else:
             return rows[0].email
     # Known exception
@@ -326,7 +326,7 @@ def verify_auth_token(auth_token):
 
 def change_user_password(username, new_password, old_password):
     """
-    Chanes current password of the supplied username
+    Changes current password of the supplied username
     to the supplied password.
     """
     values = {}

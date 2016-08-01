@@ -204,6 +204,77 @@ class MainTests(TestCase):
         cassy_mock.assert_called_once_with(username, new_password, old_password)
         self.assertEqual(response.status_code, 500)
 
+    @patch('cassy.change_user_password')
+    def test_password_change_invalid_same_old_and_new(self, cassy_mock):
+        """
+         Tests the case where user is logged in, requests a new password
+        """
+        setup_test_environment()
+        client = Client()
+        username = os.environ.get('LOGIN_USERNAME')
+        old_password = os.environ.get('LOGIN_PASSWORD')
+        new_password = os.environ.get('LOGIN_PASSWORD')
+        body = {
+            'auth_token': os.environ.get('LOGIN_SEC_TOKEN'),
+            'old': os.environ.get('LOGIN_PASSWORD'),
+            'password': new_password
+        }
+        response = client.post(
+            '/password/change',
+            data=json.dumps(body),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 403)
+
+    @patch('cassy.change_user_password')
+    def test_password_change_with_mail_token_invalid_same_old_and_new(self, cassy_mock):
+        """
+        Tests the case where a user logs in after having gotten a password reset email.
+        """
+        setup_test_environment()
+        client = Client()
+        username = os.environ.get('LOGIN_USERNAME')
+        old_password = os.environ.get('LOGIN_PASSWORD')
+        new_password = os.environ.get('LOGIN_PASSWORD')
+        body = {
+            'token': os.environ.get('LOGIN_SEC_TOKEN'),
+            'username': username,
+            'password': new_password
+        }
+        response = client.post(
+            '/password/change',
+            data=json.dumps(body),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 403)
+
+    @patch('cassy.change_user_password')
+    @patch('cassy.verify_auth_token')
+    def test_password_change_with_admin_invalid_same_old_and_new(self, cassy_auth, cassy_mock):
+        """
+        Tests the case where an admin resets someone's password.
+        Mocking the admin authentication.
+        """
+        setup_test_environment()
+        client = Client()
+        cassy_auth.return_value = 'admin'
+        username = 'mr.forgetful'
+        old_password = 'testme'
+        new_password = 'testme'
+        auth_token = 'token'
+        body = {
+            'auth_token': auth_token,
+            'username': username,
+            'password': new_password
+        }
+        response = client.post(
+            '/password/change',
+            data=json.dumps(body),
+            content_type='application/json'
+        )
+        cassy_auth.assert_called_once_with(auth_token)
+        self.assertEqual(response.status_code, 403)
+
     def test_password_reset_valid_username(self):
         """
         Tests the password reset endpoint.

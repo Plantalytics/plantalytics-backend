@@ -318,6 +318,7 @@ class MainTests(TestCase):
     def test_password_reset_valid_username(self, cassy_mock):
         """
         Tests the password reset endpoint.
+        Uses a DB mock.
         """
         setup_test_environment()
         client = Client()
@@ -337,6 +338,7 @@ class MainTests(TestCase):
     def test_password_reset_invalid_username(self, cassy_mock):
         """
         Tests the password reset endpoint with invalid username.
+        Uses a DB Mock.
         """
         setup_test_environment()
         client = Client()
@@ -358,6 +360,7 @@ class MainTests(TestCase):
     def test_password_reset_invalid_reset_token(self, cassy_mock):
         """
         Tests the password reset endpoint with invalid reset token.
+        Uses a DB mock.
         """
         setup_test_environment()
         client = Client()
@@ -379,3 +382,20 @@ class MainTests(TestCase):
         cassy_mock.assert_called_once_with(username)
         self.assertTrue('auth_error_not_found' in error)
         self.assertEqual(final_response.status_code, 403)
+
+    def test_password_reset_valid_username(self):
+        """
+        Tests the password reset endpoint with an email generated.
+        """
+        setup_test_environment()
+        client = Client()
+        username = 'welches'
+        body = {
+            'username': username,
+        }
+        response = client.post(
+            '/password/reset',
+            data=json.dumps(body),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)

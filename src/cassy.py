@@ -15,6 +15,7 @@ from cassandra.auth import PlainTextAuthProvider
 from cassandra.cluster import Cluster
 from cassandra.query import named_tuple_factory, BatchStatement
 
+
 auth = PlainTextAuthProvider(
             username=os.environ.get('DB_USERNAME'),
             password=os.environ.get('DB_PASSWORD')
@@ -323,6 +324,61 @@ def verify_auth_token(auth_token):
         raise Exception('Transaction Error Occurred: ' + str(e))
 
 
-def change_user_password(username, password):
-    # todo
-    raise NotImplementedError
+def change_user_password(username, new_password, old_password):
+    """
+    Chanes current password of the supplied username
+    to the supplied password.
+    """
+    values = {}
+    values['username'] = username
+
+    auth_stmt_get = session.prepare(
+        'SELECT *'
+        + ' FROM ' + os.environ.get('DB_USER_TABLE')
+        + ' WHERE username=?;'
+    )
+    bound = auth_stmt_get.bind(values)
+    session.row_factory = named_tuple_factory
+
+    try:
+        rows = session.execute(bound)
+        if not rows:
+            raise PlantalyticsAuthException(RESET_ERROR_USERNAME)
+        try:
+            new_values = {}
+            new_values['username'] = rows[0].username
+            new_values['password'] = new_password
+            new_values['email'] = rows[0].email
+            new_values['securitytoken'] = rows[0].securitytoken
+            new_values['subenddate'] = rows[0].subenddate
+            new_values['userid'] = rows[0].userid
+            new_values['vineyards'] = rows[0].vineyards
+            auth_stmt_set = session.prepare(
+                'INSERT INTO '
+                + os.environ.get('DB_USER_TABLE')
+                + ' (username, password, email, securitytoken, subenddate, userid, vineyards)'
+                + ' VALUES(?, ?, ?, ?, ?, ?, ?);'
+            )
+            new_bound = auth_stmt_set.bind(new_values)
+            session.execute(new_bound)
+        except Exception as e:
+            raise Exception('Transaction Error Occurred: ' + str(e))
+
+        try:
+            old_values = {}
+            old_values['username'] = username
+            old_values['password'] = old_password
+            auth_stmt_set = session.prepare(
+                'DELETE FROM '
+                + os.environ.get('DB_USER_TABLE')
+                + ' WHERE username=? AND password=?;'
+            )
+            old_bound = auth_stmt_set.bind(old_values)
+            session.execute(old_bound)
+        except Exception as e:
+            raise Exception('Transaction Error Occurred: ' + str(e))
+
+    except PlantalyticsException as e:
+        raise e
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: ' + str(e))

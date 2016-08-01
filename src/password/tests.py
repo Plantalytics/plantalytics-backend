@@ -30,6 +30,7 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         username = os.environ.get('LOGIN_USERNAME')
+        old_password = os.environ.get('LOGIN_PASSWORD')
         new_password = 'newpass'
         body = {
             'auth_token': os.environ.get('LOGIN_SEC_TOKEN'),
@@ -41,7 +42,7 @@ class MainTests(TestCase):
             data=json.dumps(body),
             content_type='application/json'
         )
-        cassy_mock.assert_called_once_with(username, new_password)
+        cassy_mock.assert_called_once_with(username, new_password, old_password)
         self.assertEqual(response.status_code, 200)
 
     @patch('cassy.change_user_password')
@@ -52,7 +53,8 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         username = os.environ.get('LOGIN_USERNAME')
-        new_password = 'newpass'
+        old_password = os.environ.get('LOGIN_PASSWORD')
+        new_password = os.environ.get('LOGIN_PASSWORD')
         body = {
             'token': os.environ.get('LOGIN_SEC_TOKEN'),
             'username': username,
@@ -63,7 +65,7 @@ class MainTests(TestCase):
             data=json.dumps(body),
             content_type='application/json'
         )
-        cassy_mock.assert_called_once_with(username, new_password)
+        cassy_mock.assert_called_once_with(username, new_password, old_password)
         self.assertEqual(response.status_code, 200)
 
     @patch('cassy.change_user_password')
@@ -77,8 +79,9 @@ class MainTests(TestCase):
         client = Client()
         cassy_auth.return_value = 'admin'
         username = 'mr.forgetful'
+        old_password = 'newpass'
         new_password = 'newpass'
-        auth_token = os.environ.get('LOGIN_SEC_TOKEN')
+        auth_token = 'token'
         body = {
             'auth_token': auth_token,
             'username': username,
@@ -89,7 +92,7 @@ class MainTests(TestCase):
             data=json.dumps(body),
             content_type='application/json'
         )
-        cassy_mock.assert_called_once_with(username, new_password)
+        cassy_mock.assert_called_once_with(username, new_password, old_password)
         cassy_auth.assert_called_once_with(auth_token)
         self.assertEqual(response.status_code, 200)
 
@@ -125,7 +128,7 @@ class MainTests(TestCase):
         client = Client()
         cassy_auth.return_value = 'admin'
         new_password = 'newpass'
-        auth_token = os.environ.get('LOGIN_SEC_TOKEN')
+        auth_token = 'token'
         body = {
             'auth_token': auth_token,
             'password': new_password
@@ -184,6 +187,7 @@ class MainTests(TestCase):
         client = Client()
         cassy_mock.side_effect = Exception('Mock exception')
         username = os.environ.get('LOGIN_USERNAME')
+        old_password = os.environ.get('LOGIN_PASSWORD')
         new_password = 'newpass'
         body = {
             'token': os.environ.get('LOGIN_SEC_TOKEN'),
@@ -197,5 +201,5 @@ class MainTests(TestCase):
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
         self.assertTrue('unknown' in error)
-        cassy_mock.assert_called_once_with(username, new_password)
+        cassy_mock.assert_called_once_with(username, new_password, old_password)
         self.assertEqual(response.status_code, 500)

@@ -190,8 +190,7 @@ def password_reset(request):
         return HttpResponse(json.dumps(new_password_object), content_type='application/json')
     # Invalid username -- expected exception
     except PlantalyticsException as e:
-        logger.warning('Unknown username \''
-                       + username + '\'.')
+        logger.warning('Error occurred while resetting password')
         error = custom_error(str(e))
         return HttpResponseForbidden(error, content_type='application/json')
     # Unexpected exception

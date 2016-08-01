@@ -12,5 +12,6 @@ from . import views
 
 urlpatterns = [
     url(r'^reset', views.reset, name='reset'),
+    url(r'^password_reset', views.password_reset, name='password_reset'),
     url(r'^change', views.change, name='change')
 ]

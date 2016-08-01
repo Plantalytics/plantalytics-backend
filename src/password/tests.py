@@ -203,3 +203,25 @@ class MainTests(TestCase):
         self.assertTrue('unknown' in error)
         cassy_mock.assert_called_once_with(username, new_password, old_password)
         self.assertEqual(response.status_code, 500)
+
+    def test_password_reset(self):
+        """
+        Tests the password reset endpoint.
+        """
+        setup_test_environment()
+        client = Client()
+        body = {
+            'username': 'welches',
+        }
+        reset_response = client.post(
+            '/password/reset',
+            data=json.dumps(body),
+            content_type='application/json'
+        )
+        response_body = json.loads(reset_response.content.decode('utf-8'))
+        reset_token = response_body.get('reset_token', '')
+        final_response = client.get(
+            '/password/password_reset?id=' +
+            reset_token
+        )
+        self.assertEqual(final_response.status_code, 200)

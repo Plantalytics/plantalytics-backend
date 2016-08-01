@@ -119,6 +119,8 @@ def reset(request):
         email_object['email'] = cassy.get_user_email(username)
 
         reset_token = str(uuid.uuid4())
+        reset_token_object = {}
+        reset_token_object['reset_token'] = reset_token
 
         reset_url = 'http://localhost:8000/password/password_reset?id=' + reset_token
 
@@ -136,7 +138,7 @@ def reset(request):
             fail_silently=False,
         )
 
-        return HttpResponse(json.dumps(email_object), content_type='application/json')
+        return HttpResponse(json.dumps(reset_token_object), content_type='application/json')
     # Invalid username -- expected exception
     except PlantalyticsException as e:
         logger.warning('Unknown username \''

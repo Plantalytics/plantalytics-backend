@@ -203,5 +203,5 @@ def password_reset(request):
                          )
         error = custom_error(EMAIL_ERROR, str(e))
         return HttpResponseForbidden(error, content_type='application/json')
-
+        
     return HttpResponse()

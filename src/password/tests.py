@@ -10,6 +10,8 @@
 # Create tests here
 import os
 import json
+import string
+import random
 
 from django.test import TestCase, Client
 from django.test.utils import setup_test_environment
@@ -43,6 +45,34 @@ class MainTests(TestCase):
             content_type='application/json'
         )
         cassy_mock.assert_called_once_with(username, new_password, old_password)
+        self.assertEqual(response.status_code, 200)
+
+    def test_password_change_with_admin_and_dummy_user(self):
+        """
+        Tests the case where an admin resets someone's password.
+        Generates random password for dummy user.
+        """
+        setup_test_environment()
+        client = Client()
+        username = 'welches'
+        new_password = ''.join(
+            random.choice(
+                string.ascii_letters +
+                string.digits
+            )
+            for _ in range(6)
+        )
+        auth_token = 'token'
+        body = {
+            'auth_token': auth_token,
+            'username': username,
+            'password': new_password
+        }
+        response = client.post(
+            '/password/change',
+            data=json.dumps(body),
+            content_type='application/json'
+        )
         self.assertEqual(response.status_code, 200)
 
     @patch('cassy.change_user_password')

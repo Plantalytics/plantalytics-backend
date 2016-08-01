@@ -54,7 +54,7 @@ class MainTests(TestCase):
         client = Client()
         username = os.environ.get('LOGIN_USERNAME')
         old_password = os.environ.get('LOGIN_PASSWORD')
-        new_password = os.environ.get('LOGIN_PASSWORD')
+        new_password = 'newpass'
         body = {
             'token': os.environ.get('LOGIN_SEC_TOKEN'),
             'username': username,
@@ -79,7 +79,7 @@ class MainTests(TestCase):
         client = Client()
         cassy_auth.return_value = 'admin'
         username = 'mr.forgetful'
-        old_password = 'newpass'
+        old_password = 'testme'
         new_password = 'newpass'
         auth_token = 'token'
         body = {

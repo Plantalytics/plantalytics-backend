@@ -54,6 +54,9 @@ def change(request):
                     + "does not match supplied username (\'{}\').".format(username)
                 )
                 raise PlantalyticsLoginException(LOGIN_ERROR)
+            if new_password == stored_password:
+                logger.warn('Invalid new password.')
+                raise PlantalyticsLoginException(LOGIN_ERROR)
 
             cassy.change_user_password(username, new_password, stored_password)
             logger.info('Password for \'{}\' successfully changed.'.format(username))
@@ -65,6 +68,9 @@ def change(request):
             if verified_name == 'admin':
                 if username:
                     stored_password = cassy.get_user_password(username)
+                    if new_password == stored_password:
+                        logger.warn('Invalid new password.')
+                        raise PlantalyticsLoginException(LOGIN_ERROR)
                     logger.info('Admin resetting password for {}'.format(username))
                     cassy.change_user_password(username, new_password, stored_password)
                 else:
@@ -73,10 +79,12 @@ def change(request):
             else:
                 logger.info('User \'{}\' attempting to reset password.'.format(verified_name))
                 stored_password = cassy.get_user_password(verified_name)
+                if new_password == stored_password:
+                    logger.warn('Invalid new password.')
+                    raise PlantalyticsLoginException(LOGIN_ERROR)
                 if stored_password != old_password:
                     logger.warn('Old password does not match supplied password.')
                     raise PlantalyticsLoginException(LOGIN_ERROR)
-                logger.info('Changing password for ' + str(verified_name) + ' where new=' + str(new_password) + ' and old=' + str(stored_password))
                 cassy.change_user_password(verified_name, new_password, stored_password)
 
     except (PlantalyticsAuthException, PlantalyticsLoginException) as e:

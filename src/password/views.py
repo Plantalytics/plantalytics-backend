@@ -18,6 +18,7 @@ from common.errors import *
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseServerError, HttpResponseNotAllowed
 from django.core.mail import send_mail
+from django.utils.http import urlencode
 
 logger = logging.getLogger('plantalytics_backend.login')
 
@@ -130,7 +131,10 @@ def reset(request):
         reset_token_object = {}
         reset_token_object['reset_token'] = reset_token
 
-        reset_url = 'http://localhost:8000/password/password_reset?id=' + reset_token
+        reset_url = 'http://localhost/forgot.html?' + urlencode({
+            "id": reset_token,
+            "username": username,
+        }) 
 
         password = cassy.get_user_password(username)
         cassy.set_user_auth_token(username, password, reset_token)

@@ -13,11 +13,15 @@ from json import dumps
 AUTH_NO_TOKEN = 'auth_error_no_token'
 AUTH_UNKNOWN = 'auth_error_unknown'
 AUTH_NOT_FOUND = 'auth_error_not_found'
+CHANGE_ERROR_PASSWORD = 'reset_error_password'
 ENV_DATA_INVALID = 'env_data_invalid'
 ENV_DATA_NOT_FOUND = 'env_data_not_found'
 ENV_DATA_UNKNOWN = 'env_data_unknown'
+EMAIL_ERROR = 'email_error'
 LOGIN_ERROR = 'login_error'
 LOGIN_UNKNOWN = 'login_unknown'
+RESET_ERROR = 'reset_error'
+RESET_ERROR_USERNAME = 'reset_error_username'
 VINEYARD_NO_ID = 'vineyard_no_id'
 VINEYARD_BAD_ID = 'vineyard_bad_id'
 VINEYARD_ID_NOT_FOUND = 'vineyard_id_not_found'
@@ -28,11 +32,15 @@ responses = {
     AUTH_NO_TOKEN: 'Missing auth token in request.',
     AUTH_UNKNOWN: 'Unexpected error occurred during authorization.',
     AUTH_NOT_FOUND: 'Auth token not found.',
+    CHANGE_ERROR_PASSWORD: 'Invalid new password.',
     ENV_DATA_INVALID: 'Request for invalid environmental data. Must be one of leafwetness, humidity, or temperature.',
     ENV_DATA_NOT_FOUND: 'The request resulted in no environmental data.',
     ENV_DATA_UNKNOWN: 'An expected error occurred gathering the requested data.',
+    EMAIL_ERROR: 'Email Error: Invalid username.',
     LOGIN_ERROR: 'Login Error: Invalid username or password.',
     LOGIN_UNKNOWN: 'An unexpected error occurred during login.',
+    RESET_ERROR: 'An error occurred while resetting your password.',
+    RESET_ERROR_USERNAME: 'An error occurred resetting the password. Bad username.',
     VINEYARD_NO_ID: 'A vineyard must have a valid ID.',
     VINEYARD_BAD_ID: 'A vineyard ID must be a positive integer.',
     VINEYARD_ID_NOT_FOUND: 'The vineyard ID was not found.',

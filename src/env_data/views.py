@@ -10,23 +10,40 @@
 import json
 import logging
 
-from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseBadRequest
+from common.exceptions import *
+from common.errors import *
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 
 import cassy
 
 logger = logging.getLogger('plantalytics_backend.env_data')
 
 
+@csrf_exempt
 def index(request):
     """
     Access database to respond with requested environmental mapping data.
     """
+    if request.method != 'POST':
+        return HttpResponseBadRequest()
 
-    vineyard_id = request.GET.get('vineyard_id', '')
-    env_variable = request.GET.get('env_variable', '')
+    request_data = json.loads(request.body.decode('utf-8'))
+    auth_token = request_data.get('auth_token', '')
+    vineyard_id = str(request_data.get('vineyard_id', ''))
+    env_variable = request_data.get('env_variable', '')
     response = {}
     map_data = []
+
+    try:
+        logger.info(
+            'Validating auth token token for vineyard id {}.'.format(vineyard_id)
+        )
+        cassy.verify_auth_token(auth_token)
+    except Exception as e:
+        message = 'Error occurred while auth token for vineyard id {}.'.format(vineyard_id)
+        logger.exception(message + '\n' + str(e))
+        return HttpResponseForbidden()
 
     try:
         logger.info('Fetching ' + env_variable + ' data.')
@@ -43,13 +60,20 @@ def index(request):
             map_data.append(map_data_point)
         response['env_data'] = map_data
 
-        logger.info('Successfully fetched ' + env_variable
-                    + ' data for vineyard ' + vineyard_id + '.'
+        logger.info(
+            'Successfully fetched ' + env_variable
+            + ' data for vineyard ' + vineyard_id + '.'
         )
         return HttpResponse(json.dumps(response), content_type='application/json')
+    except PlantalyticsException as e:
+        logger.warn('Invalid vineyard_id or env_variable. Error code: ' + str(e))
+        error = custom_error(str(e))
+        return HttpResponseBadRequest(error, content_type='application/json')
     except Exception as e:
-        logger.exception('Error occurred while fetching ' + env_variable
-                    + ' data for vineyard ' + vineyard_id + '.'
-                    + str(e)
+        logger.exception(
+            'Error occurred while fetching ' + env_variable
+            + ' data for vineyard ' + vineyard_id + '.'
+            + str(e)
         )
-        return HttpResponseBadRequest()
+        error = custom_error(ENV_DATA_UNKNOWN, str(e))
+        return HttpResponseBadRequest(error, content_type='application/json')

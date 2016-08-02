@@ -21,6 +21,8 @@ from django.core.mail import send_mail
 
 logger = logging.getLogger('plantalytics_backend.login')
 
+# todo Ensure reset-token is single use
+
 
 @csrf_exempt
 def change(request):
@@ -143,8 +145,6 @@ def reset(request):
             [email_object['email']],
             fail_silently=False,
         )
-
-        return HttpResponse(content_type='application/json')
     # Invalid username -- expected exception
     except PlantalyticsException as e:
         logger.warning('Unknown username \''
@@ -160,8 +160,8 @@ def reset(request):
         error = custom_error(EMAIL_ERROR, str(e))
         return HttpResponseForbidden(error, content_type='application/json')
 
-
     return HttpResponse()
+
 
 @csrf_exempt
 def password_reset(request):
@@ -180,7 +180,7 @@ def password_reset(request):
         verified = cassy.verify_auth_token(reset_token)
         if not verified:
             raise PlantalyticsAuthException(AUTH_NOT_FOUND)
-        return HttpResponse()
+
     except (PlantalyticsAuthException, PlantalyticsLoginException) as e:
         logger.warn(
             'Error occurred while resetting password. Error code: {}'

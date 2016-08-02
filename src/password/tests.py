@@ -16,7 +16,6 @@ import random
 from django.test import TestCase, Client
 from django.test.utils import setup_test_environment
 from common.exceptions import *
-from common.errors import *
 from unittest.mock import patch
 
 import cassy

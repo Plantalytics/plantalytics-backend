@@ -10,8 +10,6 @@
 import json
 import logging
 import uuid
-import string
-import random
 
 import cassy
 from django.views.decorators.csrf import csrf_exempt
@@ -197,8 +195,8 @@ def password_reset(request):
         return HttpResponseForbidden(error, content_type='application/json')
     # Unexpected exception
     except Exception as e:
-        logger.exception('Error occurred while resetting password for user \''
-                         + username + ' \'.'
+        logger.exception('Error occurred while resetting password with reset token \''
+                         + reset_token + ' \'.'
                          + str(e)
                          )
         error = custom_error(EMAIL_ERROR, str(e))

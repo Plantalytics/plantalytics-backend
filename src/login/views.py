@@ -12,46 +12,91 @@ import uuid
 import json
 import logging
 
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
+from django.http import HttpResponse, HttpResponseForbidden
+from common.exceptions import PlantalyticsException
+from common.errors import *
 from django.http import HttpResponse, HttpResponseForbidden
 
 import cassy
 
 logger = logging.getLogger('plantalytics_backend.login')
 
-
+@csrf_exempt
 def index(request):
     """
     Mock auth endpoint to return success with generated token
     if correct user/pass are passed in.
     """
-    username = request.GET.get('username', '')
-    submitted_password = request.GET.get('password', '')
 
-    # Generate token and put into JSON object
-    token = str(uuid.uuid4())
-    token_object = {}
-    token_object['token'] = token
+    data = json.loads(request.body.decode("utf-8"))
+    username = data.get('username', '')
+    submitted_password = data.get('password', '')
 
     try:
         # Get stored password from database, and verify with password arg
         logger.info('Fetching password for user \'' + username + '\'.')
         stored_password = cassy.get_user_password(username)
-        logger.info('Successfully fetched password for user \''
-                    + username + '\'.'
+        logger.info(
+            'Successfully fetched password for user \''
+            + username + '\'.'
         )
 
         if stored_password == submitted_password:
+            # Generate token and put into JSON object
+            auth_token = str(uuid.uuid4())
+            auth_token_object = {}
+
             # Return response with token object
-            return HttpResponse(json.dumps(token_object), content_type='application/json')
+            if username != os.environ.get('LOGIN_USERNAME'):
+                logger.info('Storing auth token for user \''
+                    + username + '\'.'
+                )
+                cassy.set_user_auth_token(
+                    username,
+                    submitted_password,
+                    auth_token
+                )
+                logger.info('Retrieving auth token for user \''
+                    + username + '\'.'
+                )
+                auth_token_object['auth_token'] = cassy.get_user_auth_token(
+                    username,
+                    submitted_password
+                )
+            else:
+                cassy.set_user_auth_token(
+                    username,
+                    submitted_password,
+                    os.environ.get('LOGIN_SEC_TOKEN')
+                )
+                auth_token_object['auth_token'] = cassy.get_user_auth_token(
+                    username,
+                    submitted_password
+                )
+            logger.info('Successfully logged in user \''
+                + username + '\'.'
+            )
+            return HttpResponse(json.dumps(auth_token_object), content_type='application/json')
         else:
             logger.warning('Incorrect password supplied for user \''
                            + username + '\'.'
-            )
-            return HttpResponseForbidden()
+                           )
+            error = custom_error(LOGIN_ERROR)
+            return HttpResponseForbidden(error, content_type='application/json')
+
+    # Invalid username -- expected exception
+    except PlantalyticsException as e:
+        logger.warning('Unknown username \''
+                       + username + '\'.')
+        error = custom_error(str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
+    # Unexpected exception
     except Exception as e:
         logger.exception('Error occurred while fetching password for user \''
-                    + username + ' \'.'
-                    + str(e)
-        )
-        return HttpResponseForbidden()
+                         + username + ' \'.'
+                         + str(e)
+                         )
+        error = custom_error(LOGIN_UNKNOWN, str(e))
+        return HttpResponseForbidden(error, content_type='application/json')

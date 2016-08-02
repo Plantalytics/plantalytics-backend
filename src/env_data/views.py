@@ -30,7 +30,7 @@ def index(request):
 
     request_data = json.loads(request.body.decode('utf-8'))
     auth_token = request_data.get('auth_token', '')
-    vineyard_id = request_data.get('vineyard_id', '')
+    vineyard_id = str(request_data.get('vineyard_id', ''))
     env_variable = request_data.get('env_variable', '')
     response = {}
     map_data = []

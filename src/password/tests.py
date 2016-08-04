@@ -332,26 +332,6 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
     @patch('cassy.get_user_email')
-    def test_password_reset_valid_username(self, cassy_mock):
-        """
-        Tests the password reset endpoint.
-        Uses a DB mock.
-        """
-        setup_test_environment()
-        client = Client()
-        username = 'welches'
-        body = {
-            'username': username,
-        }
-        response = client.post(
-            '/password/reset',
-            data=json.dumps(body),
-            content_type='application/json'
-        )
-        cassy_mock.assert_called_once_with(username)
-        self.assertEqual(response.status_code, 200)
-
-    @patch('cassy.get_user_email')
     def test_password_reset_invalid_username(self, cassy_mock):
         """
         Tests the password reset endpoint with invalid username.

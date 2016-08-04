@@ -13,7 +13,7 @@ import logging
 from common.exceptions import *
 from common.errors import *
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed
 
 import cassy
 
@@ -26,7 +26,7 @@ def index(request):
     Access database to respond with requested environmental mapping data.
     """
     if request.method != 'POST':
-        return HttpResponseBadRequest()
+        return HttpResponseNotAllowed(['POST'])
 
     request_data = json.loads(request.body.decode('utf-8'))
     auth_token = request_data.get('auth_token', '')

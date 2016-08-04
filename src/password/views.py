@@ -134,7 +134,7 @@ def reset(request):
         reset_url = 'http://localhost/forgot.html?' + urlencode({
             "id": reset_token,
             "username": username,
-        }) 
+        })
 
         password = cassy.get_user_password(username)
         cassy.set_user_auth_token(username, password, reset_token)
@@ -205,5 +205,5 @@ def password_reset(request):
                          )
         error = custom_error(EMAIL_ERROR, str(e))
         return HttpResponseForbidden(error, content_type='application/json')
-        
+
     return HttpResponse()

@@ -37,6 +37,15 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    def test_vineyard_metadata_invalid_method(self):
+        """
+        Tests the vineyard endpoint with unsupported HTTP method.
+        """
+        setup_test_environment()
+        client = Client()
+        response = client.get('/vineyard')
+        self.assertEqual(response.status_code, 405)
+
     @patch('cassy.get_vineyard_coordinates')
     def test_response_vineyard_metadata_exception(self, vineyard_mock):
         '''

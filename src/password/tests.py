@@ -450,6 +450,18 @@ class MainTests(TestCase):
         self.assertTrue('auth_error_not_found' in error)
         self.assertEqual(final_response.status_code, 403)
 
+    def test_password_reset_link_valid_reset_token(self):
+        """
+        Tests the password reset endpoint with valid reset token.
+        """
+        setup_test_environment()
+        client = Client()
+        final_response = client.get(
+            '/password/password_reset?id=' +
+            os.environ.get('LOGIN_SEC_TOKEN')
+        )
+        self.assertEqual(final_response.status_code, 200)
+
     def test_set_auth_token_with_no_token(self):
         """
         Tests the case where a user's auth token is being set and no

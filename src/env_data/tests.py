@@ -38,6 +38,15 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    def test_env_data_invalid_method(self):
+        """
+        Tests the env_data endpoint with unsupported HTTP method.
+        """
+        setup_test_environment()
+        client = Client()
+        response = client.get('/env_data')
+        self.assertEqual(response.status_code, 405)
+
     @patch('cassy.get_env_data')
     def test_response_env_data_exception(self, env_data_mock):
         '''

@@ -13,7 +13,7 @@ import logging
 from common.exceptions import PlantalyticsException
 from common.errors import *
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed
 
 import cassy
 
@@ -26,7 +26,7 @@ def index(request):
     Access database to respond with requested vineyard metadata.
     """
     if request.method != "POST":
-        return HttpResponseBadRequest()
+        return HttpResponseNotAllowed(['POST'])
 
     data = json.loads(request.body.decode('utf-8'))
     vineyard_id = data.get('vineyard_id', '')

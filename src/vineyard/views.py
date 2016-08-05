@@ -13,7 +13,12 @@ import logging
 from common.exceptions import PlantalyticsException
 from common.errors import *
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    HttpResponseNotAllowed
+)
 
 import cassy
 
@@ -34,33 +39,49 @@ def index(request):
     response = {}
 
     try:
-        logger.info('Validating auth_token token for vineyard id {}.'.format(vineyard_id))
+        logger.info(
+            'Validating auth_token token ' +
+            'for vineyard id {}.'.format(vineyard_id)
+        )
         cassy.verify_auth_token(auth_token)
     except Exception as e:
-        message = 'Error occurred while auth token for vineyard id {}.'.format(vineyard_id)
-        logger.exception(message + '\n'+ str(e))
+        message = (
+            'Error occurred while auth token ' +
+            'for vineyard id {}.'.format(vineyard_id)
+        )
+        logger.exception(message + '\n' + str(e))
         return HttpResponseForbidden()
 
     try:
-
-        logger.info('Fetching vineyard data for vineyard id \'' + vineyard_id + '\'.')
+        logger.info(
+            'Fetching vineyard data for vineyard id \'' + vineyard_id + '\'.'
+        )
         coordinates = cassy.get_vineyard_coordinates(vineyard_id)
 
-        logger.info('Successfully fetched vineyard data for vineyard id \'' + vineyard_id + '\'.')
+        logger.info(
+            'Successfully fetched vineyard data for vineyard id \'' +
+            vineyard_id + '\'.'
+        )
         response['center'] = coordinates[0]
         response['boundary'] = coordinates[1]
 
-        return HttpResponse(json.dumps(response), content_type='application/json')
+        return HttpResponse(
+            json.dumps(response),
+            content_type='application/json'
+        )
     except PlantalyticsException as e:
-        logger.warn('Invalid vineyard ID while fetching vineyard data: \'' + vineyard_id + '\'')
+        logger.warn(
+            'Invalid vineyard ID while fetching vineyard data: \'' +
+            vineyard_id + '\''
+        )
         error = custom_error(str(e))
 
         return HttpResponseBadRequest(error, content_type='application/json')
     except Exception as e:
         logger.exception(
-            'Error occurred while fetching vineyard data for '
-            + 'vineyard id \'' + vineyard_id + '\'. '
-            + str(e)
+            'Error occurred while fetching vineyard data for ' +
+            'vineyard id \'' + vineyard_id + '\'. ' +
+            str(e)
         )
         error = custom_error(VINEYARD_UNKNOWN, str(e))
 

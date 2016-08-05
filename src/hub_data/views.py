@@ -12,7 +12,11 @@ import json
 import logging
 
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden
+)
 
 import cassy
 
@@ -30,15 +34,16 @@ def index(request):
 
     try:
         logger.info(
-            'Validating key for hub id \''
-            + str(data['hub_id']) + '\'.'
+            'Validating key for hub id \'' +
+            str(data['hub_id']) + '\'.'
         )
         if hub_key != os.environ.get('HUB_KEY'):
             raise Exception('Invalid Hub Key')
     except Exception as e:
-        logger.exception('Error occurred while verifying hub key for '
-                    + 'hub id \'' + str(data['hub_id']) + ' \'.'
-                    + str(e)
+        logger.exception(
+            'Error occurred while verifying hub key for ' +
+            'hub id \'' + str(data['hub_id']) + ' \'.' +
+            str(e)
         )
         return HttpResponseForbidden()
 
@@ -48,7 +53,8 @@ def index(request):
         logger.info('Successfully inserted hub data.')
         return HttpResponse()
     except Exception as e:
-        logger.exception('Error occurred while inserting hub data.'
-                         + str(e)
+        logger.exception(
+            'Error occurred while inserting hub data.' +
+            str(e)
         )
         return HttpResponseBadRequest()

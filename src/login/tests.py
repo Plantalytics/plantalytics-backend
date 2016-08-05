@@ -123,7 +123,10 @@ class MainTests(TestCase):
             os.environ.get('LOGIN_USERNAME'),
             os.environ.get('LOGIN_PASSWORD')
         )
-        self.assertEqual(rows != None, True)
+        retrieved = True
+        if rows is None:
+            retrieved = False
+        self.assertEqual(retrieved, True)
 
     def test_response_store_auth_token(self):
         setup_test_environment()

@@ -21,7 +21,7 @@ class PlantalyticsDataException(PlantalyticsException):
 
 class PlantalyticsEmailException(PlantalyticsException):
     pass
-    
+
 
 class PlantalyticsPasswordException(PlantalyticsException):
     pass

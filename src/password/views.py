@@ -16,7 +16,13 @@ from django.views.decorators.csrf import csrf_exempt
 from common.exceptions import *
 from common.errors import *
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseServerError, HttpResponseNotAllowed
+from django.http import (
+    HttpResponse,
+    HttpResponseForbidden,
+    HttpResponseBadRequest,
+    HttpResponseServerError,
+    HttpResponseNotAllowed
+)
 from django.core.mail import send_mail
 from django.utils.http import urlencode
 
@@ -51,8 +57,10 @@ def change(request):
             stored_password = cassy.get_user_password(reset_name)
             if reset_name != username:
                 logger.warn(
-                    "Username associated with reset token (\'{}\') ".format(reset_name)
-                    + "does not match supplied username (\'{}\').".format(username)
+                    'Username associated with ' +
+                    'reset token (\'{}\') '.format(reset_name) +
+                    'does not match supplied ' +
+                    'username (\'{}\').'.format(username)
                 )
                 raise PlantalyticsLoginException(LOGIN_ERROR)
             if new_password == stored_password:
@@ -60,7 +68,9 @@ def change(request):
                 raise PlantalyticsPasswordException(CHANGE_ERROR_PASSWORD)
 
             cassy.change_user_password(username, new_password, stored_password)
-            logger.info('Password for \'{}\' successfully changed.'.format(username))
+            logger.info(
+                'Password for \'{}\' successfully changed.'.format(username)
+            )
         # Else, password being reset by admin or logged-in user
         else:
             logger.info('Attempting password reset using auth_token.')
@@ -71,22 +81,39 @@ def change(request):
                     stored_password = cassy.get_user_password(username)
                     if new_password == stored_password:
                         logger.warn('Invalid new password.')
-                        raise PlantalyticsPasswordException(CHANGE_ERROR_PASSWORD)
-                    logger.info('Admin resetting password for {}'.format(username))
-                    cassy.change_user_password(username, new_password, stored_password)
+                        raise PlantalyticsPasswordException(
+                            CHANGE_ERROR_PASSWORD
+                        )
+                    logger.info(
+                        'Admin resetting password for {}'.format(username)
+                    )
+                    cassy.change_user_password(
+                        username,
+                        new_password,
+                        stored_password
+                    )
                 else:
                     logger.warn('Invalid username. Username cannot be empty.')
                     raise PlantalyticsException(RESET_ERROR_USERNAME)
             else:
-                logger.info('User \'{}\' attempting to reset password.'.format(verified_name))
+                logger.info(
+                    'User \'{}\' attempting to' +
+                    'reset password.'.format(verified_name)
+                )
                 stored_password = cassy.get_user_password(verified_name)
                 if new_password == stored_password:
                     logger.warn('Invalid new password.')
                     raise PlantalyticsPasswordException(CHANGE_ERROR_PASSWORD)
                 if stored_password != old_password:
-                    logger.warn('Old password does not match supplied password.')
+                    logger.warn(
+                        'Old password does not match supplied password.'
+                    )
                     raise PlantalyticsLoginException(LOGIN_ERROR)
-                cassy.change_user_password(verified_name, new_password, stored_password)
+                cassy.change_user_password(
+                    verified_name,
+                    new_password,
+                    stored_password
+                )
 
     except (PlantalyticsAuthException, PlantalyticsLoginException) as e:
         logger.warn(
@@ -138,8 +165,8 @@ def reset(request):
 
         password = cassy.get_user_password(username)
         cassy.set_user_auth_token(username, password, reset_token)
-        logger.info('Emailing reset token for user \''
-            + username + '\'.'
+        logger.info(
+            'Emailing reset token for user \'' + username + '\'.'
         )
 
         send_mail(
@@ -151,16 +178,17 @@ def reset(request):
         )
     # Invalid username -- expected exception
     except PlantalyticsException as e:
-        logger.warning('Unknown username \''
-                       + username + '\'.')
+        logger.warning(
+            'Unknown username \'' + username + '\'.'
+        )
         error = custom_error(str(e))
         return HttpResponseForbidden(error, content_type='application/json')
     # Unexpected exception
     except Exception as e:
-        logger.exception('Error occurred while fetching email for user \''
-                         + username + ' \'.'
-                         + str(e)
-                         )
+        logger.exception(
+            'Error occurred while fetching email for user \'' +
+            username + ' \'.' + str(e)
+        )
         error = custom_error(EMAIL_ERROR, str(e))
         return HttpResponseForbidden(error, content_type='application/json')
 
@@ -199,10 +227,10 @@ def password_reset(request):
         return HttpResponseForbidden(error, content_type='application/json')
     # Unexpected exception
     except Exception as e:
-        logger.exception('Error occurred while resetting password with reset token \''
-                         + reset_token + ' \'.'
-                         + str(e)
-                         )
+        logger.exception(
+            'Error occurred while resetting password with reset token \'' +
+            reset_token + ' \'.' + str(e)
+        )
         error = custom_error(EMAIL_ERROR, str(e))
         return HttpResponseForbidden(error, content_type='application/json')
 

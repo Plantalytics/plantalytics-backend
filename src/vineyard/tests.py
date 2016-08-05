@@ -48,17 +48,13 @@ class MainTests(TestCase):
 
     @patch('cassy.get_vineyard_coordinates')
     def test_response_vineyard_metadata_exception(self, vineyard_mock):
-        '''
-        Tests vineyard endpoint when cassy.get_vineyard_coordinates throws Exception
-        Args:
-            vineyard_mock:
-
-        Returns:
-
-        '''
+        """
+        Tests vineyard endpoint when
+        cassy.get_vineyard_coordinates throws Exception
+        """
         setup_test_environment()
         client = Client()
-        vineyard_mock.side_effect =Exception('Test exception')
+        vineyard_mock.side_effect = Exception('Test exception')
         body = {
             'vineyard_id': '0',
             'auth_token': os.environ.get('LOGIN_SEC_TOKEN')

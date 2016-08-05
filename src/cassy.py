@@ -40,9 +40,9 @@ def get_env_data(node_id, env_variable):
 
     try:
         rows = session.execute(
-            'SELECT ' + env_variable
-            + ' FROM ' + os.environ.get('DB_ENV_TABLE')
-            + ' WHERE nodeid = ' + node + ' LIMIT 1;'
+            'SELECT ' + env_variable +
+            ' FROM ' + os.environ.get('DB_ENV_TABLE') +
+            ' WHERE nodeid = ' + node + ' LIMIT 1;'
         )
 
         if not rows:
@@ -109,9 +109,9 @@ def get_vineyard_coordinates(vineyard_id):
         # Ensures vineyard_id is integer
         int(vineyard_id)
         rows = session.execute(
-            'SELECT boundaries, center'
-            + ' FROM ' + os.environ.get('DB_VINE_TABLE')
-            + ' WHERE vineid = ' + vineyard_id + ';'
+            'SELECT boundaries, center' +
+            ' FROM ' + os.environ.get('DB_VINE_TABLE') +
+            ' WHERE vineid = ' + vineyard_id + ';'
         )
 
         if not rows:
@@ -156,9 +156,9 @@ def get_node_coordinates(vineyard_id):
         # Raises ValueError if not
         int(vineyard_id)
         rows = session.execute(
-            'SELECT nodeid, nodelocation'
-            + ' FROM ' + os.environ.get('DB_HW_TABLE')
-            + ' WHERE vineid = ' + vineyard_id + ';'
+            'SELECT nodeid, nodelocation' +
+            ' FROM ' + os.environ.get('DB_HW_TABLE') +
+            ' WHERE vineid = ' + vineyard_id + ';'
         )
         if not rows:
             raise PlantalyticsVineyardException(VINEYARD_ID_NOT_FOUND)
@@ -190,9 +190,9 @@ def get_user_password(username):
         if username == '':
             raise PlantalyticsLoginException(LOGIN_ERROR)
         rows = session.execute(
-            'SELECT password'
-            + ' FROM ' + os.environ.get('DB_USER_TABLE')
-            + ' WHERE username = \'' + username + '\';'
+            'SELECT password' +
+            ' FROM ' + os.environ.get('DB_USER_TABLE') +
+            ' WHERE username = \'' + username + '\';'
         )
 
         if not rows:
@@ -206,6 +206,7 @@ def get_user_password(username):
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
+
 def get_user_email(username):
     """
     Obtains email for the requested user.
@@ -214,9 +215,9 @@ def get_user_email(username):
     values = {}
     values['username'] = username
     auth_stmt_get = session.prepare(
-        'SELECT email'
-        + ' FROM ' + os.environ.get('DB_USER_TABLE')
-        + ' WHERE username=?'
+        'SELECT email' +
+        ' FROM ' + os.environ.get('DB_USER_TABLE') +
+        ' WHERE username=?'
     )
     bound = auth_stmt_get.bind(values)
     session.row_factory = named_tuple_factory
@@ -241,16 +242,17 @@ def get_user_email(username):
 def get_user_auth_token(username, password):
     """
     Obtains session authentication token for the requested user.
-    Assuming the username and password have already been validated prior to calling this function.
+    Assuming the username and password have already been validated
+    prior to calling this function.
     """
 
     values = {}
     values['username'] = username
     values['password'] = password
     auth_stmt_get = session.prepare(
-        'SELECT securitytoken'
-        + ' FROM ' + os.environ.get('DB_USER_TABLE')
-        + ' WHERE username=? AND password=?;'
+        'SELECT securitytoken' +
+        ' FROM ' + os.environ.get('DB_USER_TABLE') +
+        ' WHERE username=? AND password=?;'
     )
     bound = auth_stmt_get.bind(values)
     session.row_factory = named_tuple_factory
@@ -271,7 +273,8 @@ def get_user_auth_token(username, password):
 def set_user_auth_token(username, password, auth_token):
     """
     Stores the session authentication token for the requested user.
-    Assuming username and password have already been validated prior to calling this function.
+    Assuming username and password have already been validated
+    prior to calling this function.
     """
 
     values = {}
@@ -279,10 +282,10 @@ def set_user_auth_token(username, password, auth_token):
     values['password'] = password
     values['securitytoken'] = auth_token
     auth_stmt_set = session.prepare(
-        'INSERT INTO '
-        + os.environ.get('DB_USER_TABLE')
-        + ' (username, password, securitytoken)'
-        + ' VALUES(?, ?, ?);'
+        'INSERT INTO ' +
+        os.environ.get('DB_USER_TABLE') +
+        ' (username, password, securitytoken)' +
+        ' VALUES(?, ?, ?);'
     )
     bound = auth_stmt_set.bind(values)
 
@@ -295,6 +298,7 @@ def set_user_auth_token(username, password, auth_token):
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
+
 def verify_auth_token(auth_token):
     """
     Verifies session authentication token.
@@ -303,10 +307,10 @@ def verify_auth_token(auth_token):
     values['securitytoken'] = auth_token
 
     auth_stmt_get = session.prepare(
-        'SELECT username'
-        + ' FROM ' + os.environ.get('DB_USER_TABLE')
-        + ' WHERE securitytoken=?'
-        + ' ALLOW FILTERING;'
+        'SELECT username' +
+        ' FROM ' + os.environ.get('DB_USER_TABLE') +
+        ' WHERE securitytoken=?' +
+        ' ALLOW FILTERING;'
     )
     bound = auth_stmt_get.bind(values)
     session.row_factory = named_tuple_factory
@@ -333,9 +337,9 @@ def change_user_password(username, new_password, old_password):
     values['username'] = username
 
     auth_stmt_get = session.prepare(
-        'SELECT *'
-        + ' FROM ' + os.environ.get('DB_USER_TABLE')
-        + ' WHERE username=?;'
+        'SELECT *' +
+        ' FROM ' + os.environ.get('DB_USER_TABLE') +
+        ' WHERE username=?;'
     )
     bound = auth_stmt_get.bind(values)
     session.row_factory = named_tuple_factory
@@ -355,10 +359,11 @@ def change_user_password(username, new_password, old_password):
         new_values['userid'] = rows[0].userid
         new_values['vineyards'] = rows[0].vineyards
         auth_stmt_set = session.prepare(
-            'INSERT INTO '
-            + os.environ.get('DB_USER_TABLE')
-            + ' (username, password, email, securitytoken, subenddate, userid, vineyards)'
-            + ' VALUES(?, ?, ?, ?, ?, ?, ?);'
+            'INSERT INTO ' +
+            os.environ.get('DB_USER_TABLE') +
+            ' (username, password, email, securitytoken,' +
+            ' subenddate, userid, vineyards)' +
+            ' VALUES(?, ?, ?, ?, ?, ?, ?);'
         )
         new_bound = auth_stmt_set.bind(new_values)
         session.execute(new_bound)
@@ -368,9 +373,9 @@ def change_user_password(username, new_password, old_password):
         old_values['username'] = username
         old_values['password'] = old_password
         auth_stmt_set = session.prepare(
-            'DELETE FROM '
-            + os.environ.get('DB_USER_TABLE')
-            + ' WHERE username=? AND password=?;'
+            'DELETE FROM ' +
+            os.environ.get('DB_USER_TABLE') +
+            ' WHERE username=? AND password=?;'
         )
         old_bound = auth_stmt_set.bind(old_values)
         session.execute(old_bound)

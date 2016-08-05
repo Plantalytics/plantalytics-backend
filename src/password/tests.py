@@ -24,7 +24,8 @@ import cassy
 class MainTests(TestCase):
     """
     Executes all of the unit tests for plantalytics-backend.
-    Mocking change_user_password since we don't want to change a password on the DB in most cases in tests
+    Mocking change_user_password since we don't want to
+    change a password on the DB in most cases in tests.
     """
 
     @patch('cassy.change_user_password')
@@ -47,7 +48,11 @@ class MainTests(TestCase):
             data=json.dumps(body),
             content_type='application/json'
         )
-        cassy_mock.assert_called_once_with(username, new_password, old_password)
+        cassy_mock.assert_called_once_with(
+            username,
+            new_password,
+            old_password
+        )
         self.assertEqual(response.status_code, 200)
 
     def test_password_change_with_admin_and_dummy_user(self):
@@ -81,7 +86,8 @@ class MainTests(TestCase):
     @patch('cassy.change_user_password')
     def test_password_change_with_mail_token(self, cassy_mock):
         """
-        Tests the case where a user logs in after having gotten a password reset email.
+        Tests the case where a user logs in after
+        receiving gotten a password reset email.
         """
         setup_test_environment()
         client = Client()
@@ -98,7 +104,11 @@ class MainTests(TestCase):
             data=json.dumps(body),
             content_type='application/json'
         )
-        cassy_mock.assert_called_once_with(username, new_password, old_password)
+        cassy_mock.assert_called_once_with(
+            username,
+            new_password,
+            old_password
+        )
         self.assertEqual(response.status_code, 200)
 
     @patch('cassy.change_user_password')
@@ -125,7 +135,11 @@ class MainTests(TestCase):
             data=json.dumps(body),
             content_type='application/json'
         )
-        cassy_mock.assert_called_once_with(username, new_password, old_password)
+        cassy_mock.assert_called_once_with(
+            username,
+            new_password,
+            old_password
+        )
         cassy_auth.assert_called_once_with(auth_token)
         self.assertEqual(response.status_code, 200)
 
@@ -139,13 +153,18 @@ class MainTests(TestCase):
         old_password = 'TheCheesiest'
         new_password = 'NotGonnaDooooIt'
         try:
-            rows = cassy.change_user_password(username, new_password, old_password)
+            rows = cassy.change_user_password(
+                username,
+                new_password,
+                old_password
+            )
         except PlantalyticsException as e:
             self.assertEqual('reset_error_username', str(e))
 
     def test_password_email_reset_mismatched_username(self):
         """
-        Tests the unexpected case where a user uses an email reset, but the username doesn't match the one retrieved
+        Tests the unexpected case where a user uses an email reset,
+        but the username doesn't match the one retrieved
         """
         setup_test_environment()
         client = Client()
@@ -168,7 +187,8 @@ class MainTests(TestCase):
     @patch('cassy.verify_auth_token')
     def test_password_change_with_admin_empty_username(self, cassy_auth):
         """
-        Tests the case where an admin resets someone's password but with an empty or missing username
+        Tests the case where an admin resets someone's password,
+        but with an empty or missing username.
         Mocking the admin authentication.
         """
         setup_test_environment()
@@ -192,7 +212,8 @@ class MainTests(TestCase):
 
     def test_password_change_incorrect_old_pass(self):
         """
-         Tests the case where user is logged in, requests a new password but supplies incorrect old password
+         Tests the case where user is logged in, requests a new password,
+         but supplies incorrect old password.
         """
         setup_test_environment()
         client = Client()
@@ -218,17 +239,18 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         response = client.get(
-            '/password/change'
-            + '?auth_token=' + os.environ.get('LOGIN_SEC_TOKEN')
-            + '&old=badpass'
-            + '&password=newpass'
+            '/password/change' +
+            '?auth_token=' + os.environ.get('LOGIN_SEC_TOKEN') +
+            '&old=badpass' +
+            '&password=newpass'
         )
         self.assertEqual(response.status_code, 405)
 
     @patch('cassy.change_user_password')
     def test_password_change_with_unknown_exception(self, cassy_mock):
         """
-        Tests the case where a user logs in after having gotten a password reset email.
+        Tests the case where a user logs in after
+        receiving a password reset email.
         """
         setup_test_environment()
         client = Client()
@@ -248,13 +270,17 @@ class MainTests(TestCase):
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
         self.assertTrue('unknown' in error)
-        cassy_mock.assert_called_once_with(username, new_password, old_password)
+        cassy_mock.assert_called_once_with(
+            username,
+            new_password,
+            old_password
+        )
         self.assertEqual(response.status_code, 500)
 
     @patch('cassy.change_user_password')
-    def test_password_change_invalid_same_old_and_new(self, cassy_mock):
+    def test_password_change_same_old_and_new(self, cassy_mock):
         """
-         Tests the case where user is logged in, requests a new password
+         Tests the case where user is logged in, requests a new password.
         """
         setup_test_environment()
         client = Client()
@@ -277,9 +303,10 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
     @patch('cassy.change_user_password')
-    def test_password_change_with_mail_token_invalid_same_old_and_new(self, cassy_mock):
+    def test_mail_token_password_change_same_old_and_new(self, cassy_mock):
         """
-        Tests the case where a user logs in after having gotten a password reset email.
+        Tests the case where a user logs in after receiving
+        a password reset email.
         """
         setup_test_environment()
         client = Client()
@@ -303,7 +330,11 @@ class MainTests(TestCase):
 
     @patch('cassy.change_user_password')
     @patch('cassy.verify_auth_token')
-    def test_password_change_with_admin_invalid_same_old_and_new(self, cassy_auth, cassy_mock):
+    def test_admin_password_change_same_old_and_new(
+        self,
+        cassy_auth,
+        cassy_mock
+    ):
         """
         Tests the case where an admin resets someone's password.
         Mocking the admin authentication.

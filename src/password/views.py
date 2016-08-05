@@ -10,6 +10,7 @@
 import json
 import logging
 import uuid
+import os
 
 import cassy
 from django.views.decorators.csrf import csrf_exempt
@@ -157,8 +158,7 @@ def reset(request):
         reset_token = str(uuid.uuid4())
         reset_token_object = {}
         reset_token_object['reset_token'] = reset_token
-
-        reset_url = 'http://localhost/forgot.html?' + urlencode({
+        reset_url = str(os.environ.get('RESET_URL')) + urlencode({
             "id": reset_token,
             "username": username,
         })

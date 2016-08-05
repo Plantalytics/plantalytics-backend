@@ -38,12 +38,13 @@ def get_env_data(node_id, env_variable):
     if env_variable not in ['leafwetness', 'humidity', 'temperature']:
         raise PlantalyticsDataException(ENV_DATA_INVALID)
 
+    env_data_statement = session.prepare(
+        'SELECT ' + env_variable
+        + ' FROM ' + os.environ.get('DB_ENV_TABLE')
+        + ' WHERE nodeid=? LIMIT 1;'
+    )
     try:
-        rows = session.execute(
-            'SELECT ' + env_variable
-            + ' FROM ' + os.environ.get('DB_ENV_TABLE')
-            + ' WHERE nodeid = ' + node + ' LIMIT 1;'
-        )
+        rows = session.execute(env_data_statement, [node_id])
 
         if not rows:
             raise PlantalyticsDataException(ENV_DATA_NOT_FOUND)
@@ -102,17 +103,18 @@ def get_vineyard_coordinates(vineyard_id):
 
     coordinates = []
     session.row_factory = named_tuple_factory
+    vineyard_coordinates_prepare = session.prepare(
+        'SELECT boundaries, center'
+        + ' FROM ' + os.environ.get('DB_VINE_TABLE')
+        + ' WHERE vineid=?;'
+    )
 
     try:
         if vineyard_id == '':
             raise PlantalyticsVineyardException(VINEYARD_NO_ID)
         # Ensures vineyard_id is integer
-        int(vineyard_id)
-        rows = session.execute(
-            'SELECT boundaries, center'
-            + ' FROM ' + os.environ.get('DB_VINE_TABLE')
-            + ' WHERE vineid = ' + vineyard_id + ';'
-        )
+        vineyard_id = int(vineyard_id)
+        rows = session.execute(vineyard_coordinates_prepare, [vineyard_id])
 
         if not rows:
             raise PlantalyticsVineyardException(VINEYARD_ID_NOT_FOUND)
@@ -125,9 +127,10 @@ def get_vineyard_coordinates(vineyard_id):
             coordinates.append(center_point)
 
             for point in rows[0].boundaries:
-                boundary_point = {}
-                boundary_point['lat'] = point[0]
-                boundary_point['lon'] = point[1]
+                boundary_point = {
+                    'lat': point[0],
+                    'lon': point[1]
+                }
                 boundary_points.append(boundary_point)
 
             coordinates.append(boundary_points)
@@ -149,26 +152,28 @@ def get_node_coordinates(vineyard_id):
     coordinates = []
     session.row_factory = named_tuple_factory
 
+    node_coordinate_prepare = session.prepare(
+        'SELECT nodeid, nodelocation'
+        + ' FROM ' + os.environ.get('DB_HW_TABLE')
+        + ' WHERE vineid=?;'
+    )
     try:
         if vineyard_id == '':
             raise PlantalyticsVineyardException(VINEYARD_NO_ID)
-        # Confirms vineyard_id is a string representation of an integer
+        # Confirms vineyard_id is an integer
         # Raises ValueError if not
-        int(vineyard_id)
-        rows = session.execute(
-            'SELECT nodeid, nodelocation'
-            + ' FROM ' + os.environ.get('DB_HW_TABLE')
-            + ' WHERE vineid = ' + vineyard_id + ';'
-        )
+        vineyard_id = int(vineyard_id)
+        rows = session.execute(node_coordinate_prepare, [vineyard_id])
         if not rows:
             raise PlantalyticsVineyardException(VINEYARD_ID_NOT_FOUND)
         else:
             # Process node coordinates for requested vineyard.
             for node in rows:
-                location = {}
-                location['node_id'] = node.nodeid
-                location['lat'] = node.nodelocation[0]
-                location['lon'] = node.nodelocation[1]
+                location = {
+                    'node_id': node.nodeid,
+                    'lat': node.nodelocation[0],
+                    'lon': node.nodelocation[1]
+                }
                 coordinates.append(location)
             return coordinates
     except PlantalyticsException as e:
@@ -185,15 +190,15 @@ def get_user_password(username):
     """
 
     session.row_factory = named_tuple_factory
-
+    get_password_prepare = session.prepare(
+        'SELECT password'
+        + ' FROM ' + os.environ.get('DB_USER_TABLE')
+        + ' WHERE username=?;'
+    )
     try:
         if username == '':
             raise PlantalyticsLoginException(LOGIN_ERROR)
-        rows = session.execute(
-            'SELECT password'
-            + ' FROM ' + os.environ.get('DB_USER_TABLE')
-            + ' WHERE username = \'' + username + '\';'
-        )
+        rows = session.execute(get_password_prepare, [username])
 
         if not rows:
             raise PlantalyticsLoginException(LOGIN_ERROR)
@@ -206,13 +211,13 @@ def get_user_password(username):
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
+
 def get_user_email(username):
     """
     Obtains email for the requested user.
     """
 
-    values = {}
-    values['username'] = username
+    values = {'username': username}
     auth_stmt_get = session.prepare(
         'SELECT email'
         + ' FROM ' + os.environ.get('DB_USER_TABLE')
@@ -244,9 +249,10 @@ def get_user_auth_token(username, password):
     Assuming the username and password have already been validated prior to calling this function.
     """
 
-    values = {}
-    values['username'] = username
-    values['password'] = password
+    values = {
+        'username': username,
+        'password': password
+    }
     auth_stmt_get = session.prepare(
         'SELECT securitytoken'
         + ' FROM ' + os.environ.get('DB_USER_TABLE')
@@ -274,10 +280,11 @@ def set_user_auth_token(username, password, auth_token):
     Assuming username and password have already been validated prior to calling this function.
     """
 
-    values = {}
-    values['username'] = username
-    values['password'] = password
-    values['securitytoken'] = auth_token
+    values = {
+        'username': username,
+        'password': password,
+        'securitytoken': auth_token
+    }
     auth_stmt_set = session.prepare(
         'INSERT INTO '
         + os.environ.get('DB_USER_TABLE')
@@ -295,12 +302,12 @@ def set_user_auth_token(username, password, auth_token):
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
 
+
 def verify_auth_token(auth_token):
     """
     Verifies session authentication token.
     """
-    values = {}
-    values['securitytoken'] = auth_token
+    values = {'securitytoken': auth_token}
 
     auth_stmt_get = session.prepare(
         'SELECT username'
@@ -329,8 +336,7 @@ def change_user_password(username, new_password, old_password):
     Changes current password of the supplied username
     to the supplied password.
     """
-    values = {}
-    values['username'] = username
+    values = {'username': username}
 
     auth_stmt_get = session.prepare(
         'SELECT *'
@@ -346,14 +352,15 @@ def change_user_password(username, new_password, old_password):
             raise PlantalyticsAuthException(RESET_ERROR_USERNAME)
 
         # Insert new row with new password.
-        new_values = {}
-        new_values['username'] = rows[0].username
-        new_values['password'] = new_password
-        new_values['email'] = rows[0].email
-        new_values['securitytoken'] = rows[0].securitytoken
-        new_values['subenddate'] = rows[0].subenddate
-        new_values['userid'] = rows[0].userid
-        new_values['vineyards'] = rows[0].vineyards
+        new_values = {
+            'username': rows[0].username,
+            'password': new_password,
+            'email': rows[0].email,
+            'securitytoken': rows[0].securitytoken,
+            'subenddate': rows[0].subenddate,
+            'userid': rows[0].userid,
+            'vineyards': rows[0].vineyards
+        }
         auth_stmt_set = session.prepare(
             'INSERT INTO '
             + os.environ.get('DB_USER_TABLE')
@@ -364,9 +371,10 @@ def change_user_password(username, new_password, old_password):
         session.execute(new_bound)
 
         # Delete old row with old password.
-        old_values = {}
-        old_values['username'] = username
-        old_values['password'] = old_password
+        old_values = {
+            'username': username,
+            'password': old_password
+        }
         auth_stmt_set = session.prepare(
             'DELETE FROM '
             + os.environ.get('DB_USER_TABLE')

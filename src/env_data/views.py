@@ -53,9 +53,9 @@ def index(request):
         for coordinate in coordinates:
             value = cassy.get_env_data(coordinate['node_id'], env_variable)
             map_data_point = {
-                'latitude':coordinate['lat'],
-                'longitude':coordinate['lon'],
-                env_variable:value
+                'latitude': coordinate['lat'],
+                'longitude': coordinate['lon'],
+                env_variable: value
             }
             map_data.append(map_data_point)
         response['env_data'] = map_data

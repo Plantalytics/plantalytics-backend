@@ -47,7 +47,7 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 405)
 
     @patch('cassy.get_vineyard_coordinates')
-    def test_response_vineyard_metadata_exception(self, vineyard_mock):
+    def test_response_vineyard_unknown_exception(self, vineyard_mock):
         """
         Tests vineyard endpoint when
         cassy.get_vineyard_coordinates throws Exception
@@ -128,7 +128,7 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
     @patch('cassy.verify_auth_token')
-    def test_response_vineyard_metadata_exception(self, vineyard_mock):
+    def test_response_vineyard_auth_unknown_exception(self, vineyard_mock):
         """
         Tests vineyard endpoint when
         cassy.verify_auth_token throws Exception

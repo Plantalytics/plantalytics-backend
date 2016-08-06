@@ -36,7 +36,7 @@ def get_env_data(node_id, env_variable):
     supported_env_variables = [
         'leafwetness',
         'humidity',
-        'temperature'
+        'temperature',
     ]
     if env_variable not in supported_env_variables:
         raise PlantalyticsDataException(ENV_DATA_INVALID)
@@ -44,7 +44,7 @@ def get_env_data(node_id, env_variable):
     session.row_factory = named_tuple_factory
     table = str(os.environ.get('DB_ENV_TABLE'))
     parameters = {
-        'nodeid': int(node_id)
+        'nodeid': int(node_id),
     }
     query = (
         'SELECT {} FROM {} WHERE nodeid=? LIMIT 1;'
@@ -133,7 +133,7 @@ def get_vineyard_coordinates(vineyard_id):
         # Ensures vineyard_id is integer
         vineyard_id = int(vineyard_id)
         parameters = {
-            'vineid': vineyard_id
+            'vineid': vineyard_id,
         }
         rows = session.execute(
             prepared_statement,
@@ -147,14 +147,14 @@ def get_vineyard_coordinates(vineyard_id):
 
         center_point = {
             'lat': rows[0].center[0],
-            'lon': rows[0].center[1]
+            'lon': rows[0].center[1],
         }
         coordinates.append(center_point)
 
         for point in rows[0].boundaries:
             boundary_point = {
                 'lat': point[0],
-                'lon': point[1]
+                'lon': point[1],
             }
             boundary_points.append(boundary_point)
         coordinates.append(boundary_points)
@@ -191,7 +191,7 @@ def get_node_coordinates(vineyard_id):
         # Raises ValueError if not
         vineyard_id = int(vineyard_id)
         parameters = {
-            'vineid': vineyard_id
+            'vineid': vineyard_id,
         }
         rows = session.execute(
             prepared_statement,
@@ -206,7 +206,7 @@ def get_node_coordinates(vineyard_id):
             location = {
                 'node_id': node.nodeid,
                 'lat': node.nodelocation[0],
-                'lon': node.nodelocation[1]
+                'lon': node.nodelocation[1],
             }
             coordinates.append(location)
         return coordinates
@@ -226,7 +226,7 @@ def get_user_password(username):
     session.row_factory = named_tuple_factory
     table = str(os.environ.get('DB_USER_TABLE'))
     parameters = {
-        'username': username
+        'username': username,
     }
     query = (
         'SELECT password FROM {} WHERE username=?;'
@@ -262,7 +262,7 @@ def get_user_email(username):
     session.row_factory = named_tuple_factory
     table = str(os.environ.get('DB_USER_TABLE'))
     parameters = {
-        'username': username
+        'username': username,
     }
     query = (
         'SELECT email FROM {} WHERE username=?'
@@ -301,7 +301,7 @@ def get_user_auth_token(username, password):
     table = str(os.environ.get('DB_USER_TABLE'))
     parameters = {
         'username': username,
-        'password': password
+        'password': password,
     }
     query = (
         'SELECT securitytoken FROM {} WHERE username=? AND password=?;'
@@ -338,7 +338,7 @@ def set_user_auth_token(username, password, auth_token):
     parameters = {
         'username': username,
         'password': password,
-        'securitytoken': auth_token
+        'securitytoken': auth_token,
     }
     query = (
         'INSERT INTO {} (username, password, securitytoken) VALUES(?, ?, ?);'
@@ -367,7 +367,7 @@ def verify_auth_token(auth_token):
     session.row_factory = named_tuple_factory
     table = str(os.environ.get('DB_USER_TABLE'))
     parameters = {
-        'securitytoken': auth_token
+        'securitytoken': auth_token,
     }
     query = (
         'SELECT username FROM {} WHERE securitytoken=? ALLOW FILTERING;'
@@ -401,7 +401,7 @@ def change_user_password(username, new_password, old_password):
     session.row_factory = named_tuple_factory
     table = str(os.environ.get('DB_USER_TABLE'))
     parameters = {
-        'username': username
+        'username': username,
     }
     query = (
         'SELECT * FROM {} WHERE username=?;'
@@ -427,7 +427,7 @@ def change_user_password(username, new_password, old_password):
             'securitytoken': rows[0].securitytoken,
             'subenddate': rows[0].subenddate,
             'userid': rows[0].userid,
-            'vineyards': rows[0].vineyards
+            'vineyards': rows[0].vineyards,
         }
         query = (
             'INSERT INTO {} '
@@ -447,7 +447,7 @@ def change_user_password(username, new_password, old_password):
         # Delete old row with old password.
         old_row_values = {
             'username': username,
-            'password': old_password
+            'password': old_password,
         }
         query = (
             'DELETE FROM {} WHERE username=? AND password=?;'

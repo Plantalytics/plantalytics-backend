@@ -399,6 +399,28 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    @patch('cassy.get_user_email')
+    def test_password_reset_unknown_exception(self, cassy_mock):
+        """
+        Tests the password reset endpoint when
+        cassy.get_vineyard_coordinates throws Exception.
+        """
+        setup_test_environment()
+        client = Client()
+        cassy_mock.side_effect = Exception('Test exception')
+        username = 'welches'
+        body = {
+            'username': username,
+        }
+        response = client.post(
+            '/password/reset',
+            data=json.dumps(body),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('email_error' in error)
+        self.assertEqual(response.status_code, 403)
+
     def test_password_reset_invalid_method(self):
         """
         Tests the password reset endpoint with unsupported HTTP method.

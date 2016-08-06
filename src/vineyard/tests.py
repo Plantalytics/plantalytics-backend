@@ -28,7 +28,7 @@ class MainTests(TestCase):
         client = Client()
         body = {
             'vineyard_id': '0',
-            'auth_token': os.environ.get('LOGIN_SEC_TOKEN')
+            'auth_token': os.environ.get('LOGIN_SEC_TOKEN'),
         }
         response = client.post(
             '/vineyard',
@@ -57,7 +57,7 @@ class MainTests(TestCase):
         vineyard_mock.side_effect = Exception('Test exception')
         body = {
             'vineyard_id': '0',
-            'auth_token': os.environ.get('LOGIN_SEC_TOKEN')
+            'auth_token': os.environ.get('LOGIN_SEC_TOKEN'),
         }
         response = client.post(
             '/vineyard',
@@ -77,7 +77,7 @@ class MainTests(TestCase):
         client = Client()
         body = {
             'vineyard_id': '-1',
-            'auth_token': os.environ.get('LOGIN_SEC_TOKEN')
+            'auth_token': os.environ.get('LOGIN_SEC_TOKEN'),
         }
         response = client.post(
             '/vineyard',
@@ -96,7 +96,7 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         body = {
-            'auth_token': os.environ.get('LOGIN_SEC_TOKEN')
+            'auth_token': os.environ.get('LOGIN_SEC_TOKEN'),
         }
         response = client.post(
             '/vineyard',
@@ -116,7 +116,7 @@ class MainTests(TestCase):
         client = Client()
         body = {
             'vineyard_id': 'abc',
-            'auth_token': os.environ.get('LOGIN_SEC_TOKEN')
+            'auth_token': os.environ.get('LOGIN_SEC_TOKEN'),
         }
         response = client.post(
             '/vineyard',
@@ -138,7 +138,7 @@ class MainTests(TestCase):
         vineyard_mock.side_effect = Exception('Test exception')
         body = {
             'vineyard_id': '0',
-            'auth_token': 'chestercheetah'
+            'auth_token': 'chestercheetah',
         }
         response = client.post(
             '/vineyard',
@@ -158,7 +158,7 @@ class MainTests(TestCase):
         client = Client()
         body = {
             'vineyard_id': '0',
-            'auth_token': 'chestercheetah'
+            'auth_token': 'chestercheetah',
         }
         response = client.post(
             '/vineyard',

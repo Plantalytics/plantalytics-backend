@@ -75,7 +75,7 @@ def index(request):
 
         response = {
             'center': coordinates[0],
-            'boundary': coordinates[1]
+            'boundary': coordinates[1],
         }
         return HttpResponse(
             json.dumps(response),

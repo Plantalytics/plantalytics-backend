@@ -44,22 +44,27 @@ Once the environment is on, install the required dependencies:
 
 To run tests locally use the following:
 ```
-    python src/manage.py test tests
+cd src
+python manage.py test
 ```
 
 Next, run the following command:
 ```
-    python src/manage.py runserver
+    python manage.py runserver
 ```
 Once the development server is up and running, launch a web browser
 and go to the following URL:
 
-* http://localhost:8000/tests/
+* http://localhost:8000/health_check
 
-If successful, you should see the following message:
+If successful, you should see the following response:
 
-* *Hello , Plantalytics World!! Welcome to the backend, where things ain't pretty, but they get stuff DONE!*
+```
+{
+      'isAlive': true,
+}
+```
 
-**Did you see it? Congrats!! You're a *backend dev* now! Let's dance.**
+**Did you see it? Congrats!! You're *awesome* now! Let's dance.**
 
 <img src="http://cdn-assets.insomniac.com/images/news/GIF%20Dance%20Party.gif">

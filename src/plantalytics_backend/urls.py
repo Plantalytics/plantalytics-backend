@@ -33,4 +33,5 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^login', include('login.urls')),
     url(r'^password/', include('password.urls')),
+    url(r'^health_check', include('health_check.urls')),
 ]

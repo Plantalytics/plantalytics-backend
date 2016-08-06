@@ -30,66 +30,71 @@ def index(request):
     """
     Access database to respond with requested environmental mapping data.
     """
+
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
 
     request_data = json.loads(request.body.decode('utf-8'))
-    auth_token = request_data.get('auth_token', '')
-    vineyard_id = str(request_data.get('vineyard_id', ''))
-    env_variable = request_data.get('env_variable', '')
-    response = {}
-    map_data = []
+    auth_token = str(request_data.get('auth_token', ''))
+    vineyard_id = request_data.get('vineyard_id', '')
+    env_variable = str(request_data.get('env_variable', ''))
 
     try:
         message = (
-            'Validating auth token token ' +
-            'for vineyard id {}.'.format(vineyard_id)
-        )
+            'Validating auth token token for vineyard id {}.'
+        ).format(str(vineyard_id))
         logger.info(message)
         cassy.verify_auth_token(auth_token)
     except Exception as e:
         message = (
-            'Error occurred while auth token ' +
-            'for vineyard id {}.'.format(vineyard_id)
-        )
-        logger.exception(message + '\n' + str(e))
+            'Error occurred while auth token for vineyard id {}. {}'
+        ).format(str(vineyard_id), str(e))
+        logger.exception(message)
         return HttpResponseForbidden()
 
     try:
-        logger.info('Fetching ' + env_variable + ' data.')
+        message = (
+            'Fetching {} data.'
+        ).format(env_variable)
+        logger.info(message)
         coordinates = cassy.get_node_coordinates(vineyard_id)
 
         # Build data structure to return as JSON response content.
+        map_data = []
         for coordinate in coordinates:
-            value = cassy.get_env_data(coordinate['node_id'], env_variable)
+            value = cassy.get_env_data(
+                coordinate['node_id'],
+                env_variable
+            )
             map_data_point = {
                 'latitude': coordinate['lat'],
                 'longitude': coordinate['lon'],
-                env_variable: value
+                env_variable: value,
             }
             map_data.append(map_data_point)
-        response['env_data'] = map_data
+        response = {
+            'env_data': map_data,
+        }
 
-        logger.info(
-            'Successfully fetched ' + env_variable +
-            ' data for vineyard ' + vineyard_id + '.'
-        )
+        message = (
+            'Successfully fetched {} data for vineyard id {}.'
+        ).format(env_variable, str(vineyard_id))
+        logger.info(message)
         return HttpResponse(
             json.dumps(response),
             content_type='application/json'
         )
     except PlantalyticsException as e:
         message = (
-            'Invalid vineyard_id or env_variable. Error code: ' + str(e)
-        )
+            'Invalid vineyard_id or env_variable. Error code: {}'
+        ).format(str(e))
         logger.warn(message)
         error = custom_error(str(e))
         return HttpResponseBadRequest(error, content_type='application/json')
     except Exception as e:
-        logger.exception(
-            'Error occurred while fetching ' + env_variable +
-            ' data for vineyard ' + vineyard_id + '.' +
-            str(e)
-        )
+        message = (
+            'Error occurred while fetching {} data for vineyard id {}. {}'
+        ).format(env_variable, str(vineyard_id), str(e))
+        logger.exception(message)
         error = custom_error(ENV_DATA_UNKNOWN, str(e))
         return HttpResponseBadRequest(error, content_type='application/json')

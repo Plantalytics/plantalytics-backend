@@ -17,7 +17,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import (
     HttpResponse,
     HttpResponseBadRequest,
-    HttpResponseForbidden
+    HttpResponseForbidden,
+    HttpResponseNotAllowed
 )
 
 import cassy
@@ -31,8 +32,9 @@ def index(request):
     Receive data from hub to insert into database.
     """
 
-    if request.method not in ('POST', 'PUT'):
-        return HttpResponseBadRequest()
+    allowed_methods = ['POST', 'PUT']
+    if request.method not in (allowed_methods):
+        return HttpResponseNotAllowed(allowed_methods)
 
     data = json.loads(request.body.decode("utf-8"))
     hub_key = str(data.get('key', ''))
@@ -45,6 +47,11 @@ def index(request):
         logger.info(message)
         if hub_key != os.environ.get('HUB_KEY'):
             raise PlantalyticsHubException(HUB_KEY_INVALID)
+
+        logger.info('Inserting hub data.')
+        cassy.store_env_data(data)
+        logger.info('Successfully inserted hub data.')
+        return HttpResponse()
     except PlantalyticsException as e:
         message = (
             'Error attempting to process hub data. Error code: {}'
@@ -54,19 +61,7 @@ def index(request):
         return HttpResponseForbidden(error, content_type='application/json')
     except Exception as e:
         message = (
-            'Error occurred while verifying hub key for hub id \'{}\'. {}'
-        ).foramt(hub_id, str(e))
-        logger.exception(message)
-        return HttpResponseForbidden()
-
-    try:
-        logger.info('Inserting hub data.')
-        cassy.store_env_data(data)
-        logger.info('Successfully inserted hub data.')
-        return HttpResponse()
-    except Exception as e:
-        message = (
-            'Error occurred while inserting hub data: {}'
-        ).format(str(e))
+            'Error occurred while inserting hub data for hub id \'{}\'. {}'
+        ).format(hub_id, str(e))
         logger.exception(message)
         return HttpResponseBadRequest()

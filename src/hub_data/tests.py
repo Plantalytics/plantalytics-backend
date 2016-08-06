@@ -83,6 +83,9 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_response_hub_data_invalid_key(self):
+        """
+        Tests case when hub submits data with invalid key.
+        """
         setup_test_environment()
         client = Client()
         payload = {
@@ -112,3 +115,12 @@ class MainTests(TestCase):
         error = json.loads(response.content.decode('utf-8'))['errors']
         self.assertTrue('env_key_invalid' in error)
         self.assertEqual(response.status_code, 403)
+
+    def test_hub_data_invalid_method(self):
+        """
+        Tests the hub data endpoint with unsupported HTTP method.
+        """
+        setup_test_environment()
+        client = Client()
+        response = client.get('/hub_data')
+        self.assertEqual(response.status_code, 405)

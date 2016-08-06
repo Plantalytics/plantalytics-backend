@@ -41,7 +41,7 @@ class MainTests(TestCase):
         body = {
             'auth_token': os.environ.get('LOGIN_SEC_TOKEN'),
             'old': os.environ.get('LOGIN_PASSWORD'),
-            'password': new_password
+            'password': new_password,
         }
         response = client.post(
             '/password/change',
@@ -74,7 +74,7 @@ class MainTests(TestCase):
         body = {
             'auth_token': auth_token,
             'username': username,
-            'password': new_password
+            'password': new_password,
         }
         response = client.post(
             '/password/change',
@@ -97,7 +97,7 @@ class MainTests(TestCase):
         body = {
             'token': os.environ.get('LOGIN_SEC_TOKEN'),
             'username': username,
-            'password': new_password
+            'password': new_password,
         }
         response = client.post(
             '/password/change',
@@ -120,7 +120,7 @@ class MainTests(TestCase):
         """
         setup_test_environment()
         client = Client()
-        cassy_auth.return_value = 'admin'
+        cassy_auth.return_value = str(os.environ.get('ADMIN'))
         username = 'mr.forgetful'
         old_password = 'testme'
         new_password = 'newpass'
@@ -128,7 +128,7 @@ class MainTests(TestCase):
         body = {
             'auth_token': auth_token,
             'username': username,
-            'password': new_password
+            'password': new_password,
         }
         response = client.post(
             '/password/change',
@@ -173,7 +173,7 @@ class MainTests(TestCase):
         body = {
             'token': os.environ.get('LOGIN_SEC_TOKEN'),
             'username': username,
-            'password': new_password
+            'password': new_password,
         }
         response = client.post(
             '/password/change',
@@ -193,12 +193,12 @@ class MainTests(TestCase):
         """
         setup_test_environment()
         client = Client()
-        cassy_auth.return_value = 'admin'
+        cassy_auth.return_value = str(os.environ.get('ADMIN'))
         new_password = 'newpass'
         auth_token = 'token'
         body = {
             'auth_token': auth_token,
-            'password': new_password
+            'password': new_password,
         }
         response = client.post(
             '/password/change',
@@ -221,7 +221,7 @@ class MainTests(TestCase):
         body = {
             'auth_token': os.environ.get('LOGIN_SEC_TOKEN'),
             'old': 'badpass',
-            'password': new_password
+            'password': new_password,
         }
         response = client.post(
             '/password/change',
@@ -238,12 +238,10 @@ class MainTests(TestCase):
         """
         setup_test_environment()
         client = Client()
-        response = client.get(
-            '/password/change' +
-            '?auth_token=' + os.environ.get('LOGIN_SEC_TOKEN') +
-            '&old=badpass' +
-            '&password=newpass'
-        )
+        url = (
+            '/password/change?auth_token={}&old=badpass&password=newpass'
+        ).format(str(os.environ.get('LOGIN_SEC_TOKEN')))
+        response = client.get(url)
         self.assertEqual(response.status_code, 405)
 
     @patch('cassy.change_user_password')
@@ -261,7 +259,7 @@ class MainTests(TestCase):
         body = {
             'token': os.environ.get('LOGIN_SEC_TOKEN'),
             'username': username,
-            'password': new_password
+            'password': new_password,
         }
         response = client.post(
             '/password/change',
@@ -290,7 +288,7 @@ class MainTests(TestCase):
         body = {
             'auth_token': os.environ.get('LOGIN_SEC_TOKEN'),
             'old': os.environ.get('LOGIN_PASSWORD'),
-            'password': new_password
+            'password': new_password,
         }
         response = client.post(
             '/password/change',
@@ -316,7 +314,7 @@ class MainTests(TestCase):
         body = {
             'token': os.environ.get('LOGIN_SEC_TOKEN'),
             'username': username,
-            'password': new_password
+            'password': new_password,
         }
         response = client.post(
             '/password/change',
@@ -341,7 +339,7 @@ class MainTests(TestCase):
         """
         setup_test_environment()
         client = Client()
-        cassy_auth.return_value = 'admin'
+        cassy_auth.return_value = str(os.environ.get('ADMIN'))
         username = 'mr.forgetful'
         old_password = 'testme'
         new_password = 'testme'
@@ -349,7 +347,7 @@ class MainTests(TestCase):
         body = {
             'auth_token': auth_token,
             'username': username,
-            'password': new_password
+            'password': new_password,
         }
         response = client.post(
             '/password/change',
@@ -384,33 +382,6 @@ class MainTests(TestCase):
         self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
-    @patch('cassy.get_user_email')
-    def test_password_reset_invalid_reset_token(self, cassy_mock):
-        """
-        Tests the password reset endpoint with invalid reset token.
-        Uses a DB mock.
-        """
-        setup_test_environment()
-        client = Client()
-        username = 'welches'
-        body = {
-            'username': 'welches',
-        }
-        reset_response = client.post(
-            '/password/reset',
-            data=json.dumps(body),
-            content_type='application/json'
-        )
-        invalid_reset_token = 'IveGotAGoldenTicket'
-        final_response = client.get(
-            '/password/password_reset?id=' +
-            invalid_reset_token
-        )
-        error = json.loads(final_response.content.decode('utf-8'))['errors']
-        cassy_mock.assert_called_once_with(username)
-        self.assertTrue('auth_error_not_found' in error)
-        self.assertEqual(final_response.status_code, 403)
-
     def test_password_reset_valid_username(self):
         """
         Tests the password reset endpoint with an email generated.
@@ -437,42 +408,6 @@ class MainTests(TestCase):
         response = client.get('/password/reset')
         self.assertEqual(response.status_code, 405)
 
-    def test_password_reset_link_invalid_method(self):
-        """
-        Tests the password reset endpoint with unsupported HTTP method.
-        """
-        setup_test_environment()
-        client = Client()
-        response = client.post('/password/password_reset')
-        self.assertEqual(response.status_code, 405)
-
-    def test_password_reset_link_invalid_reset_token(self):
-        """
-        Tests the password reset endpoint with invalid reset token.
-        """
-        setup_test_environment()
-        client = Client()
-        invalid_reset_token = 'IveGotAGoldenTicket'
-        final_response = client.get(
-            '/password/password_reset?id=' +
-            invalid_reset_token
-        )
-        error = json.loads(final_response.content.decode('utf-8'))['errors']
-        self.assertTrue('auth_error_not_found' in error)
-        self.assertEqual(final_response.status_code, 403)
-
-    def test_password_reset_link_valid_reset_token(self):
-        """
-        Tests the password reset endpoint with valid reset token.
-        """
-        setup_test_environment()
-        client = Client()
-        final_response = client.get(
-            '/password/password_reset?id=' +
-            os.environ.get('LOGIN_SEC_TOKEN')
-        )
-        self.assertEqual(final_response.status_code, 200)
-
     def test_set_auth_token_with_no_token(self):
         """
         Tests the case where a user's auth token is being set and no
@@ -483,7 +418,11 @@ class MainTests(TestCase):
         password = 'TheCheesiest'
         auth_token = ''
         try:
-            rows = cassy.set_user_auth_token(username, password, auth_token)
+            rows = cassy.set_user_auth_token(
+               username,
+               password,
+               auth_token
+            )
         except PlantalyticsException as e:
             self.assertEqual('auth_error_no_token', str(e))
 
@@ -496,7 +435,10 @@ class MainTests(TestCase):
         username = 'ChesterCheetah'
         password = 'TheCheesiest'
         try:
-            rows = cassy.get_user_auth_token(username, password)
+            rows = cassy.get_user_auth_token(
+                username,
+                password
+            )
         except PlantalyticsException as e:
             self.assertEqual('auth_error_not_found', str(e))
 

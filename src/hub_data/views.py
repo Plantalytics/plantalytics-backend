@@ -11,6 +11,8 @@ import os
 import json
 import logging
 
+from common.exceptions import *
+from common.errors import *
 from django.views.decorators.csrf import csrf_exempt
 from django.http import (
     HttpResponse,
@@ -28,25 +30,33 @@ def index(request):
     """
     Receive data from hub to insert into database.
     """
+
     if request.method not in ('POST', 'PUT'):
         return HttpResponseBadRequest()
 
     data = json.loads(request.body.decode("utf-8"))
-    hub_key = data.get('key', '')
+    hub_key = str(data.get('key', ''))
+    hub_id = str(data.get('hub_id', ''))
 
     try:
-        logger.info(
-            'Validating key for hub id \'' +
-            str(data['hub_id']) + '\'.'
-        )
+        message = (
+            'Validating key for hub id \'{}\'.'
+        ).format(hub_id)
+        logger.info(message)
         if hub_key != os.environ.get('HUB_KEY'):
-            raise Exception('Invalid Hub Key')
+            raise PlantalyticsHubException(HUB_KEY_INVALID)
+    except PlantalyticsException as e:
+        message = (
+            'Error attempting to process hub data. Error code: {}'
+        ).format(str(e))
+        logger.warn(message)
+        error = custom_error(str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
     except Exception as e:
-        logger.exception(
-            'Error occurred while verifying hub key for ' +
-            'hub id \'' + str(data['hub_id']) + ' \'.' +
-            str(e)
-        )
+        message = (
+            'Error occurred while verifying hub key for hub id \'{}\'. {}'
+        ).foramt(hub_id, str(e))
+        logger.exception(message)
         return HttpResponseForbidden()
 
     try:
@@ -55,8 +65,8 @@ def index(request):
         logger.info('Successfully inserted hub data.')
         return HttpResponse()
     except Exception as e:
-        logger.exception(
-            'Error occurred while inserting hub data.' +
-            str(e)
-        )
+        message = (
+            'Error occurred while inserting hub data: {}'
+        ).format(str(e))
+        logger.exception(message)
         return HttpResponseBadRequest()

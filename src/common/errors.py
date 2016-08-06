@@ -18,6 +18,7 @@ ENV_DATA_INVALID = 'env_data_invalid'
 ENV_DATA_NOT_FOUND = 'env_data_not_found'
 ENV_DATA_UNKNOWN = 'env_data_unknown'
 EMAIL_ERROR = 'email_error'
+HUB_KEY_INVALID = 'env_key_invalid'
 LOGIN_ERROR = 'login_error'
 LOGIN_UNKNOWN = 'login_unknown'
 RESET_ERROR = 'reset_error'
@@ -43,6 +44,7 @@ responses = {
         'gathering the requested data.'
     ),
     EMAIL_ERROR: 'Email Error: Invalid username.',
+    HUB_KEY_INVALID: 'Hub key invalid.',
     LOGIN_ERROR: 'Login Error: Invalid username or password.',
     LOGIN_UNKNOWN: 'An unexpected error occurred during login.',
     RESET_ERROR: 'An error occurred while resetting your password.',
@@ -55,7 +57,7 @@ responses = {
     VINEYARD_UNKNOWN: (
         'An unexpected error occurred while fetching the vineyard ID.'
     ),
-    UNKNOWN: 'An unknown error occurred.'
+    UNKNOWN: 'An unknown error occurred.',
 }
 
 

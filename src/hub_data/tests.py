@@ -11,11 +11,9 @@ import os
 import json
 import time
 
+from common.exceptions import *
 from django.test import TestCase, Client
 from django.test.utils import setup_test_environment
-from unittest.mock import patch
-
-import cassy
 
 
 class MainTests(TestCase):
@@ -24,27 +22,30 @@ class MainTests(TestCase):
     """
 
     def test_response_valid_hub_data(self):
+        """
+        Tests case when hub submits data with valid data.
+        """
         setup_test_environment()
         client = Client()
-
-        payload = {}
-        payload['key'] = os.environ.get('HUB_KEY')
-        payload['vine_id'] = 0
-        payload['hub_id'] = 0
+        payload = {
+            'key': str(os.environ.get('HUB_KEY')),
+            'vine_id': 0,
+            'hub_id': 0,
+        }
         hub_data = []
-        i = 0
-        while i <= 2:
-            data_point = {}
-            data_point['node_id'] = i
-            data_point['temperature'] = 12345.00
-            data_point['humidity'] = 12345.00
-            data_point['leafwetness'] = 12345.00
-            data_point['data_sent'] = int(time.time()*1000)
+        num_of_nodes = 0
+        while num_of_nodes <= 2:
+            data_point = {
+                'node_id': num_of_nodes,
+                'temperature': 12345.00,
+                'humidity': 12345.00,
+                'leafwetness': 12345.00,
+                'data_sent': int(time.time()*1000),
+            }
             hub_data.append(data_point)
-            i = i + 1
+            num_of_nodes += 1
         payload['hub_data'] = hub_data
         payload['batch_sent'] = int(time.time()*1000)
-
         response = client.post(
             '/hub_data',
             data=json.dumps(payload),
@@ -52,25 +53,28 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    def test_response_invalid_hub_data(self):
+    def test_response_missing_hub_data(self):
+        """
+        Tests case when hub submits data with missing data.
+        """
         setup_test_environment()
         client = Client()
-
-        payload = {}
-        payload['key'] = os.environ.get('HUB_KEY')
-        payload['vine_id'] = 0
-        payload['hub_id'] = 0
+        payload = {
+            'key': str(os.environ.get('HUB_KEY')),
+            'vine_id': 0,
+            'hub_id': 0,
+        }
         hub_data = []
-        i = 0
-        while i <= 2:
-            data_point = {}
-            data_point['node_id'] = i
-            data_point['data_sent'] = int(time.time()*1000)
+        num_of_nodes = 0
+        while num_of_nodes <= 2:
+            data_point = {
+                'node_id': num_of_nodes,
+                'data_sent': int(time.time()*1000),
+            }
             hub_data.append(data_point)
-            i = i + 1
+            num_of_nodes += 1
         payload['hub_data'] = hub_data
         payload['batch_sent'] = int(time.time()*1000)
-
         response = client.post(
             '/hub_data',
             data=json.dumps(payload),
@@ -81,28 +85,30 @@ class MainTests(TestCase):
     def test_response_hub_data_invalid_key(self):
         setup_test_environment()
         client = Client()
-
-        payload = {}
-        payload['key'] = '12345'
-        payload['vine_id'] = 0
-        payload['hub_id'] = 0
+        payload = {
+            'key': '12345',
+            'vine_id': 0,
+            'hub_id': 0,
+        }
         hub_data = []
-        i = 0
-        while i <= 2:
-            data_point = {}
-            data_point['node_id'] = i
-            data_point['temperature'] = 12345.00
-            data_point['humidity'] = 12345.00
-            data_point['leafwetness'] = 12345.00
-            data_point['data_sent'] = int(time.time()*1000)
+        num_of_nodes = 0
+        while num_of_nodes <= 2:
+            data_point = {
+                'node_id': num_of_nodes,
+                'temperature': 12345.00,
+                'humidity': 12345.00,
+                'leafwetness': 12345.00,
+                'data_sent': int(time.time()*1000),
+            }
             hub_data.append(data_point)
-            i = i + 1
+            num_of_nodes += 1
         payload['hub_data'] = hub_data
         payload['batch_sent'] = int(time.time()*1000)
-
         response = client.post(
             '/hub_data',
             data=json.dumps(payload),
             content_type='application/json'
         )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('env_key_invalid' in error)
         self.assertEqual(response.status_code, 403)

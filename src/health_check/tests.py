@@ -11,7 +11,6 @@ import json
 
 from django.test import TestCase, Client
 from django.test.utils import setup_test_environment
-from django.http.response import HttpResponseRedirect
 
 
 class MainTests(TestCase):

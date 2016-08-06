@@ -9,13 +9,10 @@
 
 import os
 import json
-import time
 
 from django.test import TestCase, Client
 from django.test.utils import setup_test_environment
 from unittest.mock import patch
-
-import cassy
 
 
 class MainTests(TestCase):
@@ -24,6 +21,9 @@ class MainTests(TestCase):
     """
 
     def test_response_vineyard_metadata(self):
+        """
+        Tests the vineyard endpoint with valid vineyard id and auth token.
+        """
         setup_test_environment()
         client = Client()
         body = {
@@ -69,6 +69,10 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_response_vinemeta_invalid_vineyard(self):
+        """
+        Tests the vineyard endpoint with invalid vineyard id
+        and valid  token.
+        """
         setup_test_environment()
         client = Client()
         body = {
@@ -85,6 +89,10 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_response_vinemeta_vineyard_missing(self):
+        """
+        Tests the vineyard endpoint with valid auth token
+        and missing vineyard id.
+        """
         setup_test_environment()
         client = Client()
         body = {
@@ -100,6 +108,10 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_response_vinemeta_invalid_vineyard_non_integer(self):
+        """
+        Tests the vineyard endpoint with valid auth token
+        and invalid vineyard id (invalid type - non-integer).
+        """
         setup_test_environment()
         client = Client()
         body = {
@@ -116,6 +128,10 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_response_vineyard_metadata_invalid_token(self):
+        """
+        Tests the vineyard endpoint with valid vineyard id
+        and invalid auth token.
+        """
         setup_test_environment()
         client = Client()
         body = {

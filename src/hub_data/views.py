@@ -51,7 +51,7 @@ def index(request):
 
     try:
         logger.info('Inserting hub data.')
-        cassy.post_env_data(data)
+        cassy.store_env_data(data)
         logger.info('Successfully inserted hub data.')
         return HttpResponse()
     except Exception as e:

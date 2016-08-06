@@ -9,7 +9,6 @@
 
 import os
 import json
-import time
 
 from django.test import TestCase, Client
 from django.test.utils import setup_test_environment
@@ -24,11 +23,16 @@ class MainTests(TestCase):
     """
 
     def test_response_valid_login(self):
+        """
+         Tests the case where user logs in with
+         a valid username and password.
+        """
         setup_test_environment()
         client = Client()
-        payload = {}
-        payload['username'] = os.environ.get('LOGIN_USERNAME')
-        payload['password'] = os.environ.get('LOGIN_PASSWORD')
+        payload = {
+            'username': str(os.environ.get('LOGIN_USERNAME')),
+            'password': str(os.environ.get('LOGIN_PASSWORD')),
+        }
         response = client.post(
             '/login',
             data=json.dumps(payload),
@@ -37,11 +41,15 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_response_invalid_username(self):
+        """
+         Tests the case where user logs in with an invalid username.
+        """
         setup_test_environment()
         client = Client()
-        payload = {}
-        payload['username'] = 'mrawesome'
-        payload['password'] = os.environ.get('LOGIN_PASSWORD')
+        payload = {
+            'username': 'mrawesome',
+            'password': str(os.environ.get('LOGIN_PASSWORD')),
+        }
         response = client.post(
             '/login',
             data=json.dumps(payload),
@@ -52,10 +60,14 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_response_username_missing(self):
+        """
+         Tests the case where user logs in without a username.
+        """
         setup_test_environment()
         client = Client()
-        payload = {}
-        payload['password'] = os.environ.get('LOGIN_PASSWORD')
+        payload = {
+            'password': str(os.environ.get('LOGIN_PASSWORD')),
+        }
         response = client.post(
             '/login',
             data=json.dumps(payload),
@@ -64,11 +76,16 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_response_invalid_password(self):
+        """
+         Tests the case where user logs in with a valid username
+         and an invalid password.
+        """
         setup_test_environment()
         client = Client()
-        payload = {}
-        payload['username'] = os.environ.get('LOGIN_USERNAME')
-        payload['password'] = 'notcorrect'
+        payload = {
+            'username': str(os.environ.get('LOGIN_USERNAME')),
+            'password': 'notcorrect',
+        }
         response = client.post(
             '/login',
             data=json.dumps(payload),
@@ -79,10 +96,14 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_response_password_missing(self):
+        """
+         Tests the case where user logs in with a missing password.
+        """
         setup_test_environment()
         client = Client()
-        payload = {}
-        payload['username'] = os.environ.get('LOGIN_USERNAME')
+        payload = {
+            'username': str(os.environ.get('LOGIN_USERNAME')),
+        }
         response = client.post(
             '/login',
             data=json.dumps(payload),
@@ -94,20 +115,16 @@ class MainTests(TestCase):
 
     @patch('cassy.get_user_password')
     def test_login_get_user_password_exception(self, password_mock):
-        '''
+        """
         Tests the login endpoint when get_user_password throws Exception
-        Args:
-            mock_requests:
-
-        Returns:
-
-        '''
+        """
         setup_test_environment()
         client = Client()
         password_mock.side_effect = Exception('Test exception')
-        payload = {}
-        payload['username'] = os.environ.get('LOGIN_USERNAME')
-        payload['password'] = os.environ.get('LOGIN_PASSWORD')
+        payload = {
+            'username': str(os.environ.get('LOGIN_USERNAME')),
+            'password': str(os.environ.get('LOGIN_PASSWORD')),
+        }
         response = client.post(
             '/login',
             data=json.dumps(payload),
@@ -118,6 +135,9 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_get_auth_token(self):
+        """
+        Tests the retrieving an auth token from the database.
+        """
         setup_test_environment()
         rows = cassy.get_user_auth_token(
             os.environ.get('LOGIN_USERNAME'),
@@ -129,6 +149,9 @@ class MainTests(TestCase):
         self.assertEqual(retrieved, True)
 
     def test_response_store_auth_token(self):
+        """
+        Tests the storing an auth token in the database.
+        """
         setup_test_environment()
         result = cassy.set_user_auth_token(
             os.environ.get('LOGIN_USERNAME'),

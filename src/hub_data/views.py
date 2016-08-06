@@ -28,6 +28,8 @@ def index(request):
     """
     Receive data from hub to insert into database.
     """
+    if request.method not in ('POST', 'PUT'):
+        return HttpResponseBadRequest()
 
     data = json.loads(request.body.decode("utf-8"))
     hub_key = data.get('key', '')

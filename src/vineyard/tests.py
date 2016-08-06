@@ -127,6 +127,28 @@ class MainTests(TestCase):
         self.assertTrue('vineyard_bad_id' in error)
         self.assertEqual(response.status_code, 400)
 
+    @patch('cassy.verify_auth_token')
+    def test_response_vineyard_metadata_exception(self, vineyard_mock):
+        """
+        Tests vineyard endpoint when
+        cassy.verify_auth_token throws Exception
+        """
+        setup_test_environment()
+        client = Client()
+        vineyard_mock.side_effect = Exception('Test exception')
+        body = {
+            'vineyard_id': '0',
+            'auth_token': 'chestercheetah'
+        }
+        response = client.post(
+            '/vineyard',
+            data=json.dumps(body),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('auth_error_unknown' in error)
+        self.assertEqual(response.status_code, 403)
+
     def test_response_vineyard_metadata_invalid_token(self):
         """
         Tests the vineyard endpoint with valid vineyard id

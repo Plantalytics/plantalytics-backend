@@ -423,3 +423,41 @@ def verify_authenticated_admin(username, auth_token):
     # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def get_user_info(username):
+    """
+    Obtains email, user id, and vineyard ids for submitted user.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': username,
+    }
+    query = (
+        'SELECT email, userid, vineyards FROM {} WHERE username=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            raise PlantalyticsAuthException(AUTH_UNKNOWN)
+        user_info = {
+            'email': rows[0].email,
+            'userid': rows[0].userid,
+            'vineyards': rows[0].vineyards,
+        }
+        return user_info
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))

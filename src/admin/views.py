@@ -36,13 +36,14 @@ def user(request):
     data = json.loads(request.body.decode('utf-8'))
 
     auth_token = str(data.get('auth_token', ''))
-    username = str(data.get('username', ''))
+    admin_username = str(data.get('admin_username', ''))
+    request_username = str(data.get('request_username', ''))
 
     try:
-        is_admin = cassy.verify_authenticated_admin(username, auth_token)
-        response = {
-            'admin': is_admin,
-        }
+        is_admin = cassy.verify_authenticated_admin(admin_username, auth_token)
+        if(is_admin is False):
+            return HttpResponseForbidden()
+        response = cassy.get_user_info(request_username)
         return HttpResponse(
             json.dumps(response),
             content_type='application/json'

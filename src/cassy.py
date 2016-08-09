@@ -461,3 +461,40 @@ def get_user_info(username):
     # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def create_new_user(new_user_info):
+    """
+    Creates new user in DB using the submitted info.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+            'username': new_user_info.get('username', ''),
+            'password': new_user_info.get('password', ''),
+            'email': new_user_info.get('email', ''),
+            'securitytoken': new_user_info.get('securitytoken', ''),
+            'subenddate': new_user_info.get('subenddate', ''),
+            'userid': new_user_info.get('userid', ''),
+            'vineyards': new_user_info.get('vineyards', ''),
+    }
+    query = (
+        'INSERT INTO {} (username, password, email, securitytoken, '
+        'userid, vineyards) VALUES(?, ?, ?, ?, ?, ?);'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        session.execute(
+            prepared_statement,
+            parameters
+        )
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))

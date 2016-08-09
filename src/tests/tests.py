@@ -494,17 +494,3 @@ class MainTests(TestCase):
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 403)
-
-    def test_admin_redirect(self):
-        setup_test_environment()
-        client = Client()
-        response = client.get('/admin/')
-        expected_redirect_url = '/admin/login/?next=/admin/'
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, expected_redirect_url)
-
-    def test_admin(self):
-        setup_test_environment()
-        client = Client()
-        response = client.get('/admin/login/?next=/admin/')
-        self.assertEqual(response.status_code, 200)

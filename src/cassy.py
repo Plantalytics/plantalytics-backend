@@ -387,3 +387,39 @@ def change_user_password(username, new_password, old_password):
         raise e
     except Exception as e:
         raise Exception('Transaction Error Occurred: ' + str(e))
+
+
+def verify_authenticated_admin(username, auth_token):
+    """
+    Verifies if supplied username is an admin and is authenticated.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': username,
+    }
+    query = (
+        'SELECT admin FROM {} WHERE username=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        verified = str(verify_auth_token(auth_token))
+        if (verified != username):
+            raise PlantalyticsAuthException(AUTH_NOT_FOUND)
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            raise PlantalyticsAuthException(AUTH_NOT_FOUND)
+        return rows[0].admin
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))

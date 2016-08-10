@@ -43,7 +43,16 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    def test_user_update_sub_date(self):
+    def test_user_info_invalid_method(self):
+        """
+        Tests the user info endpoint with unsupported HTTP method.
+        """
+        setup_test_environment()
+        client = Client()
+        response = client.get('/admin/user')
+        self.assertEqual(response.status_code, 405)
+
+    def test_user_update_sub_end_date(self):
         """
         Tests a valid request to update a user subscription date.
         """
@@ -56,8 +65,27 @@ class MainTests(TestCase):
             'sub_end_date': '2100-01-01',
         }
         response = client.post(
-            '/admin/user',
+            '/admin/user/subscription',
             data=json.dumps(payload),
             content_type='application/json'
         )
         self.assertEqual(response.status_code, 200)
+
+    def test_user_update_sub_end_date_invalid_method(self):
+        """
+        Tests the update user subscription end date endpoint
+        with unsupported HTTP method.
+        """
+        setup_test_environment()
+        client = Client()
+        response = client.get('/admin/user/subscription')
+        self.assertEqual(response.status_code, 405)
+
+    def test_new_user_invalid_method(self):
+        """
+        Tests the create new user endpoint with unsupported HTTP method.
+        """
+        setup_test_environment()
+        client = Client()
+        response = client.get('/admin/user/new')
+        self.assertEqual(response.status_code, 405)

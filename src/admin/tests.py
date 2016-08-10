@@ -89,3 +89,30 @@ class MainTests(TestCase):
         client = Client()
         response = client.get('/admin/user/new')
         self.assertEqual(response.status_code, 405)
+
+    def test_disable_user(self):
+        """
+        Tests a valid request to disable a user.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'request_username': os.environ.get('LOGIN_USERNAME'),
+        }
+        response = client.post(
+            '/admin/user/disable',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_disable_user_invalid_method(self):
+        """
+        Tests the disable user endpoint with unsupported HTTP method.
+        """
+        setup_test_environment()
+        client = Client()
+        response = client.get('/admin/user/disable')
+        self.assertEqual(response.status_code, 405)

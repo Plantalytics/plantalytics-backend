@@ -532,3 +532,37 @@ def update_user_subscription(username, sub_end_date):
     # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def disable_user(username):
+    """
+    Disables user in DB for submitted username.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': username,
+        'enable': False,
+    }
+    query = (
+        'UPDATE {} SET enable=? WHERE username=? AND password=?;'
+    )
+
+    try:
+        password = get_user_password(username)
+        parameters['password'] = password
+        prepared_statement = session.prepare(
+            query.format(table)
+        )
+        session.execute(
+            prepared_statement,
+            parameters
+        )
+        return True
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))

@@ -140,3 +140,40 @@ def subscription(request):
         logger.exception(message)
         error = custom_error(UNKNOWN, str(e))
         return HttpResponseServerError(error, content_type='application/json')
+
+
+@csrf_exempt
+def disable(request):
+    """
+    Endpoint disables the user for the request username.
+    """
+
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    data = json.loads(request.body.decode('utf-8'))
+
+    auth_token = str(data.get('auth_token', ''))
+    admin_username = str(data.get('admin_username', ''))
+    request_username = str(data.get('request_username', ''))
+
+    try:
+        is_admin = cassy.verify_authenticated_admin(admin_username, auth_token)
+        if(is_admin is False):
+            return HttpResponseForbidden()
+        response = cassy.disable_user(request_username)
+        return HttpResponse()
+    except PlantalyticsException as e:
+        message = (
+            'Error attempting to disable. Error code: {}'
+        ).format(str(e))
+        logger.warn(message)
+        error = custom_error(str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
+    except Exception as e:
+        message = (
+            'Unknown error occurred while attempting to disable user:'
+        )
+        logger.exception(message)
+        error = custom_error(UNKNOWN, str(e))
+        return HttpResponseServerError(error, content_type='application/json')

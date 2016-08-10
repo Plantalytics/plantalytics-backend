@@ -59,7 +59,7 @@ def user(request):
         return HttpResponseForbidden(error, content_type='application/json')
     except Exception as e:
         message = (
-            'Unknown error occurred while attempting to reset password:'
+            'Unknown error occurred while attempting to retrieve user info:'
         )
         logger.exception(message)
         error = custom_error(UNKNOWN, str(e))
@@ -89,14 +89,53 @@ def new(request):
         return HttpResponse()
     except PlantalyticsException as e:
         message = (
-            'Error attempting to retireve user info. Error code: {}'
+            'Error attempting to create new user. Error code: {}'
         ).format(str(e))
         logger.warn(message)
         error = custom_error(str(e))
         return HttpResponseForbidden(error, content_type='application/json')
     except Exception as e:
         message = (
-            'Unknown error occurred while attempting to reset password:'
+            'Unknown error occurred while attempting to create new user:'
+        )
+        logger.exception(message)
+        error = custom_error(UNKNOWN, str(e))
+        return HttpResponseServerError(error, content_type='application/json')
+
+
+@csrf_exempt
+def subscription(request):
+    """
+    Endpoint update the subscription end date for the requested user.
+    """
+
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    data = json.loads(request.body.decode('utf-8'))
+
+    auth_token = str(data.get('auth_token', ''))
+    admin_username = str(data.get('admin_username', ''))
+    request_username = str(data.get('request_username', ''))
+    sub_end_date = data.get('sub_end_date', '')
+
+    try:
+        is_admin = cassy.verify_authenticated_admin(admin_username, auth_token)
+        if(is_admin is False):
+            return HttpResponseForbidden()
+        cassy.update_user_subscription(request_username, sub_end_date)
+        return HttpResponse()
+    except PlantalyticsException as e:
+        message = (
+            'Error attempting to update user subscription. Error code: {}'
+        ).format(str(e))
+        logger.warn(message)
+        error = custom_error(str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
+    except Exception as e:
+        message = (
+            'Unknown error occurred while attempting '
+            'to update user subscription:'
         )
         logger.exception(message)
         error = custom_error(UNKNOWN, str(e))

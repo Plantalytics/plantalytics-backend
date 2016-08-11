@@ -46,7 +46,7 @@ def index(request):
         if stored_password == submitted_password:
             # Generate token and put into JSON object
             auth_token = str(uuid.uuid4())
-            auth_token_object = {}
+            response_object = {}
 
             # Return response with token object
             if username != os.environ.get('LOGIN_USERNAME'):
@@ -61,24 +61,23 @@ def index(request):
                 logger.info('Retrieving auth token for user \''
                     + username + '\'.'
                 )
-                auth_token_object['auth_token'] = cassy.get_user_auth_token(
-                    username,
-                    submitted_password
-                )
             else:
                 cassy.set_user_auth_token(
                     username,
                     submitted_password,
                     os.environ.get('LOGIN_SEC_TOKEN')
                 )
-                auth_token_object['auth_token'] = cassy.get_user_auth_token(
-                    username,
-                    submitted_password
-                )
+            response_object['auth_token'] = cassy.get_user_auth_token(
+                username,
+                submitted_password
+            )
+            response_object['vineyard_ids'] = cassy.get_authorized_vineyards(
+                username
+            )
             logger.info('Successfully logged in user \''
                 + username + '\'.'
             )
-            return HttpResponse(json.dumps(auth_token_object), content_type='application/json')
+            return HttpResponse(json.dumps(response_object), content_type='application/json')
         else:
             logger.warning('Incorrect password supplied for user \''
                            + username + '\'.'

@@ -3,14 +3,6 @@ class PlantalyticsException(Exception):
         Exception.__init__(self, *args, **kwargs)
 
 
-class PlantalyticsVineyardException(PlantalyticsException):
-    pass
-
-
-class PlantalyticsLoginException(PlantalyticsException):
-    pass
-
-
 class PlantalyticsAuthException(PlantalyticsException):
     pass
 
@@ -21,7 +13,19 @@ class PlantalyticsDataException(PlantalyticsException):
 
 class PlantalyticsEmailException(PlantalyticsException):
     pass
-    
+
+
+class PlantalyticsHubException(PlantalyticsException):
+    pass
+
+
+class PlantalyticsLoginException(PlantalyticsException):
+    pass
+
 
 class PlantalyticsPasswordException(PlantalyticsException):
+    pass
+
+
+class PlantalyticsVineyardException(PlantalyticsException):
     pass

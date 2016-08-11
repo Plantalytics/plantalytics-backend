@@ -11,8 +11,15 @@ import os
 import json
 import logging
 
+from common.exceptions import *
+from common.errors import *
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    HttpResponseNotAllowed
+)
 
 import cassy
 
@@ -24,33 +31,37 @@ def index(request):
     """
     Receive data from hub to insert into database.
     """
-    if request.method not in ('POST', 'PUT'):
-        return HttpResponseBadRequest()
+
+    allowed_methods = ['POST', 'PUT']
+    if request.method not in (allowed_methods):
+        return HttpResponseNotAllowed(allowed_methods)
 
     data = json.loads(request.body.decode("utf-8"))
-    hub_key = data.get('key', '')
+    hub_key = str(data.get('key', ''))
+    hub_id = str(data.get('hub_id', ''))
 
     try:
-        logger.info(
-            'Validating key for hub id \''
-            + str(data['hub_id']) + '\'.'
-        )
+        message = (
+            'Validating key for hub id \'{}\'.'
+        ).format(hub_id)
+        logger.info(message)
         if hub_key != os.environ.get('HUB_KEY'):
-            raise Exception('Invalid Hub Key')
-    except Exception as e:
-        logger.exception('Error occurred while verifying hub key for '
-                    + 'hub id \'' + str(data['hub_id']) + ' \'.'
-                    + str(e)
-        )
-        return HttpResponseForbidden()
+            raise PlantalyticsHubException(HUB_KEY_INVALID)
 
-    try:
         logger.info('Inserting hub data.')
-        cassy.post_env_data(data)
+        cassy.store_env_data(data)
         logger.info('Successfully inserted hub data.')
         return HttpResponse()
+    except PlantalyticsException as e:
+        message = (
+            'Error attempting to process hub data. Error code: {}'
+        ).format(str(e))
+        logger.warn(message)
+        error = custom_error(str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
     except Exception as e:
-        logger.exception('Error occurred while inserting hub data.'
-                         + str(e)
-        )
+        message = (
+            'Error occurred while inserting hub data for hub id \'{}\'. {}'
+        ).format(hub_id, str(e))
+        logger.exception(message)
         return HttpResponseBadRequest()

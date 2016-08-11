@@ -54,8 +54,8 @@ def index(request):
         return HttpResponseForbidden(error, content_type='application/json')
     except Exception as e:
         message = (
-            'Error occurred while auth token for vineyard id {}{}{}.'
-        ).format(vineyard_id, '\n', str(e))
+            'Error occurred while auth token for vineyard id {}\n{}.'
+        ).format(vineyard_id, str(e))
         logger.exception(message)
         error = custom_error(AUTH_UNKNOWN, str(e))
         return HttpResponseForbidden(error, content_type='application/json')

@@ -239,7 +239,10 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         url = (
-            '/password/change?auth_token={}&old=badpass&password=newpass'
+            '/password/change'
+            '?auth_token={}&'
+            'old=badpass&'
+            'password=newpass'
         ).format(str(os.environ.get('LOGIN_SEC_TOKEN')))
         response = client.get(url)
         self.assertEqual(response.status_code, 405)

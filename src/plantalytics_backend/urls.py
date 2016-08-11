@@ -27,11 +27,11 @@ from django.conf.urls import include, url
 from django.contrib import admin
 
 urlpatterns = [
-    url(r'^tests/', include('tests.urls')),
     url(r'^vineyard', include('vineyard.urls')),
     url(r'^env_data', include('env_data.urls')),
     url(r'^hub_data', include('hub_data.urls')),
     url(r'^admin/', include('admin.urls')),
     url(r'^login', include('login.urls')),
-    url(r'^password/', include('password.urls'))
+    url(r'^password/', include('password.urls')),
+    url(r'^health_check', include('health_check.urls')),
 ]

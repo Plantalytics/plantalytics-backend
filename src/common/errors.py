@@ -18,6 +18,7 @@ ENV_DATA_INVALID = 'env_data_invalid'
 ENV_DATA_NOT_FOUND = 'env_data_not_found'
 ENV_DATA_UNKNOWN = 'env_data_unknown'
 EMAIL_ERROR = 'email_error'
+HUB_KEY_INVALID = 'env_key_invalid'
 LOGIN_ERROR = 'login_error'
 LOGIN_UNKNOWN = 'login_unknown'
 RESET_ERROR = 'reset_error'
@@ -33,19 +34,30 @@ responses = {
     AUTH_UNKNOWN: 'Unexpected error occurred during authorization.',
     AUTH_NOT_FOUND: 'Auth token not found.',
     CHANGE_ERROR_PASSWORD: 'Invalid new password.',
-    ENV_DATA_INVALID: 'Request for invalid environmental data. Must be one of leafwetness, humidity, or temperature.',
+    ENV_DATA_INVALID: (
+        'Request for invalid environmental data. '
+        'Must be one of leafwetness, humidity, or temperature.'
+    ),
     ENV_DATA_NOT_FOUND: 'The request resulted in no environmental data.',
-    ENV_DATA_UNKNOWN: 'An expected error occurred gathering the requested data.',
+    ENV_DATA_UNKNOWN: (
+        'An expected error occurred '
+        'gathering the requested data.'
+    ),
     EMAIL_ERROR: 'Email Error: Invalid username.',
+    HUB_KEY_INVALID: 'Hub key invalid.',
     LOGIN_ERROR: 'Login Error: Invalid username or password.',
     LOGIN_UNKNOWN: 'An unexpected error occurred during login.',
     RESET_ERROR: 'An error occurred while resetting your password.',
-    RESET_ERROR_USERNAME: 'An error occurred resetting the password. Bad username.',
+    RESET_ERROR_USERNAME: (
+        'An error occurred resetting the password. Bad username.'
+    ),
     VINEYARD_NO_ID: 'A vineyard must have a valid ID.',
     VINEYARD_BAD_ID: 'A vineyard ID must be a positive integer.',
     VINEYARD_ID_NOT_FOUND: 'The vineyard ID was not found.',
-    VINEYARD_UNKNOWN: 'An unexpected error occurred while fetching the vineyard ID.',
-    UNKNOWN: 'An unknown error occurred.'
+    VINEYARD_UNKNOWN: (
+        'An unexpected error occurred while fetching the vineyard ID.'
+    ),
+    UNKNOWN: 'An unknown error occurred.',
 }
 
 
@@ -57,8 +69,11 @@ def custom_error(code, additional_message=None):
     """
     valid_code = code if code in responses else UNKNOWN
     message = responses[valid_code]
-    message = message + ' ' + additional_message if additional_message else message
-    result = {'errors':
+    message = (
+        message + ' ' + additional_message if additional_message else message
+    )
+    result = {
+        'errors':
         {
             valid_code: message
         }

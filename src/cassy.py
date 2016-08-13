@@ -775,3 +775,35 @@ def get_vineyard_info(vineyard_id):
     # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def disable_vineyard(vineyard_id):
+    """
+    Disables vineyard in DB for submitted vineyard id.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_VINE_TABLE'))
+    parameters = {
+        'vineid': int(vineyard_id),
+        'enable': False,
+    }
+    query = (
+        'UPDATE {} SET enable=? WHERE vineid=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        session.execute(
+            prepared_statement,
+            parameters
+        )
+        return True
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))

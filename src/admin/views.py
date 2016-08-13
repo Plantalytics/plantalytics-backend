@@ -165,7 +165,7 @@ def disable(request):
         return HttpResponse()
     except PlantalyticsException as e:
         message = (
-            'Error attempting to disable. Error code: {}'
+            'Error attempting to disable user. Error code: {}'
         ).format(str(e))
         logger.warn(message)
         error = custom_error(str(e))
@@ -251,6 +251,43 @@ def new_vineyard(request):
     except Exception as e:
         message = (
             'Unknown error occurred while attempting to create new vineyard:'
+        )
+        logger.exception(message)
+        error = custom_error(UNKNOWN, str(e))
+        return HttpResponseServerError(error, content_type='application/json')
+
+
+@csrf_exempt
+def disable_vineyard(request):
+    """
+    Endpoint disables the vineyard for the requested vineyard id.
+    """
+
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    data = json.loads(request.body.decode('utf-8'))
+
+    auth_token = str(data.get('auth_token', ''))
+    admin_username = str(data.get('admin_username', ''))
+    vineyard_id = str(data.get('vineyard_id', ''))
+
+    try:
+        is_admin = cassy.verify_authenticated_admin(admin_username, auth_token)
+        if(is_admin is False):
+            return HttpResponseForbidden()
+        response = cassy.disable_vineyard(vineyard_id)
+        return HttpResponse()
+    except PlantalyticsException as e:
+        message = (
+            'Error attempting to disable vineyard. Error code: {}'
+        ).format(str(e))
+        logger.warn(message)
+        error = custom_error(str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
+    except Exception as e:
+        message = (
+            'Unknown error occurred while attempting to disable vineyard:'
         )
         logger.exception(message)
         error = custom_error(UNKNOWN, str(e))

@@ -647,6 +647,53 @@ def disable_user(username):
         raise Exception('Transaction Error Occurred: '.format(str(e)))
 
 
+def create_new_vineyard(new_vineyard_info):
+    """
+    Creates new vineyard in DB using the submitted info.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_VINE_TABLE'))
+    parameters = {
+            'vineid': int(new_vineyard_info.get('vineyard_id', '')),
+            'ownerlist': new_vineyard_info.get('owners', ''),
+            'vinename': new_vineyard_info.get('name', ''),
+    }
+    boundaries = []
+    for point in new_vineyard_info.get('boundaries', ''):
+        coordinate = (
+            float(point['lon']),
+            float(point['lat'])
+        )
+        boundaries.append(coordinate)
+    center_point = new_vineyard_info.get('center', '')
+    center = (
+        float(center_point['lon']),
+        float(center_point['lat']),
+    )
+    parameters['boundaries'] = boundaries
+    parameters['center'] = center
+    query = (
+        'INSERT INTO {} (vineid, boundaries, center, ownerlist, vinename) '
+        'VALUES(?, ?, ?, ?, ?);'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        session.execute(
+            prepared_statement,
+            parameters
+        )
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
 def get_vineyard_users(vineyard_id):
     """
     Obtains the users of the supplied vineyard id.

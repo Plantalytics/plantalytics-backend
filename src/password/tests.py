@@ -421,7 +421,7 @@ class MainTests(TestCase):
             content_type='application/json'
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
-        self.assertTrue('email_error' in error)
+        self.assertTrue('email_reset_error' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_password_reset_invalid_method(self):
@@ -477,7 +477,7 @@ class MainTests(TestCase):
         try:
             rows = cassy.get_user_email(username)
         except PlantalyticsException as e:
-            self.assertEqual('email_error', str(e))
+            self.assertEqual('email_reset_error', str(e))
 
     def test_get_user_email_with_invalid_user(self):
         """
@@ -489,4 +489,4 @@ class MainTests(TestCase):
         try:
             rows = cassy.get_user_email(username)
         except PlantalyticsException as e:
-            self.assertEqual('email_error', str(e))
+            self.assertEqual('email_reset_error', str(e))

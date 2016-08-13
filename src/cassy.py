@@ -273,13 +273,13 @@ def get_user_email(username):
 
     try:
         if username == '':
-            raise PlantalyticsEmailException(EMAIL_ERROR)
+            raise PlantalyticsEmailException(EMAIL_RESET_ERROR)
         rows = session.execute(
             prepared_statement,
             parameters
         )
         if not rows:
-            raise PlantalyticsEmailException(EMAIL_ERROR)
+            raise PlantalyticsEmailException(EMAIL_RESET_ERROR)
         else:
             return rows[0].email
     # Known exception

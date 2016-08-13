@@ -14,10 +14,12 @@ AUTH_NO_TOKEN = 'auth_error_no_token'
 AUTH_UNKNOWN = 'auth_error_unknown'
 AUTH_NOT_FOUND = 'auth_error_not_found'
 CHANGE_ERROR_PASSWORD = 'reset_error_password'
+CHANGE_EMAIL_UNKNOWN = 'change_email_unknown'
 ENV_DATA_INVALID = 'env_data_invalid'
 ENV_DATA_NOT_FOUND = 'env_data_not_found'
 ENV_DATA_UNKNOWN = 'env_data_unknown'
-EMAIL_ERROR = 'email_error'
+EMAIL_RESET_ERROR = 'email_reset_error'
+EMAIL_INVALID = 'email_missing_error'
 HUB_KEY_INVALID = 'env_key_invalid'
 LOGIN_ERROR = 'login_error'
 LOGIN_UNKNOWN = 'login_unknown'
@@ -34,6 +36,7 @@ responses = {
     AUTH_UNKNOWN: 'Unexpected error occurred during authorization.',
     AUTH_NOT_FOUND: 'Auth token not found.',
     CHANGE_ERROR_PASSWORD: 'Invalid new password.',
+    CHANGE_EMAIL_UNKNOWN: 'Unknown error while attempting to change email',
     ENV_DATA_INVALID: (
         'Request for invalid environmental data. '
         'Must be one of leafwetness, humidity, or temperature.'
@@ -43,7 +46,8 @@ responses = {
         'An expected error occurred '
         'gathering the requested data.'
     ),
-    EMAIL_ERROR: 'Email Error: Invalid username.',
+    EMAIL_RESET_ERROR: 'Email Error: Invalid username.',
+    EMAIL_INVALID: 'Email Error: invalid or missing email',
     HUB_KEY_INVALID: 'Hub key invalid.',
     LOGIN_ERROR: 'Login Error: Invalid username or password.',
     LOGIN_UNKNOWN: 'An unexpected error occurred during login.',

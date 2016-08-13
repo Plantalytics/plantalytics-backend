@@ -474,73 +474,33 @@ def change_user_email(username, new_email):
     to the supplied email
     """
 
+    print(get_user_email(username))
     session.row_factory = named_tuple_factory
     table = str(os.environ.get('DB_USER_TABLE'))
     parameters = {
         'username': username,
+        'email': new_email,
     }
     query = (
-        'SELECT * FROM {} WHERE username=?;'
-    )
-    prepared_statement = session.prepare(
-        query.format(table)
+        'UPDATE {} SET email=? WHERE username=? AND password=?;'
     )
 
     try:
-        # Verify that the supplied username exists
-        rows = session.execute(
+        password = get_user_password(username)
+        parameters['password'] = password
+        prepared_statement = session.prepare(
+            query.format(table)
+        )
+        session.execute(
             prepared_statement,
             parameters
         )
-        if not rows:
-            raise PlantalyticsAuthException(RESET_ERROR_USERNAME)
-
-        # Insert new row with new password.
-        new_row_values = {
-            'username': rows[0].username,
-            'password': rows[0].password,
-            'email': new_email,
-            'securitytoken': rows[0].securitytoken,
-            'subenddate': rows[0].subenddate,
-            'userid': rows[0].userid,
-            'vineyards': rows[0].vineyards,
-        }
-        query = (
-            'INSERT INTO {} '
-            '(username, password, email, securitytoken, '
-            'subenddate, userid, vineyards) '
-            'VALUES(?, ?, ?, ?, ?, ?, ?);'
-        )
-        prepared_statement = session.prepare(
-            query.format(table)
-        )
-
-        session.execute(
-            prepared_statement,
-            new_row_values
-        )
-
-        # Delete old row with old email.
-        old_email = get_user_email(username)
-        old_row_values = {
-            'username': username,
-            'email': old_email,
-        }
-        query = (
-            'DELETE FROM {} WHERE username=? AND email=?;'
-        )
-        prepared_statement = session.prepare(
-            query.format(table)
-        )
-
-        session.execute(
-            prepared_statement,
-            old_row_values
-        )
+        print(get_user_email(username))
+        return True
     # Known exception
     except PlantalyticsException as e:
         raise e
     # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))
-    return None
+

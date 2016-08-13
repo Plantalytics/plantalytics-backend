@@ -9,6 +9,7 @@
 
 import json
 import logging
+import re
 
 from common.exceptions import *
 from common.errors import *
@@ -27,9 +28,7 @@ logger = logging.getLogger('plantalytics_backend.email')
 
 
 def email_is_good(new_email):
-    result = True
-    # TODO: Logic for checking if email address is acceptable
-    return result
+    return True if re.match(r"[^@]+@[^@]+\.[^@]+", new_email) else False
 
 
 @csrf_exempt
@@ -43,11 +42,13 @@ def index(request):
     data = json.loads(request.body.decode('utf-8'))
 
     auth_token = str(data.get('auth_token', ''))
-    new_email = str(data.get('email, '''))
+    new_email = str(data.get('new_email', ''))
     logger.info('Request to change email address.')
     if auth_token and new_email:
         if email_is_good(new_email) is not True:
-            return HttpResponseBadRequest()
+            logger.warn("Invalid email address: {}".format(new_email))
+            error = custom_error(EMAIL_INVALID)
+            return HttpResponseBadRequest(error, content_type='application/json')
         try:
             username = cassy.verify_auth_token(auth_token)
 
@@ -57,7 +58,9 @@ def index(request):
             return HttpResponseForbidden(error, content_type='application/json')
 
         try:
+            # TODO: email original email address notification
             cassy.change_user_email(username, new_email)
+
         except PlantalyticsException as e:
             logger.warn('Error changing email address.')
             error = custom_error(str(e))

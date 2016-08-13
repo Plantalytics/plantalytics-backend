@@ -645,3 +645,86 @@ def disable_user(username):
     # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def get_vineyard_users(vineyard_id):
+    """
+    Obtains the users of the supplied vineyard id.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    query = (
+        'SELECT username FROM {} WHERE vineyards CONTAINS ' +
+        str(vineyard_id) + ';'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement
+        )
+        if not rows:
+            raise PlantalyticsAuthException(AUTH_NOT_FOUND)
+        users = []
+        for row in rows:
+            users.append(row.username)
+        return users
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def get_vineyard_info(vineyard_id):
+    """
+    Obtains the name, owners, and users of a vineyard
+    matching the supplied vineyard id.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = os.environ.get('DB_VINE_TABLE')
+    query = (
+        'SELECT vinename, ownerlist FROM {} WHERE vineid=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        if vineyard_id == '':
+            raise PlantalyticsVineyardException(VINEYARD_NO_ID)
+        # Ensures vineyard_id is integer
+        vineyard_id = int(vineyard_id)
+        parameters = {
+            'vineid': vineyard_id,
+        }
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            raise PlantalyticsVineyardException(VINEYARD_ID_NOT_FOUND)
+
+        owners = []
+        for owner in rows[0].ownerlist:
+            owners.append(owner)
+        users = get_vineyard_users(vineyard_id)
+        vineyard_info = {
+            'name': rows[0].vinename,
+            'owners': owners,
+            'users': users,
+        }
+        return vineyard_info
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    except ValueError as e:
+        raise PlantalyticsVineyardException(VINEYARD_BAD_ID)
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))

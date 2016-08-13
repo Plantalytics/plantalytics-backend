@@ -15,4 +15,5 @@ urlpatterns = [
     url(r'^user/new$', views.new, name='new'),
     url(r'^user/subscription$', views.subscription, name='subscription'),
     url(r'^user/disable$', views.disable, name='disable'),
+    url(r'^vineyard$', views.vineyard, name='vineyard'),
 ]

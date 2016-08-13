@@ -177,3 +177,44 @@ def disable(request):
         logger.exception(message)
         error = custom_error(UNKNOWN, str(e))
         return HttpResponseServerError(error, content_type='application/json')
+
+
+@csrf_exempt
+def vineyard(request):
+    """
+    Endpoint returns the vineyard info for the requested vineyard id.
+    """
+
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    data = json.loads(request.body.decode('utf-8'))
+
+    auth_token = str(data.get('auth_token', ''))
+    admin_username = str(data.get('admin_username', ''))
+    vineyard_id = str(data.get('vineyard_id', ''))
+
+    try:
+        is_admin = cassy.verify_authenticated_admin(admin_username, auth_token)
+        if(is_admin is False):
+            return HttpResponseForbidden()
+        response = cassy.get_vineyard_info(vineyard_id)
+        return HttpResponse(
+            json.dumps(response),
+            content_type='application/json'
+        )
+    except PlantalyticsException as e:
+        message = (
+            'Error attempting to retireve vineyard info. Error code: {}'
+        ).format(str(e))
+        logger.warn(message)
+        error = custom_error(str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
+    except Exception as e:
+        message = (
+            'Unknown error occurred while attempting '
+            'to retrieve vineyard info:'
+        )
+        logger.exception(message)
+        error = custom_error(UNKNOWN, str(e))
+        return HttpResponseServerError(error, content_type='application/json')

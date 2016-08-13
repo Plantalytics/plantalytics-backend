@@ -85,7 +85,6 @@ class MainTests(TestCase):
         """
         Tests a valid request to create a new user.
         """
-        print(">>>>>TEST NEW USER!!!")
         setup_test_environment()
         client = Client()
         payload = {

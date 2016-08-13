@@ -555,7 +555,7 @@ def create_new_user(new_user_info):
             'email': new_user_info.get('email', ''),
             'securitytoken': new_user_info.get('securitytoken', ''),
             'subenddate': new_user_info.get('subenddate', ''),
-            'userid': new_user_info.get('userid', ''),
+            'userid': int(new_user_info.get('userid', '')),
             'vineyards': new_user_info.get('vineyards', ''),
     }
     query = (

@@ -81,6 +81,33 @@ class MainTests(TestCase):
         response = client.get('/admin/user/subscription')
         self.assertEqual(response.status_code, 405)
 
+    def test_new_user(self):
+        """
+        Tests a valid request to create a new user.
+        """
+        print(">>>>>TEST NEW USER!!!")
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'new_user_info': {
+                'username': os.environ.get('LOGIN_USERNAME'),
+                'password': os.environ.get('LOGIN_PASSWORD'),
+                'email': os.environ.get('RESET_EMAIL'),
+                'securitytoken': os.environ.get('LOGIN_SEC_TOKEN'),
+                'subenddate': os.environ.get('LOGIN_SUB_END_DATE'),
+                'userid': os.environ.get('LOGIN_USER_ID'),
+                'vineyards': [int(os.environ.get('LOGIN_USER_ID'))],
+            },
+        }
+        response = client.post(
+            '/admin/user/new',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+
     def test_new_user_invalid_method(self):
         """
         Tests the create new user endpoint with unsupported HTTP method.

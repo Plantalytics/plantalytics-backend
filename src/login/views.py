@@ -75,7 +75,7 @@ def index(request):
                 response_object['auth_token'] = os.environ.get('LOGIN_SEC_TOKEN')
 
             # Add in vineyard ids
-            response_object['vineyard_ids'] = cassy.get_authorized_vineyards(
+            response_object['authorized_vineyards'] = cassy.get_authorized_vineyards(
                 username
             )
 

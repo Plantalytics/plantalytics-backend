@@ -497,6 +497,8 @@ def verify_authenticated_admin(username, auth_token):
             return False
         return True
     # Known exception
+    except PlantalyticsAuthException as e:
+            return False
     except PlantalyticsException as e:
         raise e
     # Unknown exception
@@ -527,7 +529,7 @@ def get_user_info(username):
             parameters
         )
         if not rows:
-            raise PlantalyticsAuthException(AUTH_UNKNOWN)
+            raise PlantalyticsAuthException(USER_INVALID)
         user_info = {
             'email': rows[0].email,
             'userid': rows[0].userid,

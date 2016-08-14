@@ -20,6 +20,8 @@ class MainTests(TestCase):
     Executes all of the unit tests for the admin endpoints.
     """
 
+# /admin/user - valid request tests
+
     def test_user_info(self):
         """
         Tests a valid request for user info.
@@ -43,6 +45,50 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+# /admin/user - exception tests
+
+    def test_user_info_invalid_username(self):
+        """
+        Tests a request for user info with an invalid username.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'request_username': 'thisGuyAintInThere',
+        }
+        response = client.post(
+            '/admin/user',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('username_invalid' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_info_invalid_admin(self):
+        """
+        Tests a request for user info with an invalid admin credentials.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': 'thisWontGetYouFar',
+            'admin_username': 'mrDerp',
+            'request_username': os.environ.get('LOGIN_USERNAME'),
+        }
+        response = client.post(
+            '/admin/user',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('admin_invalid' in error)
+        self.assertEqual(response.status_code, 403)
+
+# /admin/user - invalid HTTP method tests
+
     def test_user_info_invalid_method(self):
         """
         Tests the user info endpoint with unsupported HTTP method.
@@ -51,6 +97,8 @@ class MainTests(TestCase):
         client = Client()
         response = client.get('/admin/user')
         self.assertEqual(response.status_code, 405)
+
+# /admin/user/subscription - valid request tests
 
     def test_user_update_sub_end_date(self):
         """
@@ -71,6 +119,10 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+# TODO: /admin/user/subscription exception tests
+
+# /admin/user/subscription - invalid HTTP method tests
+
     def test_user_update_sub_end_date_invalid_method(self):
         """
         Tests the update user subscription end date endpoint
@@ -80,6 +132,10 @@ class MainTests(TestCase):
         client = Client()
         response = client.get('/admin/user/subscription')
         self.assertEqual(response.status_code, 405)
+
+# TODO: /admin/user/edit tests
+
+# /admin/user/new - valid request tests
 
     def test_new_user(self):
         """
@@ -107,6 +163,10 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+# TODO: /admin/user/new exception tests
+
+# /admin/user/new - invalid HTTP method tests
+
     def test_new_user_invalid_method(self):
         """
         Tests the create new user endpoint with unsupported HTTP method.
@@ -115,6 +175,8 @@ class MainTests(TestCase):
         client = Client()
         response = client.get('/admin/user/new')
         self.assertEqual(response.status_code, 405)
+
+# /admin/user/disable - valid request tests
 
     def test_disable_user(self):
         """
@@ -134,6 +196,10 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+# TODO: /admin/user/disable exception tests
+
+# /admin/user/disable - invalid HTTP method tests
+
     def test_disable_user_invalid_method(self):
         """
         Tests the disable user endpoint with unsupported HTTP method.
@@ -142,3 +208,5 @@ class MainTests(TestCase):
         client = Client()
         response = client.get('/admin/user/disable')
         self.assertEqual(response.status_code, 405)
+
+# TODO: /admin/vineyard tests...

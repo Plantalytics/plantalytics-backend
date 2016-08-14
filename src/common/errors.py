@@ -24,6 +24,7 @@ LOGIN_ERROR = 'login_error'
 LOGIN_UNKNOWN = 'login_unknown'
 RESET_ERROR = 'reset_error'
 RESET_ERROR_USERNAME = 'reset_error_username'
+USER_INVALID = 'username_invalid'
 VINEYARD_NO_ID = 'vineyard_no_id'
 VINEYARD_BAD_ID = 'vineyard_bad_id'
 VINEYARD_ID_NOT_FOUND = 'vineyard_id_not_found'
@@ -53,6 +54,7 @@ responses = {
     RESET_ERROR_USERNAME: (
         'An error occurred resetting the password. Bad username.'
     ),
+    USER_INVALID: 'Requested username is invalid.',
     VINEYARD_NO_ID: 'A vineyard must have a valid ID.',
     VINEYARD_BAD_ID: 'A vineyard ID must be a positive integer.',
     VINEYARD_ID_NOT_FOUND: 'The vineyard ID was not found.',

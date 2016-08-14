@@ -258,6 +258,47 @@ def vineyard_info(request):
 
 
 @csrf_exempt
+def vineyard_edit(request):
+    """
+    Endpoint edits the vineyard info for the requested vineyard id.
+    """
+
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    data = json.loads(request.body.decode('utf-8'))
+
+    auth_token = str(data.get('auth_token', ''))
+    admin_username = str(data.get('admin_username', ''))
+    edit_vineyard_info = data.get('edit_vineyard_info', '')
+
+    try:
+        is_admin = cassy.verify_authenticated_admin(admin_username, auth_token)
+        if(is_admin is False):
+            return HttpResponseForbidden()
+        response = cassy.edit_vineyard(edit_vineyard_info)
+        return HttpResponse(
+            json.dumps(response),
+            content_type='application/json'
+        )
+    except PlantalyticsException as e:
+        message = (
+            'Error attempting to edit vineyard info. Error code: {}'
+        ).format(str(e))
+        logger.warn(message)
+        error = custom_error(str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
+    except Exception as e:
+        message = (
+            'Unknown error occurred while attempting '
+            'to edit vineyard info:'
+        )
+        logger.exception(message)
+        error = custom_error(UNKNOWN, str(e))
+        return HttpResponseServerError(error, content_type='application/json')
+
+
+@csrf_exempt
 def vineyard_new(request):
     """
     Endpoint creates a new vineyard with the requested user info.

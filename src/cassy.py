@@ -717,11 +717,9 @@ def edit_user(user_edit_info):
             prepared_statement,
             edit_row
         )
-        new_username = edit_row.get('username', '')
         new_password = edit_row.get('password', '')
-        old_username = old_row.get('username', '')
         old_password = old_row.get('password', '')
-        if (new_username != old_username or new_password != old_password):
+        if (new_password != old_password):
             query = (
                 'DELETE FROM {} WHERE username=? AND password=?;'
             )
@@ -732,6 +730,87 @@ def edit_user(user_edit_info):
                 prepared_statement,
                 old_row
             )
+        return True
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def edit_vineyard(edit_vineyard_info):
+    """
+    Edits vineyard info in DB using submitted info.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_VINE_TABLE'))
+    parameters = {
+        'vineid': edit_vineyard_info.get('vineyard_id', ''),
+    }
+    query = (
+        'SELECT * FROM {} WHERE vineid=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            raise PlantalyticsAuthException(RESET_ERROR_USERNAME)
+        old_row = {
+            'vineid': rows[0].vineid,
+        }
+
+        edit_row = {
+            'vineid': rows[0].vineid,
+            'boundaries': rows[0].boundaries,
+            'center': rows[0].center,
+            'enable': rows[0].enable,
+            'ownerlist': rows[0].ownerlist,
+            'vinename': rows[0].vinename,
+        }
+        if (edit_vineyard_info.get('vineyard_id', '') != ''):
+            edit_row['vineid'] = edit_vineyard_info.get('vineyard_id', '')
+        if (edit_vineyard_info.get('boundaries', '') != ''):
+            boundaries = []
+            for point in edit_vineyard_info.get('boundaries', ''):
+                coordinate = (
+                    float(point['lon']),
+                    float(point['lat'])
+                )
+                boundaries.append(coordinate)
+            edit_row['boundaries'] = boundaries
+        if (edit_vineyard_info.get('center', '') != ''):
+            center_point = edit_vineyard_info.get('center', '')
+            center = (
+                float(center_point['lon']),
+                float(center_point['lat']),
+            )
+            edit_row['center'] = center
+        if (edit_vineyard_info.get('enable', '') != ''):
+            edit_row['enable'] = edit_vineyard_info.get('enable', '')
+        if (edit_vineyard_info.get('owners', '') != ''):
+            edit_row['ownerlist'] = edit_vineyard_info.get('owners', '')
+        if (edit_vineyard_info.get('name', '') != ''):
+            edit_row['vinename'] = edit_vineyard_info.get('name', '')
+
+        query = (
+            'INSERT INTO {} '
+            '(vineid, boundaries, center, enable, ownerlist, vinename) '
+            'VALUES(?, ?, ?, ?, ?, ?);'
+        )
+        prepared_statement = session.prepare(
+            query.format(table)
+        )
+        session.execute(
+            prepared_statement,
+            edit_row
+        )
         return True
     # Known exception
     except PlantalyticsException as e:
@@ -752,6 +831,7 @@ def create_new_vineyard(new_vineyard_info):
             'vineid': int(new_vineyard_info.get('vineyard_id', '')),
             'ownerlist': new_vineyard_info.get('owners', ''),
             'vinename': new_vineyard_info.get('name', ''),
+            'enable': True,
     }
     boundaries = []
     for point in new_vineyard_info.get('boundaries', ''):
@@ -768,8 +848,9 @@ def create_new_vineyard(new_vineyard_info):
     parameters['boundaries'] = boundaries
     parameters['center'] = center
     query = (
-        'INSERT INTO {} (vineid, boundaries, center, ownerlist, vinename) '
-        'VALUES(?, ?, ?, ?, ?);'
+        'INSERT INTO {} '
+        '(vineid, boundaries, center, enable, ownerlist, vinename) '
+        'VALUES(?, ?, ?, ?, ?, ?);'
     )
     prepared_statement = session.prepare(
         query.format(table)

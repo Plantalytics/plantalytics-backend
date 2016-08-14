@@ -26,6 +26,7 @@ urlpatterns = [
         views.vineyard_disable,
         name='vineyard_disable'
     ),
+    url(r'^vineyard/edit$', views.vineyard_edit, name='vineyard_edit'),
     url(r'^vineyard/new$', views.vineyard_new, name='vineyard_new'),
 
 ]

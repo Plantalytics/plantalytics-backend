@@ -27,7 +27,7 @@ logger = logging.getLogger('plantalytics_backend.admin')
 
 
 @csrf_exempt
-def user(request):
+def user_info(request):
     """
     Endpoint returns the user info for the request username.
     """
@@ -67,7 +67,7 @@ def user(request):
 
 
 @csrf_exempt
-def new(request):
+def user_new(request):
     """
     Endpoint creates a new user with the requested user info.
     """
@@ -104,7 +104,7 @@ def new(request):
 
 
 @csrf_exempt
-def subscription(request):
+def user_subscription(request):
     """
     Endpoint update the subscription end date for the requested user.
     """
@@ -143,7 +143,44 @@ def subscription(request):
 
 
 @csrf_exempt
-def disable(request):
+def user_edit(request):
+    """
+    Endpoint edits the user for the requested username.
+    """
+
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    data = json.loads(request.body.decode('utf-8'))
+
+    auth_token = str(data.get('auth_token', ''))
+    admin_username = str(data.get('admin_username', ''))
+    user_edit_info = data.get('edit_user_info', '')
+
+    try:
+        is_admin = cassy.verify_authenticated_admin(admin_username, auth_token)
+        if(is_admin is False):
+            return HttpResponseForbidden()
+        cassy.edit_user(user_edit_info)
+        return HttpResponse()
+    except PlantalyticsException as e:
+        message = (
+            'Error attempting to edit user info. Error code: {}'
+        ).format(str(e))
+        logger.warn(message)
+        error = custom_error(str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
+    except Exception as e:
+        message = (
+            'Unknown error occurred while attempting to edit user info:'
+        )
+        logger.exception(message)
+        error = custom_error(UNKNOWN, str(e))
+        return HttpResponseServerError(error, content_type='application/json')
+
+
+@csrf_exempt
+def user_disable(request):
     """
     Endpoint disables the user for the request username.
     """
@@ -180,7 +217,7 @@ def disable(request):
 
 
 @csrf_exempt
-def vineyard(request):
+def vineyard_info(request):
     """
     Endpoint returns the vineyard info for the requested vineyard id.
     """
@@ -221,7 +258,7 @@ def vineyard(request):
 
 
 @csrf_exempt
-def new_vineyard(request):
+def vineyard_new(request):
     """
     Endpoint creates a new vineyard with the requested user info.
     """
@@ -258,7 +295,7 @@ def new_vineyard(request):
 
 
 @csrf_exempt
-def disable_vineyard(request):
+def vineyard_disable(request):
     """
     Endpoint disables the vineyard for the requested vineyard id.
     """

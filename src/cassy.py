@@ -647,6 +647,100 @@ def disable_user(username):
         raise Exception('Transaction Error Occurred: '.format(str(e)))
 
 
+def edit_user(user_edit_info):
+    """
+    Edits user info in DB using submitted info.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': user_edit_info.get('username', ''),
+    }
+    query = (
+        'SELECT * FROM {} WHERE username=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            raise PlantalyticsAuthException(RESET_ERROR_USERNAME)
+        old_row = {
+            'username': rows[0].username,
+            'password': rows[0].password,
+        }
+
+        edit_row = {
+            'username': rows[0].username,
+            'password': rows[0].password,
+            'admin': rows[0].admin,
+            'email': rows[0].email,
+            'enable': rows[0].enable,
+            'securitytoken': rows[0].securitytoken,
+            'subenddate': rows[0].subenddate,
+            'userid': rows[0].userid,
+            'vineyards': rows[0].vineyards,
+        }
+        if (user_edit_info.get('username', '') != ''):
+            edit_row['username'] = user_edit_info.get('username', '')
+        if (user_edit_info.get('password', '') != ''):
+            edit_row['password'] = user_edit_info.get('password', '')
+        if (user_edit_info.get('admin', '') != ''):
+            edit_row['admin'] = user_edit_info.get('admin', '')
+        if (user_edit_info.get('email', '') != ''):
+            edit_row['email'] = user_edit_info.get('email', '')
+        if (user_edit_info.get('enable', '') != ''):
+            edit_row['enable'] = user_edit_info.get('enable', '')
+        if (user_edit_info.get('auth_token', '') != ''):
+            edit_row['securitytoken'] = user_edit_info.get('auth_token', '')
+        if (user_edit_info.get('sub_end_date', '') != ''):
+            edit_row['subenddate'] = user_edit_info.get('sub_end_date', '')
+        if (user_edit_info.get('user_id', '') != ''):
+            edit_row['userid'] = user_edit_info.get('user_id', '')
+        if (user_edit_info.get('vineyards', '') != ''):
+            edit_row['vineyards'] = user_edit_info.get('vineyards', '')
+        query = (
+            'INSERT INTO {} '
+            '(username, password, admin, email, enable, '
+            'securitytoken, subenddate, userid, vineyards) '
+            'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);'
+        )
+        prepared_statement = session.prepare(
+            query.format(table)
+        )
+        session.execute(
+            prepared_statement,
+            edit_row
+        )
+        new_username = edit_row.get('username', '')
+        new_password = edit_row.get('password', '')
+        old_username = old_row.get('username', '')
+        old_password = old_row.get('password', '')
+        if (new_username != old_username or new_password != old_password):
+            query = (
+                'DELETE FROM {} WHERE username=? AND password=?;'
+            )
+            prepared_statement = session.prepare(
+                query.format(table)
+            )
+            session.execute(
+                prepared_statement,
+                old_row
+            )
+        return True
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
 def create_new_vineyard(new_vineyard_info):
     """
     Creates new vineyard in DB using the submitted info.

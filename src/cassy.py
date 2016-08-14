@@ -598,6 +598,8 @@ def update_user_subscription(username, sub_end_date):
 
     try:
         password = get_user_password(username)
+        if not password:
+            raise PlantalyticsAuthException(USER_INVALID)
         parameters['password'] = password
         prepared_statement = session.prepare(
             query.format(table)
@@ -608,6 +610,8 @@ def update_user_subscription(username, sub_end_date):
         )
         return True
     # Known exception
+    except PlantalyticsLoginException as e:
+            raise PlantalyticsAuthException(USER_INVALID)
     except PlantalyticsException as e:
         raise e
     # Unknown exception
@@ -632,6 +636,8 @@ def disable_user(username):
 
     try:
         password = get_user_password(username)
+        if not password:
+            raise PlantalyticsAuthException(USER_INVALID)
         parameters['password'] = password
         prepared_statement = session.prepare(
             query.format(table)
@@ -642,6 +648,8 @@ def disable_user(username):
         )
         return True
     # Known exception
+    except PlantalyticsLoginException as e:
+            raise PlantalyticsAuthException(USER_INVALID)
     except PlantalyticsException as e:
         raise e
     # Unknown exception

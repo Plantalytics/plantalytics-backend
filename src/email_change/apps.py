@@ -7,9 +7,10 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
-from django.conf.urls import url
-from .import views
+from __future__ import unicode_literals
 
-urlpatterns = [
-    url(r'^$', views.index, name='index'),
-]
+from django.apps import AppConfig
+
+
+class EnvDataConfig(AppConfig):
+    name = 'email_change'

@@ -7,8 +7,17 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
-from django.apps import AppConfig
+import json
+import logging
+
+from django.http import HttpResponse
+
+logger = logging.getLogger('plantalytics_backend.health_check')
 
 
-class TestsConfig(AppConfig):
-    name = 'tests'
+def index(request):
+    logger.info('It\'s Alive!!')
+    response = {
+        'isAlive': True,
+    }
+    return HttpResponse(json.dumps(response), content_type='application/json')

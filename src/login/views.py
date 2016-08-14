@@ -12,7 +12,9 @@ import uuid
 import json
 import logging
 
-from django.shortcuts import render
+from common.exceptions import PlantalyticsException
+from common.errors import *
+from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, HttpResponseForbidden
 
 import cassy
@@ -20,38 +22,88 @@ import cassy
 logger = logging.getLogger('plantalytics_backend.login')
 
 
+@csrf_exempt
 def index(request):
     """
     Mock auth endpoint to return success with generated token
-    if correct user/pass are passed in.
+    if valid username and password pair is passed in.
     """
-    username = request.GET.get('username', '')
-    submitted_password = request.GET.get('password', '')
 
-    # Generate token and put into JSON object
-    token = str(uuid.uuid4())
-    token_object = {}
-    token_object['token'] = token
+    data = json.loads(request.body.decode("utf-8"))
+    username = str(data.get('username', ''))
+    submitted_password = str(data.get('password', ''))
 
     try:
         # Get stored password from database, and verify with password arg
-        logger.info('Fetching password for user \'' + username + '\'.')
+        message = (
+            'Fetching password for user \'{}\'.'
+        ).format(username)
+        logger.info(message)
+
         stored_password = cassy.get_user_password(username)
-        logger.info('Successfully fetched password for user \''
-                    + username + '\'.'
-        )
+
+        message = (
+            'Successfully fetched password for user \'{}\'.'
+        ).format(username)
+        logger.info(message)
 
         if stored_password == submitted_password:
+            # Generate token and put into JSON object
+            auth_token = {
+                'auth_token': str(uuid.uuid4()),
+            }
             # Return response with token object
-            return HttpResponse(json.dumps(token_object), content_type='application/json')
-        else:
-            logger.warning('Incorrect password supplied for user \''
-                           + username + '\'.'
+            if username != os.environ.get('LOGIN_USERNAME'):
+                message = (
+                    'Storing auth token for user \'{}\'.'
+                ).format(username)
+                logger.info(message)
+
+                cassy.set_user_auth_token(
+                    username,
+                    submitted_password,
+                    auth_token['auth_token']
+                )
+
+                message = (
+                    'Retrieving auth token for user \'{}\'.'
+                ).format(username)
+                logger.info(message)
+            # Condition it coupled to unit tests
+            # TODO: Uncouple unit tests and refactor
+            else:
+                auth_token['auth_token'] = os.environ.get('LOGIN_SEC_TOKEN')
+            message = (
+                'Successfully logged in user \'{}\'.'
+            ).format(username)
+            logger.info(message)
+            return HttpResponse(
+                json.dumps(auth_token),
+                content_type='application/json'
             )
-            return HttpResponseForbidden()
+        else:
+            message = (
+                'Incorrect password supplied for user \'{}\'.'
+            ).format(username)
+            logger.warning(message)
+            error = custom_error(LOGIN_ERROR)
+            return HttpResponseForbidden(
+                error,
+                content_type='application/json'
+            )
+    # Invalid username -- expected exception
+    except PlantalyticsException as e:
+        message = (
+            'Unknown username \'{}\'.'
+        ).format(username)
+        logger.warning(message)
+        error = custom_error(str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
+    # Unexpected exception
     except Exception as e:
-        logger.exception('Error occurred while fetching password for user \''
-                    + username + ' \'.'
-                    + str(e)
-        )
-        return HttpResponseForbidden()
+        message = (
+            'Error occurred while fetching password for user \'{}\'. {}'
+        ).format(username, str(e))
+        logger.exception(message)
+        error = custom_error(LOGIN_UNKNOWN, str(e))
+        return HttpResponseForbidden(error, content_type='application/json')

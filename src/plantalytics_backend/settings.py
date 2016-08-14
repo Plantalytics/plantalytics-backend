@@ -38,7 +38,11 @@ DEBUG = False
 LIVE = False
 BUILD = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '104.197.35.232']
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '104.197.35.232',
+]
 
 
 # Application definition
@@ -104,16 +108,28 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'UserAttributeSimilarityValidator'
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'MinimumLengthValidator'
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'CommonPasswordValidator'
+        ),
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        'NAME': (
+            'django.contrib.auth.password_validation.'
+            'NumericPasswordValidator'
+        ),
     },
 ]
 
@@ -141,22 +157,30 @@ STATIC_URL = '/static/'
 if DEBUG:
     # output to console
     logging.basicConfig(
-        level = logging.DEBUG,
-        format = '%(asctime)s %(levelname)s %(message)s',
+        level=logging.DEBUG,
+        format='%(asctime)s %(levelname)s %(message)s',
     )
 if LIVE:
     # output to logging file
     logging.basicConfig(
-        level = logging.DEBUG,
-        format = '%(asctime)s %(levelname)s %(message)s',
-        filename = '/var/log/uwsgi/plantalytics_backend.log',
-        filemode = 'a'
+        level=logging.DEBUG,
+        format='%(asctime)s %(levelname)s %(message)s',
+        filename=os.environ.get('LOG_UWSGI'),
+        filemode='a'
     )
 if BUILD:
     # output to temp logging file
     logging.basicConfig(
-        level = logging.DEBUG,
-        format = '%(asctime)s %(levelname)s %(message)s',
-        filename = '/tmp/plantalytics_backend.log',
-        filemode = 'a'
+        level=logging.DEBUG,
+        format='%(asctime)s %(levelname)s %(message)s',
+        filename=os.environ.get('LOG_BUILD'),
+        filemode='a'
     )
+
+EMAIL_USE_TLS = True
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('RESET_HOST')
+EMAIL_PORT = os.environ.get('RESET_PORT')
+EMAIL_HOST_USER = os.environ.get('RESET_EMAIL')
+EMAIL_HOST_PASSWORD = os.environ.get('RESET_PASSWORD')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

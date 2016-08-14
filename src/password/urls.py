@@ -7,16 +7,10 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
-# !/usr/bin/env python
-import os
-import sys
+from django.conf.urls import url
+from . import views
 
-if __name__ == '__main__':
-    os.environ.setdefault(
-        'DJANGO_SETTINGS_MODULE',
-        'plantalytics_backend.settings'
-    )
-
-    from django.core.management import execute_from_command_line
-
-    execute_from_command_line(sys.argv)
+urlpatterns = [
+    url(r'^reset', views.reset, name='reset'),
+    url(r'^change', views.change, name='change'),
+]

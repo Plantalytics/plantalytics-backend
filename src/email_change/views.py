@@ -13,6 +13,8 @@ import re
 
 from common.exceptions import *
 from common.errors import *
+from django.core.mail import send_mail
+from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.http import (
     HttpResponse,
@@ -58,8 +60,18 @@ def index(request):
             return HttpResponseForbidden(error, content_type='application/json')
 
         try:
-            # TODO: email original email address notification
+            old_email = cassy.get_user_email(username)
             cassy.change_user_email(username, new_email)
+            message = "The email address associated with this account has been changed to:\n{}\n\n" \
+                      "If you did not request this change, please contact us as admin@plantalytics.us\n"\
+                      .format(new_email)
+            send_mail(
+                'Plantalytics Email Changed',
+                message,
+                settings.EMAIL_HOST_USER,
+                [old_email],
+                fail_silently=False,
+            )
 
         except PlantalyticsException as e:
             logger.warn('Error changing email address.')

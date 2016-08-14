@@ -474,7 +474,6 @@ def change_user_email(username, new_email):
     to the supplied email
     """
 
-    print(get_user_email(username))
     session.row_factory = named_tuple_factory
     table = str(os.environ.get('DB_USER_TABLE'))
     parameters = {
@@ -495,7 +494,6 @@ def change_user_email(username, new_email):
             prepared_statement,
             parameters
         )
-        print(get_user_email(username))
         return True
     # Known exception
     except PlantalyticsException as e:

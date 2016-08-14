@@ -314,10 +314,11 @@ def get_authorized_vineyards(username):
         else:
             # Loop through vineyards and grab vineyard names
             vineyard_ids = rows[0].vineyards
-            vineyard_names = []
+            vineyard_object_array = []
 
-            # Perform query for vineyard name for each vineyard id.
+            # Assemble array of vineyard id/name combinations
             for vine in vineyard_ids:
+                # Perform query for vineyard name
                 values = {'vineid': vine}
                 vineyard_names_stmt_get = session.prepare(
                     'SELECT vinename'
@@ -327,14 +328,10 @@ def get_authorized_vineyards(username):
                 bound = vineyard_names_stmt_get.bind(values)
                 session.row_factory = named_tuple_factory
                 name_rows = session.execute(bound)
-                vineyard_names.append(name_rows[0].vinename)
 
-            # Assemble array of vineyard id/name combinations
-            vineyard_object_array = []
-            for i in range(len(vineyard_ids)):
                 cur_vineyard_object = {
-                    'vineyard_id': vineyard_ids[i],
-                    'vineyard_name': vineyard_names[i]
+                    'vineyard_id': vine,
+                    'vineyard_name': name_rows[0].vinename
                 }
                 vineyard_object_array.append(cur_vineyard_object)
 

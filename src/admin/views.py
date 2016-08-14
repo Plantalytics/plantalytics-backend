@@ -26,10 +26,32 @@ import cassy
 logger = logging.getLogger('plantalytics_backend.admin')
 
 
+def verify_admin(admin_username, auth_token):
+    """
+    Verifies username has admin privileges and is authenticated.
+    """
+
+    try:
+        message = (
+            'Validating {} is an authenticated admin.'
+        ).format(admin_username)
+        logger.info(message)
+        is_admin = cassy.verify_authenticated_admin(admin_username, auth_token)
+        if (is_admin is False):
+            return False
+        message = (
+            'Successfully validated {} is an authenticated admin.'
+        ).format(admin_username)
+        logger.info(message)
+        return True
+    except Exception as e:
+        raise e
+
+
 @csrf_exempt
 def user_info(request):
     """
-    Endpoint returns the user info for the request username.
+    Endpoint returns the user info for the requested username.
     """
 
     if request.method != 'POST':
@@ -42,10 +64,19 @@ def user_info(request):
     request_username = str(data.get('request_username', ''))
 
     try:
-        is_admin = cassy.verify_authenticated_admin(admin_username, auth_token)
-        if(is_admin is False):
-            return HttpResponseForbidden()
+        is_verified = verify_admin(admin_username, auth_token)
+        if (is_verified is False):
+            raise PlantalyticsAuthException(ADMIN_INVALID)
+
+        message = (
+            '{} is retrieving user info for username: {}.'
+        ).format(admin_username, request_username)
+        logger.info(message)
         response = cassy.get_user_info(request_username)
+        message = (
+            '{} successfully retrieved user info for username: {}.'
+        ).format(admin_username, request_username)
+        logger.info(message)
         return HttpResponse(
             json.dumps(response),
             content_type='application/json'
@@ -80,13 +111,29 @@ def user_new(request):
     auth_token = str(data.get('auth_token', ''))
     admin_username = str(data.get('admin_username', ''))
     new_user_info = data.get('new_user_info', '')
+    new_username = str(new_user_info.get('username', ''))
 
     try:
-        is_admin = cassy.verify_authenticated_admin(admin_username, auth_token)
-        if(is_admin is False):
-            return HttpResponseForbidden()
+        is_verified = verify_admin(admin_username, auth_token)
+        if (is_verified is False):
+            raise PlantalyticsAuthException(ADMIN_INVALID)
+
+        message = (
+            '{} is attemping to create new user: {}.'
+        ).format(admin_username, new_username)
+        logger.info(message)
         cassy.create_new_user(new_user_info)
-        return HttpResponse()
+        message = (
+            '{} successfully created new user: {}.'
+        ).format(admin_username, new_username)
+        logger.info(message)
+        body = {
+                'errors': {}
+        }
+        return HttpResponse(
+            json.dumps(body),
+            content_type='application/json'
+        )
     except PlantalyticsException as e:
         message = (
             'Error attempting to create new user. Error code: {}'
@@ -117,14 +164,29 @@ def user_subscription(request):
     auth_token = str(data.get('auth_token', ''))
     admin_username = str(data.get('admin_username', ''))
     request_username = str(data.get('request_username', ''))
-    sub_end_date = data.get('sub_end_date', '')
+    sub_end_date = str(data.get('sub_end_date', ''))
 
     try:
-        is_admin = cassy.verify_authenticated_admin(admin_username, auth_token)
-        if(is_admin is False):
-            return HttpResponseForbidden()
+        is_verified = verify_admin(admin_username, auth_token)
+        if (is_verified is False):
+            raise PlantalyticsAuthException(ADMIN_INVALID)
+
+        message = (
+            '{} is attemping to update subscription for user: {}.'
+        ).format(admin_username, request_username)
+        logger.info(message)
         cassy.update_user_subscription(request_username, sub_end_date)
-        return HttpResponse()
+        message = (
+            '{} successfully updated subscruption for user: {}.'
+        ).format(admin_username, request_username)
+        logger.info(message)
+        body = {
+                'errors': {}
+        }
+        return HttpResponse(
+            json.dumps(body),
+            content_type='application/json'
+        )
     except PlantalyticsException as e:
         message = (
             'Error attempting to update user subscription. Error code: {}'
@@ -156,13 +218,29 @@ def user_edit(request):
     auth_token = str(data.get('auth_token', ''))
     admin_username = str(data.get('admin_username', ''))
     user_edit_info = data.get('edit_user_info', '')
+    username = str(user_edit_info.get('username', ''))
 
     try:
-        is_admin = cassy.verify_authenticated_admin(admin_username, auth_token)
-        if(is_admin is False):
-            return HttpResponseForbidden()
+        is_verified = verify_admin(admin_username, auth_token)
+        if (is_verified is False):
+            raise PlantalyticsAuthException(ADMIN_INVALID)
+
+        message = (
+            '{} is attemping to edit info for user: {}.'
+        ).format(admin_username, username)
+        logger.info(message)
         cassy.edit_user(user_edit_info)
-        return HttpResponse()
+        message = (
+            '{} successfully edited info for user: {}.'
+        ).format(admin_username, username)
+        logger.info(message)
+        body = {
+                'errors': {}
+        }
+        return HttpResponse(
+            json.dumps(body),
+            content_type='application/json'
+        )
     except PlantalyticsException as e:
         message = (
             'Error attempting to edit user info. Error code: {}'
@@ -182,7 +260,7 @@ def user_edit(request):
 @csrf_exempt
 def user_disable(request):
     """
-    Endpoint disables the user for the request username.
+    Endpoint disables the user for the requested username.
     """
 
     if request.method != 'POST':
@@ -195,11 +273,26 @@ def user_disable(request):
     request_username = str(data.get('request_username', ''))
 
     try:
-        is_admin = cassy.verify_authenticated_admin(admin_username, auth_token)
-        if(is_admin is False):
-            return HttpResponseForbidden()
-        response = cassy.disable_user(request_username)
-        return HttpResponse()
+        is_verified = verify_admin(admin_username, auth_token)
+        if (is_verified is False):
+            raise PlantalyticsAuthException(ADMIN_INVALID)
+
+        message = (
+            '{} is attemping to disable user: {}.'
+        ).format(admin_username, request_username)
+        logger.info(message)
+        cassy.disable_user(request_username)
+        message = (
+            '{} successfully disabled user: {}.'
+        ).format(admin_username, request_username)
+        logger.info(message)
+        body = {
+                'errors': {}
+        }
+        return HttpResponse(
+            json.dumps(body),
+            content_type='application/json'
+        )
     except PlantalyticsException as e:
         message = (
             'Error attempting to disable user. Error code: {}'
@@ -232,10 +325,19 @@ def vineyard_info(request):
     vineyard_id = str(data.get('vineyard_id', ''))
 
     try:
-        is_admin = cassy.verify_authenticated_admin(admin_username, auth_token)
-        if(is_admin is False):
-            return HttpResponseForbidden()
+        is_verified = verify_admin(admin_username, auth_token)
+        if (is_verified is False):
+            raise PlantalyticsAuthException(ADMIN_INVALID)
+
+        message = (
+            '{} is retrieving vineyard info for vineyard id: {}.'
+        ).format(admin_username, vineyard_id)
+        logger.info(message)
         response = cassy.get_vineyard_info(vineyard_id)
+        message = (
+            '{} successfully retrieved vineyard info for vineyard id: {}.'
+        ).format(admin_username, request_username)
+        logger.info(message)
         return HttpResponse(
             json.dumps(response),
             content_type='application/json'
@@ -271,14 +373,27 @@ def vineyard_edit(request):
     auth_token = str(data.get('auth_token', ''))
     admin_username = str(data.get('admin_username', ''))
     edit_vineyard_info = data.get('edit_vineyard_info', '')
+    vineyard_id = str(edit_vineyard_info.get('vineid', ''))
 
     try:
-        is_admin = cassy.verify_authenticated_admin(admin_username, auth_token)
-        if(is_admin is False):
-            return HttpResponseForbidden()
-        response = cassy.edit_vineyard(edit_vineyard_info)
+        is_verified = verify_admin(admin_username, auth_token)
+        if (is_verified is False):
+            raise PlantalyticsAuthException(ADMIN_INVALID)
+
+        message = (
+            '{} is attemping to edit info for vineyard id: {}.'
+        ).format(admin_username, vineyard_id)
+        logger.info(message)
+        cassy.edit_vineyard(edit_vineyard_info)
+        message = (
+            '{} successfully edited info for vineyard id: {}.'
+        ).format(admin_username, vineyard_id)
+        logger.info(message)
+        body = {
+                'errors': {}
+        }
         return HttpResponse(
-            json.dumps(response),
+            json.dumps(body),
             content_type='application/json'
         )
     except PlantalyticsException as e:
@@ -312,13 +427,29 @@ def vineyard_new(request):
     auth_token = str(data.get('auth_token', ''))
     admin_username = str(data.get('admin_username', ''))
     new_vineyard_info = data.get('new_vineyard_info', '')
+    vineyard_id = str(new_vineyard_info.get('vineid', ''))
 
     try:
-        is_admin = cassy.verify_authenticated_admin(admin_username, auth_token)
-        if(is_admin is False):
-            return HttpResponseForbidden()
+        is_verified = verify_admin(admin_username, auth_token)
+        if (is_verified is False):
+            raise PlantalyticsAuthException(ADMIN_INVALID)
+
+        message = (
+            '{} is attemping to create new vineyard with vineyard id: {}.'
+        ).format(admin_username, vineyard_id)
+        logger.info(message)
         cassy.create_new_vineyard(new_vineyard_info)
-        return HttpResponse()
+        message = (
+            '{} successfully created new vineyard with vineyard id: {}.'
+        ).format(admin_username, vineyard_id)
+        logger.info(message)
+        body = {
+                'errors': {}
+        }
+        return HttpResponse(
+            json.dumps(body),
+            content_type='application/json'
+        )
     except PlantalyticsException as e:
         message = (
             'Error attempting to create new vineyard. Error code: {}'
@@ -351,11 +482,26 @@ def vineyard_disable(request):
     vineyard_id = str(data.get('vineyard_id', ''))
 
     try:
-        is_admin = cassy.verify_authenticated_admin(admin_username, auth_token)
-        if(is_admin is False):
-            return HttpResponseForbidden()
+        is_verified = verify_admin(admin_username, auth_token)
+        if (is_verified is False):
+            raise PlantalyticsAuthException(ADMIN_INVALID)
+
+        message = (
+            '{} is attemping to disable vineyard with vineyard id: {}.'
+        ).format(admin_username, vineyard_id)
+        logger.info(message)
         response = cassy.disable_vineyard(vineyard_id)
-        return HttpResponse()
+        message = (
+            '{} successfully disabled vineyard with vineyard id: {}.'
+        ).format(admin_username, vineyard_id)
+        logger.info(message)
+        body = {
+                'errors': {}
+        }
+        return HttpResponse(
+            json.dumps(body),
+            content_type='application/json'
+        )
     except PlantalyticsException as e:
         message = (
             'Error attempting to disable vineyard. Error code: {}'

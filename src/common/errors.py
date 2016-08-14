@@ -10,6 +10,7 @@
 from json import dumps
 
 # Using constants to make it easier to rename codes
+ADMIN_INVALID = 'admin_invalid'
 AUTH_NO_TOKEN = 'auth_error_no_token'
 AUTH_UNKNOWN = 'auth_error_unknown'
 AUTH_NOT_FOUND = 'auth_error_not_found'
@@ -30,6 +31,7 @@ VINEYARD_UNKNOWN = 'vineyard_unknown'
 UNKNOWN = 'unknown'
 
 responses = {
+    ADMIN_INVALID: 'Invalid admin credentials.',
     AUTH_NO_TOKEN: 'Missing auth token in request.',
     AUTH_UNKNOWN: 'Unexpected error occurred during authorization.',
     AUTH_NOT_FOUND: 'Auth token not found.',

@@ -488,14 +488,14 @@ def verify_authenticated_admin(username, auth_token):
     try:
         verified = str(verify_auth_token(auth_token))
         if (verified != username):
-            raise PlantalyticsAuthException(AUTH_NOT_FOUND)
+            return False
         rows = session.execute(
             prepared_statement,
             parameters
         )
         if not rows:
-            raise PlantalyticsAuthException(AUTH_NOT_FOUND)
-        return rows[0].admin
+            return False
+        return True
     # Known exception
     except PlantalyticsException as e:
         raise e

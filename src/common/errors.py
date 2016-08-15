@@ -21,6 +21,7 @@ EMAIL_ERROR = 'email_error'
 HUB_KEY_INVALID = 'env_key_invalid'
 LOGIN_ERROR = 'login_error'
 LOGIN_UNKNOWN = 'login_unknown'
+LOGIN_NO_VINEYARDS = 'login_no_vineyards'
 RESET_ERROR = 'reset_error'
 RESET_ERROR_USERNAME = 'reset_error_username'
 VINEYARD_NO_ID = 'vineyard_no_id'
@@ -47,6 +48,7 @@ responses = {
     HUB_KEY_INVALID: 'Hub key invalid.',
     LOGIN_ERROR: 'Login Error: Invalid username or password.',
     LOGIN_UNKNOWN: 'An unexpected error occurred during login.',
+    LOGIN_NO_VINEYARDS: 'Login Error: User has no active vineyards.',
     RESET_ERROR: 'An error occurred while resetting your password.',
     RESET_ERROR_USERNAME: (
         'An error occurred resetting the password. Bad username.'

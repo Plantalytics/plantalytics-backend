@@ -49,7 +49,7 @@ def index(request):
 
         if stored_password == submitted_password:
             # Generate token and put into JSON object
-            auth_token = {
+            response_object = {
                 'auth_token': str(uuid.uuid4()),
             }
             # Return response with token object
@@ -62,7 +62,7 @@ def index(request):
                 cassy.set_user_auth_token(
                     username,
                     submitted_password,
-                    auth_token['auth_token']
+                    response_object['auth_token']
                 )
 
                 message = (
@@ -72,13 +72,19 @@ def index(request):
             # Condition it coupled to unit tests
             # TODO: Uncouple unit tests and refactor
             else:
-                auth_token['auth_token'] = os.environ.get('LOGIN_SEC_TOKEN')
+                response_object['auth_token'] = os.environ.get('LOGIN_SEC_TOKEN')
+
+            # Add in vineyard ids
+            response_object['authorized_vineyards'] = cassy.get_authorized_vineyards(
+                username
+            )
+
             message = (
                 'Successfully logged in user \'{}\'.'
             ).format(username)
             logger.info(message)
             return HttpResponse(
-                json.dumps(auth_token),
+                json.dumps(response_object),
                 content_type='application/json'
             )
         else:

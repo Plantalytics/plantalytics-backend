@@ -290,6 +290,61 @@ def get_user_email(username):
         raise Exception('Transaction Error Occurred: '.format(str(e)))
 
 
+def get_authorized_vineyards(username):
+    """
+    Obtains authorized vineyard ids for requested user.
+    """
+
+    values = {'username': username}
+    vineyards_stmt_get = session.prepare(
+        'SELECT vineyards'
+        + ' FROM ' + os.environ.get('DB_USER_TABLE')
+        + ' WHERE username=?'
+    )
+    bound = vineyards_stmt_get.bind(values)
+    session.row_factory = named_tuple_factory
+
+    try:
+        if username == '':
+            raise PlantalyticsEmailException(EMAIL_ERROR)
+        rows = session.execute(bound)
+
+        if not rows:
+            raise PlantalyticsLoginException(LOGIN_NO_VINEYARDS)
+        else:
+            # Loop through vineyards and grab vineyard names
+            vineyard_ids = rows[0].vineyards
+            vineyard_object_array = []
+
+            # Assemble array of vineyard id/name combinations
+            for vine in vineyard_ids:
+                # Perform query for vineyard name
+                values = {'vineid': vine}
+                vineyard_names_stmt_get = session.prepare(
+                    'SELECT vinename'
+                    + ' FROM ' + os.environ.get('DB_VINE_TABLE')
+                    + ' WHERE vineid=?'
+                )
+                bound = vineyard_names_stmt_get.bind(values)
+                session.row_factory = named_tuple_factory
+                name_rows = session.execute(bound)
+
+                cur_vineyard_object = {
+                    'vineyard_id': vine,
+                    'vineyard_name': name_rows[0].vinename
+                }
+                vineyard_object_array.append(cur_vineyard_object)
+
+            # Return completed object.
+            return vineyard_object_array
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: ' + str(e))
+
+
 def get_user_auth_token(username, password):
     """
     Obtains session authentication token for the requested user.

@@ -273,13 +273,13 @@ def get_user_email(username):
 
     try:
         if username == '':
-            raise PlantalyticsEmailException(EMAIL_ERROR)
+            raise PlantalyticsEmailException(EMAIL_RESET_ERROR)
         rows = session.execute(
             prepared_statement,
             parameters
         )
         if not rows:
-            raise PlantalyticsEmailException(EMAIL_ERROR)
+            raise PlantalyticsEmailException(EMAIL_RESET_ERROR)
         else:
             return rows[0].email
     # Known exception
@@ -520,4 +520,40 @@ def change_user_password(username, new_password, old_password):
         raise e
     # Unknown exception
     except Exception as e:
-        raise Exception('Transaction Error Occurred: '.foramt(str(e)))
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def change_user_email(username, new_email):
+    """
+    Changes email address of the supplied username
+    to the supplied email
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': username,
+        'email': new_email,
+    }
+    query = (
+        'UPDATE {} SET email=? WHERE username=? AND password=?;'
+    )
+
+    try:
+        password = get_user_password(username)
+        parameters['password'] = password
+        prepared_statement = session.prepare(
+            query.format(table)
+        )
+        session.execute(
+            prepared_statement,
+            parameters
+        )
+        return True
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+

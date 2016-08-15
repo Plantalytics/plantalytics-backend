@@ -208,7 +208,7 @@ def reset(request):
             'Error occurred while fetching email for user \'{}\'. {}'
         ).format(username, str(e))
         logger.exception(message)
-        error = custom_error(EMAIL_ERROR, str(e))
+        error = custom_error(EMAIL_RESET_ERROR, str(e))
         return HttpResponseForbidden(error, content_type='application/json')
 
     return HttpResponse()

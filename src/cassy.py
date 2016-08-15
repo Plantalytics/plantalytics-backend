@@ -646,14 +646,17 @@ def create_new_user(new_user_info):
             'username': new_user_info.get('username', ''),
             'password': new_user_info.get('password', ''),
             'email': new_user_info.get('email', ''),
+            'admin': new_user_info.get('admin', ''),
+            'enable': new_user_info.get('enable', ''),
             'securitytoken': new_user_info.get('securitytoken', ''),
             'subenddate': new_user_info.get('subenddate', ''),
             'userid': int(new_user_info.get('userid', '')),
             'vineyards': new_user_info.get('vineyards', ''),
     }
     query = (
-        'INSERT INTO {} (username, password, email, securitytoken, '
-        'userid, vineyards) VALUES(?, ?, ?, ?, ?, ?);'
+        'INSERT INTO {} (username, password, admin, email, enable, '
+        'securitytoken, subenddate, userid, vineyards) '
+        'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);'
     )
     prepared_statement = session.prepare(
         query.format(table)

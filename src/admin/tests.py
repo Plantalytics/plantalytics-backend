@@ -372,6 +372,8 @@ class MainTests(TestCase):
                 'username': os.environ.get('LOGIN_USERNAME'),
                 'password': os.environ.get('LOGIN_PASSWORD'),
                 'email': os.environ.get('RESET_EMAIL'),
+                'admin': False,
+                'enable': False,
                 'securitytoken': os.environ.get('LOGIN_SEC_TOKEN'),
                 'subenddate': os.environ.get('LOGIN_SUB_END_DATE'),
                 'userid': os.environ.get('LOGIN_USER_ID'),

@@ -34,4 +34,5 @@ urlpatterns = [
     url(r'^login', include('login.urls')),
     url(r'^password/', include('password.urls')),
     url(r'^health_check', include('health_check.urls')),
+    url(r'^email_change', include('email_change.urls')),
 ]

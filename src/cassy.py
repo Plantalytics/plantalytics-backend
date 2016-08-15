@@ -679,7 +679,7 @@ def edit_user(user_edit_info):
             parameters
         )
         if not rows:
-            raise PlantalyticsAuthException(RESET_ERROR_USERNAME)
+            raise PlantalyticsAuthException(USER_INVALID)
         old_row = {
             'username': rows[0].username,
             'password': rows[0].password,
@@ -757,7 +757,7 @@ def edit_vineyard(edit_vineyard_info):
     session.row_factory = named_tuple_factory
     table = str(os.environ.get('DB_VINE_TABLE'))
     parameters = {
-        'vineid': edit_vineyard_info.get('vineyard_id', ''),
+        'vineid': int(edit_vineyard_info.get('vineyard_id', '')),
     }
     query = (
         'SELECT * FROM {} WHERE vineid=?;'
@@ -771,7 +771,7 @@ def edit_vineyard(edit_vineyard_info):
             parameters
         )
         if not rows:
-            raise PlantalyticsAuthException(RESET_ERROR_USERNAME)
+            raise PlantalyticsAuthException(VINEYARD_BAD_ID)
         old_row = {
             'vineid': rows[0].vineid,
         }
@@ -785,7 +785,7 @@ def edit_vineyard(edit_vineyard_info):
             'vinename': rows[0].vinename,
         }
         if (edit_vineyard_info.get('vineyard_id', '') != ''):
-            edit_row['vineid'] = edit_vineyard_info.get('vineyard_id', '')
+            edit_row['vineid'] = int(edit_vineyard_info.get('vineyard_id', ''))
         if (edit_vineyard_info.get('boundaries', '') != ''):
             boundaries = []
             for point in edit_vineyard_info.get('boundaries', ''):
@@ -940,7 +940,7 @@ def get_vineyard_info(vineyard_id):
             parameters
         )
         if not rows:
-            raise PlantalyticsVineyardException(VINEYARD_ID_NOT_FOUND)
+            raise PlantalyticsVineyardException(VINEYARD_BAD_ID)
 
         owners = []
         for owner in rows[0].ownerlist:
@@ -971,8 +971,29 @@ def disable_vineyard(vineyard_id):
     table = str(os.environ.get('DB_VINE_TABLE'))
     parameters = {
         'vineid': int(vineyard_id),
-        'enable': False,
     }
+    query = (
+        'SELECT * FROM {} WHERE vineid=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            raise PlantalyticsVineyardException(VINEYARD_BAD_ID)
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+    parameters['enable'] = False
     query = (
         'UPDATE {} SET enable=? WHERE vineid=?;'
     )

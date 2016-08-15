@@ -238,7 +238,124 @@ class MainTests(TestCase):
         response = client.get('/admin/user/subscription')
         self.assertEqual(response.status_code, 405)
 
-# TODO: /admin/user/edit tests
+# /admin/user/edit - valid request tests
+
+    def test_edit_user(self):
+        """
+        Tests a valid request to edit a user.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'edit_user_info': {
+                'username': os.environ.get('LOGIN_USERNAME'),
+                'password': os.environ.get('LOGIN_PASSWORD'),
+                'email': os.environ.get('RESET_EMAIL'),
+            },
+        }
+        response = client.post(
+            '/admin/user/edit',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        body = json.loads(response.content.decode('utf-8'))
+        self.assertTrue(body is not None)
+        self.assertEqual(response.status_code, 200)
+
+# /admin/user/edit - invalid request tests
+
+    def test_edit_user_invalid_admin(self):
+        """
+        Tests a request to edit a user with invalid admin credentials.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': 'thisWontGetYouFar',
+            'admin_username': 'mrDerp',
+            'edit_user_info': {
+                'username': os.environ.get('LOGIN_USERNAME'),
+                'password': os.environ.get('LOGIN_PASSWORD'),
+                'email': os.environ.get('RESET_EMAIL'),
+            },
+        }
+        response = client.post(
+            '/admin/user/edit',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('admin_invalid' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_edit_user_invalid_username(self):
+        """
+        Tests a request to edit a user with an invalid username.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'edit_user_info': {
+                'username': 'thisGuyAintInThere',
+                'password': os.environ.get('LOGIN_PASSWORD'),
+                'email': os.environ.get('RESET_EMAIL'),
+            },
+        }
+        response = client.post(
+            '/admin/user/edit',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('username_invalid' in error)
+        self.assertEqual(response.status_code, 403)
+
+# /admin/user/edit exception tests
+
+    @patch('cassy.edit_user')
+    def test_edit_user_unknown_exception(self, cassy_mock):
+        """
+        Tests the /admin/user/edit endpoint when
+        cassy.edit_user throws Exception.
+        """
+        setup_test_environment()
+        client = Client()
+        cassy_mock.side_effect = Exception('Test exception')
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'edit_user_info': {
+                'username': os.environ.get('LOGIN_USERNAME'),
+                'password': os.environ.get('LOGIN_PASSWORD'),
+                'email': os.environ.get('RESET_EMAIL'),
+            },
+        }
+        response = client.post(
+            '/admin/user/edit',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('unknown' in error)
+        cassy_mock.assert_called_once_with(
+            payload.get('edit_user_info', '')
+        )
+        self.assertEqual(response.status_code, 500)
+
+# /admin/user/edit - invalid HTTP method tests
+
+    def test_edit_user_invalid_method(self):
+        """
+        Tests the edit user endpoint with unsupported HTTP method.
+        """
+        setup_test_environment()
+        client = Client()
+        response = client.get('/admin/user/edit')
+        self.assertEqual(response.status_code, 405)
 
 # /admin/user/new - valid request tests
 
@@ -365,6 +482,8 @@ class MainTests(TestCase):
             data=json.dumps(payload),
             content_type='application/json'
         )
+        body = json.loads(response.content.decode('utf-8'))
+        self.assertTrue(body is not None)
         self.assertEqual(response.status_code, 200)
 
 # /admin/user/disable - invalid request tests
@@ -448,4 +567,454 @@ class MainTests(TestCase):
         response = client.get('/admin/user/disable')
         self.assertEqual(response.status_code, 405)
 
-# TODO: /admin/vineyard tests...
+# /admin/vineyard - valid request tests
+
+    def test_vineyard_info(self):
+        """
+        Tests a valid request for vineyard info.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'vineyard_id': os.environ.get('VINE_ID'),
+        }
+        response = client.post(
+            '/admin/vineyard',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        content = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(
+            content.get('name', ''),
+            os.environ.get('VINE_NAME')
+        )
+        self.assertEqual(response.status_code, 200)
+
+# /admin/vineyard - invalid request tests
+
+    def test_vineyard_info_invalid_vineyard(self):
+        """
+        Tests a request for vineyard info with an invalid vineyard id.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'vineyard_id': 12345,
+        }
+        response = client.post(
+            '/admin/vineyard',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_bad_id' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_vineyard_info_invalid_admin(self):
+        """
+        Tests a request for vineyard info with an invalid admin credentials.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': 'thisWontGetYouFar',
+            'admin_username': 'mrDerp',
+            'vineyard_id': os.environ.get('VINE_ID'),
+        }
+        response = client.post(
+            '/admin/vineyard',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('admin_invalid' in error)
+        self.assertEqual(response.status_code, 403)
+
+# /admin/vineyard - exception tests
+
+    @patch('cassy.get_vineyard_info')
+    def test_vineyard_info_unknown_exception(self, cassy_mock):
+        """
+        Tests the /admin/vineyard endpoint when
+        cassy.get_user_info throws Exception.
+        """
+        setup_test_environment()
+        client = Client()
+        cassy_mock.side_effect = Exception('Test exception')
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'vineyard_id': os.environ.get('VINE_ID'),
+        }
+        response = client.post(
+            '/admin/vineyard',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('unknown' in error)
+        cassy_mock.assert_called_once_with(
+            payload.get('vineyard_id', '')
+        )
+        self.assertEqual(response.status_code, 500)
+
+# /admin/vineyard - invalid HTTP method tests
+
+    def test_vineyard_info_invalid_method(self):
+        """
+        Tests the vineyard info endpoint with unsupported HTTP method.
+        """
+        setup_test_environment()
+        client = Client()
+        response = client.get('/admin/vineyard')
+        self.assertEqual(response.status_code, 405)
+
+# /admin/vineyard/new - valid request tests
+
+    def test_new_vineyard(self):
+        """
+        Tests a valid request to create a new vineyard.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'new_vineyard_info': {
+                'vineyard_id': os.environ.get('VINE_ID'),
+                'owners': [str(os.environ.get('VINE_OWNERS'))],
+                'enable': True,
+                'name': os.environ.get('VINE_NAME'),
+                'boundaries': [{
+                    'lat': os.environ.get('VINE_BOUND_LAT'),
+                    'lon': os.environ.get('VINE_BOUND_LON'),
+                }],
+                'center': {
+                    'lat': os.environ.get('VINE_CENTER_LAT'),
+                    'lon': os.environ.get('VINE_CENTER_LON'),
+                },
+            },
+        }
+        response = client.post(
+            '/admin/vineyard/new',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        body = json.loads(response.content.decode('utf-8'))
+        self.assertTrue(body is not None)
+        self.assertEqual(response.status_code, 200)
+
+# /admin/vineyard/new - invalid request tests
+
+    def test_new_vineyard_invalid_admin(self):
+        """
+        Tests a request to create a new vineyard
+        with invalid admin credentials.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': 'thisWontGetYouFar',
+            'admin_username': 'mrDerp',
+            'new_vineyard_info': {
+                'vineyard_id': os.environ.get('VINE_ID'),
+                'owners': [str(os.environ.get('VINE_OWNERS'))],
+                'enable': True,
+                'name': os.environ.get('VINE_NAME'),
+                'boundaries': [{
+                    'lat': os.environ.get('VINE_BOUND_LAT'),
+                    'lon': os.environ.get('VINE_BOUND_LON'),
+                }],
+                'center': {
+                    'lat': os.environ.get('VINE_CENTER_LAT'),
+                    'lon': os.environ.get('VINE_CENTER_LON'),
+                },
+            },
+        }
+        response = client.post(
+            '/admin/vineyard/new',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('admin_invalid' in error)
+        self.assertEqual(response.status_code, 403)
+
+# /admin/vineyard/new exception tests
+
+    @patch('cassy.create_new_vineyard')
+    def test_new_vineyard_unknown_exception(self, cassy_mock):
+        """
+        Tests the /admin/vineyard/new endpoint when
+        cassy.create_new_vineyard throws Exception.
+        """
+        setup_test_environment()
+        client = Client()
+        cassy_mock.side_effect = Exception('Test exception')
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'new_vineyard_info': {
+                'vineyard_id': os.environ.get('VINE_ID'),
+                'owners': [str(os.environ.get('VINE_OWNERS'))],
+                'enable': True,
+                'name': os.environ.get('VINE_NAME'),
+                'boundaries': [{
+                    'lat': os.environ.get('VINE_BOUND_LAT'),
+                    'lon': os.environ.get('VINE_BOUND_LON'),
+                }],
+                'center': {
+                    'lat': os.environ.get('VINE_CENTER_LAT'),
+                    'lon': os.environ.get('VINE_CENTER_LON'),
+                },
+            },
+        }
+        response = client.post(
+            '/admin/vineyard/new',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('unknown' in error)
+        cassy_mock.assert_called_once_with(
+            payload.get('new_vineyard_info', '')
+        )
+        self.assertEqual(response.status_code, 500)
+
+        # /admin/user/new - invalid HTTP method tests
+
+    def test_new_vineyard_invalid_method(self):
+        """
+        Tests the create new vineyard endpoint with unsupported HTTP method.
+        """
+        setup_test_environment()
+        client = Client()
+        response = client.get('/admin/vineyard/new')
+        self.assertEqual(response.status_code, 405)
+
+# /admin/vineyard/edit - valid request tests
+
+    def test_edit_vineyard(self):
+        """
+        Tests a valid request to edit a vineyard.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'edit_vineyard_info': {
+                'vineyard_id': os.environ.get('VINE_ID'),
+                'owners': [str(os.environ.get('VINE_OWNERS'))],
+                'name': os.environ.get('VINE_NAME'),
+            },
+        }
+        response = client.post(
+            '/admin/vineyard/edit',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        body = json.loads(response.content.decode('utf-8'))
+        self.assertTrue(body is not None)
+        self.assertEqual(response.status_code, 200)
+
+# /admin/vineyard/edit - invalid request tests
+
+    def test_edit_vineyard_invalid_admin(self):
+        """
+        Tests a request to create a new vineyard
+        with invalid admin credentials.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': 'thisWontGetYouFar',
+            'admin_username': 'mrDerp',
+            'edit_vineyard_info': {
+                'vineyard_id': os.environ.get('VINE_ID'),
+                'owners': [str(os.environ.get('VINE_OWNERS'))],
+                'name': os.environ.get('VINE_NAME'),
+            },
+        }
+        response = client.post(
+            '/admin/vineyard/edit',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('admin_invalid' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_edit_vineyard_invalid_username(self):
+        """
+        Tests a request to edit a vineyard with an invalid vineyard id.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'edit_vineyard_info': {
+                'vineyard_id': 12345,
+                'owners': [str(os.environ.get('VINE_OWNERS'))],
+                'name': os.environ.get('VINE_NAME'),
+            },
+        }
+        response = client.post(
+            '/admin/vineyard/edit',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_bad_id' in error)
+        self.assertEqual(response.status_code, 403)
+
+# /admin/vineyard/edit exception tests
+
+    @patch('cassy.edit_vineyard')
+    def test_edit_vineyard_unknown_exception(self, cassy_mock):
+        """
+        Tests the /admin/vineyard/edit endpoint when
+        cassy.edit_vineyard throws Exception.
+        """
+        setup_test_environment()
+        client = Client()
+        cassy_mock.side_effect = Exception('Test exception')
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'edit_vineyard_info': {
+                'vineyard_id': os.environ.get('VINE_ID'),
+                'owners': [str(os.environ.get('VINE_OWNERS'))],
+                'name': os.environ.get('VINE_NAME'),
+            },
+        }
+        response = client.post(
+            '/admin/vineyard/edit',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('unknown' in error)
+        cassy_mock.assert_called_once_with(
+            payload.get('edit_vineyard_info', '')
+        )
+        self.assertEqual(response.status_code, 500)
+
+        # /admin/user/new - invalid HTTP method tests
+
+    def test_edit_vineyard_invalid_method(self):
+        """
+        Tests the edit vineyard endpoint with unsupported HTTP method.
+        """
+        setup_test_environment()
+        client = Client()
+        response = client.get('/admin/vineyard/edit')
+        self.assertEqual(response.status_code, 405)
+
+# /admin/vineyard/disable - valid request tests
+
+    def test_disable_vineyard(self):
+        """
+        Tests a valid request to disable a vineyard.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'vineyard_id': os.environ.get('VINE_ID'),
+        }
+        response = client.post(
+            '/admin/vineyard/disable',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        body = json.loads(response.content.decode('utf-8'))
+        self.assertTrue(body is not None)
+        self.assertEqual(response.status_code, 200)
+
+# /admin/vineyard/disable - invalid request tests
+
+    def test_vineyard_disable_invalid_vineyard(self):
+        """
+        Tests a request to disable a vineyard with an invalid vineyard id.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'vineyard_id': 12345,
+        }
+        response = client.post(
+            '/admin/vineyard/disable',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_bad_id' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_vineyard_disable_invalid_admin(self):
+        """
+        Tests a request to disable a vineyard with invalid admin credentials.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': 'thisWontGetYouFar',
+            'admin_username': 'mrDerp',
+            'vineyard_id': os.environ.get('VINE_ID'),
+        }
+        response = client.post(
+            '/admin/vineyard/disable',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('admin_invalid' in error)
+        self.assertEqual(response.status_code, 403)
+
+# /admin/vineyard/disable exception tests
+
+    @patch('cassy.disable_vineyard')
+    def test_vineyard_disable_unknown_exception(self, cassy_mock):
+        """
+        Tests the /admin/vineyard/disable endpoint when
+        cassy.disable_vineyard throws Exception.
+        """
+        setup_test_environment()
+        client = Client()
+        cassy_mock.side_effect = Exception('Test exception')
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'vineyard_id': os.environ.get('VINE_ID'),
+        }
+        response = client.post(
+            '/admin/vineyard/disable',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('unknown' in error)
+        cassy_mock.assert_called_once_with(
+            payload.get('vineyard_id', '')
+        )
+        self.assertEqual(response.status_code, 500)
+
+# /admin/vineyard/disable - invalid HTTP method tests
+
+    def test_disable_vineyard_invalid_method(self):
+        """
+        Tests the disable vineyard endpoint with unsupported HTTP method.
+        """
+        setup_test_environment()
+        client = Client()
+        response = client.get('/admin/vineyard/disable')
+        self.assertEqual(response.status_code, 405)

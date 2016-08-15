@@ -335,7 +335,7 @@ def vineyard_info(request):
         response = cassy.get_vineyard_info(vineyard_id)
         message = (
             '{} successfully retrieved vineyard info for vineyard id: {}.'
-        ).format(admin_username, request_username)
+        ).format(admin_username, vineyard_id)
         logger.info(message)
         return HttpResponse(
             json.dumps(response),
@@ -372,7 +372,7 @@ def vineyard_edit(request):
     auth_token = str(data.get('auth_token', ''))
     admin_username = str(data.get('admin_username', ''))
     edit_vineyard_info = data.get('edit_vineyard_info', '')
-    vineyard_id = str(edit_vineyard_info.get('vineid', ''))
+    vineyard_id = str(edit_vineyard_info.get('vineyard_id', ''))
 
     try:
         is_verified = verify_admin(admin_username, auth_token)

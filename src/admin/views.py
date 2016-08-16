@@ -9,6 +9,9 @@
 
 import json
 import logging
+import re
+import datetime
+import time
 
 from common.exceptions import *
 from common.errors import *
@@ -16,6 +19,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import (
     HttpResponse,
     HttpResponseForbidden,
+    HttpResponseBadRequest,
     HttpResponseServerError,
     HttpResponseNotAllowed
 )
@@ -96,6 +100,77 @@ def user_info(request):
         return HttpResponseServerError(error, content_type='application/json')
 
 
+def check_user_id(user_id):
+    """
+    Validates submitted user id by checking if it already exists.
+    """
+
+    message = (
+        'Validating submitted user id.'
+    )
+    logger.info(message)
+    invalid = (
+        user_id == '' or
+        int(user_id) < 0 or
+        cassy.check_user_id_exists(int(user_id))
+    )
+    if (invalid):
+        raise PlantalyticsDataException(USER_ID_INVALID)
+    message = (
+        'Submitted user id successfully validated.'
+    )
+    logger.info(message)
+
+
+def check_subscription_end_date(sub_end_date, current_date):
+    """
+    Validates submitted user subscription end date.
+    """
+
+    message = (
+        'Validating submitted user subscription end date.'
+    )
+    logger.info(message)
+    if sub_end_date != '':
+        expected = datetime.datetime.strptime(sub_end_date, '%Y-%m-%d').strftime('%Y-%m-%d')
+        if sub_end_date != expected:
+            raise ValueError("Invalid date format. Expected: YYYY-MM-DD")
+        if time.strptime(sub_end_date, '%Y-%m-%d') < time.strptime(current_date, '%Y-%m-%d'):
+            raise PlantalyticsDataException(SUB_DATE_INVLAID)
+    message = (
+        'Submitted user subscription end date successfully validated.'
+    )
+    logger.info(message)
+
+
+def check_user_parameters(user_info):
+    """
+    Checks submitted user data for parameter constraints.
+    """
+
+    email = user_info.get('email', '')
+    sub_end_date = user_info.get('sub_end_date', '')
+    vineyards = user_info.get('vineyards', '')
+    current_date = datetime.date.today().strftime('%Y-%m-%d')
+
+    message = (
+        'Validating submitted user parameters.'
+    )
+    logger.info(message)
+    if email != '':
+        if re.match(r"[^@]+@[^@]+\.[^@]+", email) is None:
+            raise PlantalyticsDataException(EMAIL_INVALID)
+    check_subscription_end_date(sub_end_date, current_date)
+    if vineyards != '':
+        for vineyard_id in vineyards:
+            if int(vineyard_id) < 0:
+                PlantalyticsDataException(VINEYARD_BAD_ID)
+    message = (
+        'Submitted user parameters successfully validated.'
+    )
+    logger.info(message)
+
+
 @csrf_exempt
 def user_new(request):
     """
@@ -111,6 +186,7 @@ def user_new(request):
     admin_username = str(data.get('admin_username', ''))
     new_user_info = data.get('new_user_info', '')
     new_username = str(new_user_info.get('username', ''))
+    new_user_id = new_user_info.get('userid', '')
 
     try:
         is_verified = verify_admin(admin_username, auth_token)
@@ -121,6 +197,8 @@ def user_new(request):
             '{} is attemping to create new user: {}.'
         ).format(admin_username, new_username)
         logger.info(message)
+        check_user_id(new_user_id)
+        check_user_parameters(new_user_info)
         cassy.create_new_user(new_user_info)
         message = (
             '{} successfully created new user: {}.'
@@ -140,6 +218,13 @@ def user_new(request):
         logger.warn(message)
         error = custom_error(str(e))
         return HttpResponseForbidden(error, content_type='application/json')
+    except ValueError as e:
+        message = (
+            'Error attempting to create new user. Error code: {}'
+        ).format(str(e))
+        logger.warn(message)
+        error = custom_error(DATA_INVALID, str(e))
+        return HttpResponseBadRequest(error, content_type='application/json')
     except Exception as e:
         message = (
             'Unknown error occurred while attempting to create new user:'
@@ -164,6 +249,7 @@ def user_subscription(request):
     admin_username = str(data.get('admin_username', ''))
     request_username = str(data.get('request_username', ''))
     sub_end_date = str(data.get('sub_end_date', ''))
+    current_date = datetime.date.today().strftime('%Y-%m-%d')
 
     try:
         is_verified = verify_admin(admin_username, auth_token)
@@ -174,6 +260,7 @@ def user_subscription(request):
             '{} is attemping to update subscription for user: {}.'
         ).format(admin_username, request_username)
         logger.info(message)
+        check_subscription_end_date(sub_end_date, current_date)
         cassy.update_user_subscription(request_username, sub_end_date)
         message = (
             '{} successfully updated subscruption for user: {}.'
@@ -412,6 +499,28 @@ def vineyard_edit(request):
         return HttpResponseServerError(error, content_type='application/json')
 
 
+def check_vineyard_id(vineyard_id):
+    """
+    Validates submitted vineyard id by checking if it already exists.
+    """
+
+    message = (
+        'Validating submitted vineyard id.'
+    )
+    logger.info(message)
+    invalid = (
+        vineyard_id == '' or
+        int(vineyard_id) < 0 or
+        cassy.check_vineyard_id_exists(int(vineyard_id))
+    )
+    if (invalid):
+        raise PlantalyticsDataException(VINEYARD_ID_INVALID)
+    message = (
+        'Submitted vineyard id successfully validated.'
+    )
+    logger.info(message)
+
+
 @csrf_exempt
 def vineyard_new(request):
     """
@@ -426,7 +535,7 @@ def vineyard_new(request):
     auth_token = str(data.get('auth_token', ''))
     admin_username = str(data.get('admin_username', ''))
     new_vineyard_info = data.get('new_vineyard_info', '')
-    vineyard_id = str(new_vineyard_info.get('vineid', ''))
+    vineyard_id = str(new_vineyard_info.get('vineyard_id', ''))
 
     try:
         is_verified = verify_admin(admin_username, auth_token)
@@ -437,6 +546,7 @@ def vineyard_new(request):
             '{} is attemping to create new vineyard with vineyard id: {}.'
         ).format(admin_username, vineyard_id)
         logger.info(message)
+        check_vineyard_id(vineyard_id)
         cassy.create_new_vineyard(new_vineyard_info)
         message = (
             '{} successfully created new vineyard with vineyard id: {}.'

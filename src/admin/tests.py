@@ -359,7 +359,8 @@ class MainTests(TestCase):
 
 # /admin/user/new - valid request tests
 
-    def test_new_user(self):
+    @patch('admin.views.check_user_id')
+    def test_new_user(self, check_id_mock):
         """
         Tests a valid request to create a new user.
         """
@@ -384,6 +385,11 @@ class MainTests(TestCase):
             '/admin/user/new',
             data=json.dumps(payload),
             content_type='application/json'
+        )
+        new_user_info = payload.get('new_user_info', '')
+        user_id = str(new_user_info.get('userid', ''))
+        check_id_mock.assert_called_once_with(
+            user_id
         )
         body = json.loads(response.content.decode('utf-8'))
         self.assertTrue(body is not None)
@@ -422,7 +428,8 @@ class MainTests(TestCase):
 # /admin/user/new exception tests
 
     @patch('cassy.create_new_user')
-    def test_new_user_unknown_exception(self, cassy_mock):
+    @patch('admin.views.check_user_id')
+    def test_new_user_unknown_exception(self,  check_id_mock, cassy_mock):
         """
         Tests the /admin/user/new endpoint when
         cassy.create_new_user throws Exception.
@@ -449,6 +456,11 @@ class MainTests(TestCase):
             content_type='application/json'
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
+        new_user_info = payload.get('new_user_info', '')
+        user_id = str(new_user_info.get('userid', ''))
+        check_id_mock.assert_called_once_with(
+             user_id
+        )
         self.assertTrue('unknown' in error)
         cassy_mock.assert_called_once_with(
             payload.get('new_user_info', '')
@@ -677,7 +689,8 @@ class MainTests(TestCase):
 
 # /admin/vineyard/new - valid request tests
 
-    def test_new_vineyard(self):
+    @patch('admin.views.check_vineyard_id')
+    def test_new_vineyard(self, check_id_mock):
         """
         Tests a valid request to create a new vineyard.
         """
@@ -705,6 +718,11 @@ class MainTests(TestCase):
             '/admin/vineyard/new',
             data=json.dumps(payload),
             content_type='application/json'
+        )
+        new_vineyard_info = payload.get('new_vineyard_info', '')
+        vineyard_id = str(new_vineyard_info.get('vineyard_id', ''))
+        check_id_mock.assert_called_once_with(
+             vineyard_id
         )
         body = json.loads(response.content.decode('utf-8'))
         self.assertTrue(body is not None)
@@ -749,7 +767,8 @@ class MainTests(TestCase):
 # /admin/vineyard/new exception tests
 
     @patch('cassy.create_new_vineyard')
-    def test_new_vineyard_unknown_exception(self, cassy_mock):
+    @patch('admin.views.check_vineyard_id')
+    def test_new_vineyard_unknown_exception(self, check_id_mock, cassy_mock):
         """
         Tests the /admin/vineyard/new endpoint when
         cassy.create_new_vineyard throws Exception.
@@ -781,6 +800,11 @@ class MainTests(TestCase):
             content_type='application/json'
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
+        new_vineyard_info = payload.get('new_vineyard_info', '')
+        vineyard_id = str(new_vineyard_info.get('vineyard_id', ''))
+        check_id_mock.assert_called_once_with(
+             vineyard_id
+        )
         self.assertTrue('unknown' in error)
         cassy_mock.assert_called_once_with(
             payload.get('new_vineyard_info', '')

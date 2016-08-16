@@ -216,8 +216,8 @@ def user_edit(request):
 
     auth_token = str(data.get('auth_token', ''))
     admin_username = str(data.get('admin_username', ''))
-    user_edit_info = data.get('edit_user_info', '')
-    username = str(user_edit_info.get('username', ''))
+    edit_user_info = data.get('edit_user_info', '')
+    username = str(edit_user_info.get('username', ''))
 
     try:
         is_verified = verify_admin(admin_username, auth_token)
@@ -228,7 +228,7 @@ def user_edit(request):
             '{} is attemping to edit info for user: {}.'
         ).format(admin_username, username)
         logger.info(message)
-        cassy.edit_user(user_edit_info)
+        cassy.edit_user(edit_user_info)
         message = (
             '{} successfully edited info for user: {}.'
         ).format(admin_username, username)

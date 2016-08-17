@@ -75,6 +75,43 @@ def get_env_data(node_id, env_variable):
         raise Exception('Transaction Error Occurred: '.format(str(e)))
 
 
+def set_latest_batch_time(vineyard_id, hub_id, batch_sent, hub_data):
+    """
+    Inserts timestamp for latest data, received from a hub, into the database.
+    """
+
+    table = os.environ.get('DB_HW_TABLE')
+    parameters = {
+        'vineid': vineyard_id,
+        'hubid': hub_id,
+        'lasthubbatchsent': batch_sent,
+    }
+    query = (
+        'UPDATE {} SET lasthubbatchsent=? '
+        'WHERE vineid=? AND hubid=? AND nodeid=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+    batch_statement = BatchStatement()
+
+    try:
+        for data_point in hub_data:
+            parameters['nodeid'] = int(data_point['node_id'])
+            batch_statement.add(
+                prepared_statement,
+                parameters
+            )
+        session.execute(batch_statement)
+        return True
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
 def store_env_data(env_data):
     """
     Inserts environmental data, received from a hub, into the database.
@@ -92,6 +129,12 @@ def store_env_data(env_data):
     batch_statement = BatchStatement()
 
     try:
+        set_latest_batch_time(
+            int(env_data.get('vine_id', '')),
+            int(env_data.get('hub_id', '')),
+            env_data.get('batch_sent', ''),
+            env_data.get('hub_data', '')
+        )
         for data_point in env_data['hub_data']:
             data = (
                 data_point['node_id'],

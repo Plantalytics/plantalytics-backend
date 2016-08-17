@@ -9,6 +9,8 @@
 
 import json
 import logging
+import time
+import datetime
 
 from common.exceptions import *
 from common.errors import *
@@ -23,6 +25,34 @@ from django.http import (
 import cassy
 
 logger = logging.getLogger('plantalytics_backend.env_data')
+
+
+def check_hubs_not_reporting(latest_times):
+    """
+    Checks if the most recent hub batch times haven't reported in
+    more than 20 minutes.
+    """
+
+    timestamp_format = "%Y-%m-%d %H:%M:%S"
+    current_epoch_time = time.strftime(
+        timestamp_format,
+        time.gmtime(time.time())
+    )
+    current_timestamp = datetime.datetime.strptime(
+        current_epoch_time,
+        timestamp_format
+    )
+    current_unix_timestamp = time.mktime(current_timestamp.timetuple())
+
+    for timestamp in latest_times:
+        batch_time = timestamp.lasthubbatchsent
+        batch_unix_time = time.mktime(batch_time.timetuple())
+        time_elapsed = (
+            int(current_unix_timestamp - batch_unix_time) / 60
+        )
+        if(time_elapsed > 20):
+            return False
+    return True
 
 
 @csrf_exempt
@@ -57,6 +87,20 @@ def index(request):
             'Fetching {} data.'
         ).format(env_variable)
         logger.info(message)
+
+        # Check most recent hub batch timestamp
+        message = (
+            'Checking latest hub batch times.'
+        )
+        logger.info(message)
+        latest_times = cassy.check_latest_batch_time(vineyard_id)
+        hubs_are_reporting = check_hubs_not_reporting(latest_times)
+        if(hubs_are_reporting is False):
+            message = (
+                'A hub for vineyard id {} has not reported in the last 20 min.'
+            ).format(str(vineyard_id))
+            logger.warn(message)
+
         coordinates = cassy.get_node_coordinates(vineyard_id)
 
         # Build data structure to return as JSON response content.

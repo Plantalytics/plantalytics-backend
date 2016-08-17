@@ -75,6 +75,34 @@ def get_env_data(node_id, env_variable):
         raise Exception('Transaction Error Occurred: '.format(str(e)))
 
 
+def check_latest_batch_time(vineyard_id):
+    """
+    Checks hub timestamps for submitted vineyard id.
+    """
+
+    table = os.environ.get('DB_HW_TABLE')
+    parameters = {
+        'vineid': int(vineyard_id),
+    }
+    query = (
+        'SELECT lasthubbatchsent FROM {} WHERE vineid=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            raise PlantalyticsDataException(VINEYARD_ID_NOT_FOUND)
+        return rows
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
 def set_latest_batch_time(vineyard_id, hub_id, batch_sent, hub_data):
     """
     Inserts timestamp for latest data, received from a hub, into the database.

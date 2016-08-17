@@ -295,48 +295,58 @@ def get_authorized_vineyards(username):
     Obtains authorized vineyard ids for requested user.
     """
 
-    values = {'username': username}
-    vineyards_stmt_get = session.prepare(
-        'SELECT vineyards'
-        + ' FROM ' + os.environ.get('DB_USER_TABLE')
-        + ' WHERE username=?'
-    )
-    bound = vineyards_stmt_get.bind(values)
     session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': username,
+    }
+    query = (
+        'SELECT vineyards FROM {} WHERE username=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
 
     try:
         if username == '':
             raise PlantalyticsEmailException(EMAIL_ERROR)
-        rows = session.execute(bound)
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
 
         if not rows:
             raise PlantalyticsLoginException(LOGIN_NO_VINEYARDS)
         else:
             # Loop through vineyards and grab vineyard names
             vineyard_ids = rows[0].vineyards
-            vineyard_object_array = []
+            authorized_vineyards = []
 
             # Assemble array of vineyard id/name combinations
             for vine in vineyard_ids:
                 # Perform query for vineyard name
-                values = {'vineid': vine}
-                vineyard_names_stmt_get = session.prepare(
-                    'SELECT vinename'
-                    + ' FROM ' + os.environ.get('DB_VINE_TABLE')
-                    + ' WHERE vineid=?'
+                table = str(os.environ.get('DB_VINE_TABLE'))
+                parameters = {
+                    'vineid': vine,
+                }
+                query = (
+                    'SELECT vinename FROM {} WHERE vineid=?;'
                 )
-                bound = vineyard_names_stmt_get.bind(values)
-                session.row_factory = named_tuple_factory
-                name_rows = session.execute(bound)
-
-                cur_vineyard_object = {
+                prepared_statement = session.prepare(
+                    query.format(table)
+                )
+                name_rows = session.execute(
+                    prepared_statement,
+                    parameters
+                )
+                current_vineyard = {
                     'vineyard_id': vine,
                     'vineyard_name': name_rows[0].vinename
                 }
-                vineyard_object_array.append(cur_vineyard_object)
+                authorized_vineyards.append(current_vineyard)
 
             # Return completed object.
-            return vineyard_object_array
+            return authorized_vineyards
     # Known exception
     except PlantalyticsException as e:
         raise e
@@ -556,4 +566,3 @@ def change_user_email(username, new_email):
     # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))
-

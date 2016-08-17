@@ -157,11 +157,13 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
     @patch("cassy.change_user_email")
-    def test_email_change_with_plantalytics_exception(self, change_user_email_mock):
+    def test_email_change_with_plantalytics_exception(self, change_email_mock):
         """
         Test with a Plantalytics exception
         """
-        change_user_email_mock.side_effect = PlantalyticsException(CHANGE_EMAIL_UNKNOWN)
+        change_email_mock.side_effect = (
+            PlantalyticsException(CHANGE_EMAIL_UNKNOWN)
+        )
         setup_test_environment()
         client = Client()
 

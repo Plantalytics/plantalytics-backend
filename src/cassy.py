@@ -426,6 +426,39 @@ def get_authorized_vineyards(username):
         raise Exception('Transaction Error Occurred: ' + str(e))
 
 
+def get_vineyard_name(vineyard_id):
+    """
+    Obtains vineyard name for the submitted vineyard id.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_VINE_TABLE'))
+    parameters = {
+        'vineid': int(vineyard_id),
+    }
+    query = (
+        'SELECT vinename FROM {} WHERE vineid=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            raise PlantalyticsLoginException(LOGIN_NO_VINEYARDS)
+        return rows[0].vinename
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: ' + str(e))
+
+
 def get_user_auth_token(username, password):
     """
     Obtains session authentication token for the requested user.

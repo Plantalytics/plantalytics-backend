@@ -11,9 +11,12 @@ import json
 import logging
 import time
 import datetime
+import os
 
 from common.exceptions import *
 from common.errors import *
+from django.core.mail import send_mail
+from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.http import (
     HttpResponse,
@@ -53,6 +56,26 @@ def check_hubs_not_reporting(latest_times):
         if(time_elapsed > 20):
             return False
     return True
+
+
+def send_hub_not_reporting_email(vineyard_id):
+    """
+    Checks if the most recent hub batch times haven't reported in
+    more than 20 minutes.
+    """
+
+    vineyard_name = str(cassy.get_vineyard_name(vineyard_id))
+    message = (
+        'A hub has failed to report data within the last 20 minutes at '
+        'the following vineyard:\n\n{}'
+    ).format(vineyard_name)
+    send_mail(
+        'Plantalytics - Hub Not Reporting',
+        message,
+        settings.EMAIL_HOST_USER,
+        [os.environ.get('RESET_EMAIL')],
+        fail_silently=False,
+    )
 
 
 @csrf_exempt
@@ -100,6 +123,7 @@ def index(request):
                 'A hub for vineyard id {} has not reported in the last 20 min.'
             ).format(str(vineyard_id))
             logger.warn(message)
+            send_hub_not_reporting_email(vineyard_id)
 
         coordinates = cassy.get_node_coordinates(vineyard_id)
 

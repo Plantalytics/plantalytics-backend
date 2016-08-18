@@ -105,21 +105,28 @@ def check_user_id(user_id):
     Validates submitted user id by checking if it already exists.
     """
 
-    message = (
-        'Validating submitted user id.'
-    )
-    logger.info(message)
-    invalid = (
-        user_id == '' or
-        int(user_id) < 0 or
-        cassy.check_user_id_exists(int(user_id))
-    )
-    if (invalid):
-        raise PlantalyticsDataException(USER_ID_INVALID)
-    message = (
-        'Submitted user id successfully validated.'
-    )
-    logger.info(message)
+    try:
+        message = (
+            'Validating submitted user id.'
+        )
+        logger.info(message)
+        invalid = (
+            user_id == '' or
+            int(user_id) < 0 or
+            cassy.check_user_id_exists(int(user_id))
+        )
+        if (invalid):
+            raise PlantalyticsDataException(USER_ID_INVALID)
+        message = (
+            'Submitted user id successfully validated.'
+        )
+        logger.info(message)
+    except PlantalyticsException as e:
+        raise e
+    except ValueError as e:
+        raise e
+    except Exception as e:
+        raise e
 
 
 def check_username(username):
@@ -127,20 +134,27 @@ def check_username(username):
     Validates submitted username by checking if it already exists.
     """
 
-    message = (
-        'Validating submitted username.'
-    )
-    logger.info(message)
-    invalid = (
-        username == '' or
-        cassy.check_username_exists(username)
-    )
-    if (invalid):
-        raise PlantalyticsDataException(USER_INVALID)
-    message = (
-        'Submitted username successfully validated.'
-    )
-    logger.info(message)
+    try:
+        message = (
+            'Validating submitted username.'
+        )
+        logger.info(message)
+        invalid = (
+            username == '' or
+            cassy.check_username_exists(username)
+        )
+        if (invalid):
+            raise PlantalyticsDataException(USER_INVALID)
+        message = (
+            'Submitted username successfully validated.'
+        )
+        logger.info(message)
+    except PlantalyticsException as e:
+        raise e
+    except ValueError as e:
+        raise e
+    except Exception as e:
+        raise e
 
 
 def check_subscription_end_date(sub_end_date, current_date):
@@ -148,20 +162,32 @@ def check_subscription_end_date(sub_end_date, current_date):
     Validates submitted user subscription end date.
     """
 
-    message = (
-        'Validating submitted user subscription end date.'
-    )
-    logger.info(message)
-    if sub_end_date != '':
-        expected = datetime.datetime.strptime(sub_end_date, '%Y-%m-%d').strftime('%Y-%m-%d')
-        if sub_end_date != expected:
-            raise ValueError("Invalid date format. Expected: YYYY-MM-DD")
-        if time.strptime(sub_end_date, '%Y-%m-%d') < time.strptime(current_date, '%Y-%m-%d'):
-            raise PlantalyticsDataException(SUB_DATE_INVLAID)
-    message = (
-        'Submitted user subscription end date successfully validated.'
-    )
-    logger.info(message)
+    try:
+        message = (
+            'Validating submitted user subscription end date.'
+        )
+        logger.info(message)
+        if sub_end_date != '':
+            expected = datetime.datetime.strptime(sub_end_date, '%Y-%m-%d').strftime('%Y-%m-%d')
+            date = sub_end_date.split('-')
+            invalid = (
+                sub_end_date != expected or
+                len(date) != 3
+            )
+            if invalid is True:
+                raise PlantalyticsDataException("Expected date format: YYYY-MM-DD")
+            if time.strptime(sub_end_date, '%Y-%m-%d') < time.strptime(current_date, '%Y-%m-%d'):
+                raise PlantalyticsDataException("Subcription end date has already passed.")
+        message = (
+            'Submitted user subscription end date successfully validated.'
+        )
+        logger.info(message)
+    except PlantalyticsException as e:
+        raise e
+    except ValueError as e:
+        raise ValueError("Expected date format: YYYY-MM-DD")
+    except Exception as e:
+        raise e
 
 
 def check_user_parameters(user_info):
@@ -170,30 +196,37 @@ def check_user_parameters(user_info):
     """
 
     email = user_info.get('email', '')
-    sub_end_date = user_info.get('sub_end_date', '')
+    sub_end_date = user_info.get('subenddate', '')
     vineyards = user_info.get('vineyards', '')
     current_date = datetime.date.today().strftime('%Y-%m-%d')
     new_user_id = user_info.get('userid', '')
     new_username = str(user_info.get('username', ''))
 
-    message = (
-        'Validating submitted user parameters.'
-    )
-    logger.info(message)
-    check_username(new_username)
-    check_user_id(new_user_id)
-    if email != '':
-        if re.match(r"[^@]+@[^@]+\.[^@]+", email) is None:
-            raise PlantalyticsDataException(EMAIL_INVALID)
-    check_subscription_end_date(sub_end_date, current_date)
-    if vineyards != '':
-        for vineyard_id in vineyards:
-            if int(vineyard_id) < 0:
-                PlantalyticsDataException(VINEYARD_BAD_ID)
-    message = (
-        'Submitted user parameters successfully validated.'
-    )
-    logger.info(message)
+    try:
+        message = (
+            'Validating submitted user parameters.'
+        )
+        logger.info(message)
+        check_username(new_username)
+        check_user_id(new_user_id)
+        if email != '':
+            if re.match(r"[^@]+@[^@]+\.[^@]+", email) is None:
+                raise PlantalyticsDataException(EMAIL_INVALID)
+        check_subscription_end_date(sub_end_date, current_date)
+        if vineyards != '':
+            for vineyard_id in vineyards:
+                if int(vineyard_id) < 0:
+                    PlantalyticsDataException(VINEYARD_BAD_ID)
+        message = (
+            'Submitted user parameters successfully validated.'
+        )
+        logger.info(message)
+    except PlantalyticsException as e:
+        raise e
+    except ValueError as e:
+        raise e
+    except Exception as e:
+        raise e
 
 
 @csrf_exempt
@@ -234,19 +267,26 @@ def user_new(request):
             json.dumps(body),
             content_type='application/json'
         )
-    except PlantalyticsException as e:
+    except PlantalyticsAuthException as e:
         message = (
             'Error attempting to create new user. Error code: {}'
         ).format(str(e))
         logger.warn(message)
         error = custom_error(str(e))
         return HttpResponseForbidden(error, content_type='application/json')
+    except PlantalyticsException as e:
+        message = (
+            'Error attempting to create new user. Error code: {}'
+        ).format(str(e))
+        logger.warn(message)
+        error = custom_error(SUB_DATE_INVLAID, str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
     except ValueError as e:
         message = (
             'Error attempting to create new user. Error code: {}'
         ).format(str(e))
         logger.warn(message)
-        error = custom_error(DATA_INVALID, str(e))
+        error = custom_error(SUB_DATE_INVLAID, str(e))
         return HttpResponseBadRequest(error, content_type='application/json')
     except Exception as e:
         message = (

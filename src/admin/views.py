@@ -110,13 +110,14 @@ def check_user_id(user_id):
             'Validating submitted user id.'
         )
         logger.info(message)
-        invalid = (
-            user_id == '' or
-            int(user_id) < 0 or
-            cassy.check_user_id_exists(int(user_id))
-        )
-        if (invalid):
-            raise PlantalyticsDataException(USER_ID_INVALID)
+        if user_id != '':
+            invalid = (
+
+                int(user_id) < 0 or
+                cassy.check_user_id_exists(int(user_id))
+            )
+            if (invalid):
+                raise PlantalyticsDataException(USER_ID_INVALID)
         message = (
             'Submitted user id successfully validated.'
         )
@@ -200,14 +201,12 @@ def check_user_parameters(user_info):
     vineyards = user_info.get('vineyards', '')
     current_date = datetime.date.today().strftime('%Y-%m-%d')
     new_user_id = user_info.get('userid', '')
-    new_username = str(user_info.get('username', ''))
 
     try:
         message = (
             'Validating submitted user parameters.'
         )
         logger.info(message)
-        check_username(new_username)
         check_user_id(new_user_id)
         if email != '':
             if re.match(r"[^@]+@[^@]+\.[^@]+", email) is None:
@@ -254,6 +253,7 @@ def user_new(request):
             '{} is attemping to create new user: {}.'
         ).format(admin_username, new_username)
         logger.info(message)
+        check_username(new_username)
         check_user_parameters(new_user_info)
         cassy.create_new_user(new_user_info)
         message = (
@@ -378,6 +378,7 @@ def user_edit(request):
             '{} is attemping to edit info for user: {}.'
         ).format(admin_username, username)
         logger.info(message)
+        check_user_parameters(edit_user_info)
         cassy.edit_user(edit_user_info)
         message = (
             '{} successfully edited info for user: {}.'

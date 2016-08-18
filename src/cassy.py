@@ -1096,6 +1096,39 @@ def disable_vineyard(vineyard_id):
         raise Exception('Transaction Error Occurred: '.format(str(e)))
 
 
+def check_username_exists(username):
+    """
+    Checks if submitted username exists in the database.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': username,
+    }
+    query = (
+        'SELECT * FROM {} WHERE username=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            return False
+        return True
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
 def check_user_id_exists(user_id):
     """
     Checks if submitted user ID exists in the database.

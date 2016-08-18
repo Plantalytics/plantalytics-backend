@@ -122,6 +122,27 @@ def check_user_id(user_id):
     logger.info(message)
 
 
+def check_username(username):
+    """
+    Validates submitted username by checking if it already exists.
+    """
+
+    message = (
+        'Validating submitted username.'
+    )
+    logger.info(message)
+    invalid = (
+        username == '' or
+        cassy.check_username_exists(username)
+    )
+    if (invalid):
+        raise PlantalyticsDataException(USER_INVALID)
+    message = (
+        'Submitted username successfully validated.'
+    )
+    logger.info(message)
+
+
 def check_subscription_end_date(sub_end_date, current_date):
     """
     Validates submitted user subscription end date.
@@ -152,11 +173,15 @@ def check_user_parameters(user_info):
     sub_end_date = user_info.get('sub_end_date', '')
     vineyards = user_info.get('vineyards', '')
     current_date = datetime.date.today().strftime('%Y-%m-%d')
+    new_user_id = user_info.get('userid', '')
+    new_username = str(user_info.get('username', ''))
 
     message = (
         'Validating submitted user parameters.'
     )
     logger.info(message)
+    check_username(new_username)
+    check_user_id(new_user_id)
     if email != '':
         if re.match(r"[^@]+@[^@]+\.[^@]+", email) is None:
             raise PlantalyticsDataException(EMAIL_INVALID)
@@ -186,7 +211,6 @@ def user_new(request):
     admin_username = str(data.get('admin_username', ''))
     new_user_info = data.get('new_user_info', '')
     new_username = str(new_user_info.get('username', ''))
-    new_user_id = new_user_info.get('userid', '')
 
     try:
         is_verified = verify_admin(admin_username, auth_token)
@@ -197,7 +221,6 @@ def user_new(request):
             '{} is attemping to create new user: {}.'
         ).format(admin_username, new_username)
         logger.info(message)
-        check_user_id(new_user_id)
         check_user_parameters(new_user_info)
         cassy.create_new_user(new_user_info)
         message = (

@@ -360,7 +360,8 @@ class MainTests(TestCase):
 # /admin/user/new - valid request tests
 
     @patch('admin.views.check_user_id')
-    def test_new_user(self, check_id_mock):
+    @patch('admin.views.check_username')
+    def test_new_user(self, check_name_mock, check_id_mock):
         """
         Tests a valid request to create a new user.
         """
@@ -388,9 +389,9 @@ class MainTests(TestCase):
         )
         new_user_info = payload.get('new_user_info', '')
         user_id = str(new_user_info.get('userid', ''))
-        check_id_mock.assert_called_once_with(
-            user_id
-        )
+        username = str(new_user_info.get('username', ''))
+        check_name_mock.assert_called_once_with(username)
+        check_id_mock.assert_called_once_with(user_id)
         body = json.loads(response.content.decode('utf-8'))
         self.assertTrue(body is not None)
         self.assertEqual(response.status_code, 200)
@@ -429,7 +430,8 @@ class MainTests(TestCase):
 
     @patch('cassy.create_new_user')
     @patch('admin.views.check_user_id')
-    def test_new_user_unknown_exception(self,  check_id_mock, cassy_mock):
+    @patch('admin.views.check_username')
+    def test_new_user_unknown_exception(self, check_name_mock, check_id_mock, cassy_mock):
         """
         Tests the /admin/user/new endpoint when
         cassy.create_new_user throws Exception.
@@ -458,9 +460,9 @@ class MainTests(TestCase):
         error = json.loads(response.content.decode('utf-8'))['errors']
         new_user_info = payload.get('new_user_info', '')
         user_id = str(new_user_info.get('userid', ''))
-        check_id_mock.assert_called_once_with(
-             user_id
-        )
+        username = str(new_user_info.get('username', ''))
+        check_name_mock.assert_called_once_with(username)
+        check_id_mock.assert_called_once_with(user_id)
         self.assertTrue('unknown' in error)
         cassy_mock.assert_called_once_with(
             payload.get('new_user_info', '')

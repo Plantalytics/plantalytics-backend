@@ -1305,6 +1305,31 @@ class MainTests(TestCase):
 
 # /admin/vineyard/new - invalid request tests
 
+    def test_new_vineyard_invalid_missing_parameters(self):
+        """
+        Tests an invalid request to create a new vineyard.
+        The request is missing reuired parameters.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'new_vineyard_info': {
+                'vineyard_id': os.environ.get('VINE_ID'),
+                'owners': [str(os.environ.get('VINE_OWNERS'))],
+                'enable': True,
+                'name': os.environ.get('VINE_NAME'),
+            },
+        }
+        response = client.post(
+            '/admin/vineyard/new',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('data_missing' in error)
+        self.assertEqual(response.status_code, 403)
+
     def test_new_vineyard_invalid_id_exists(self):
         """
         Tests an invalid request to create a new vineyard.
@@ -1481,6 +1506,38 @@ class MainTests(TestCase):
                 'vineyard_id': os.environ.get('VINE_ID'),
                 'owners': [str(os.environ.get('VINE_OWNERS'))],
                 'name': os.environ.get('VINE_NAME'),
+            },
+        }
+        response = client.post(
+            '/admin/vineyard/edit',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        body = json.loads(response.content.decode('utf-8'))
+        self.assertTrue(body is not None)
+        self.assertEqual(response.status_code, 200)
+
+    def test_edit_vineyard_all_parameters(self):
+        """
+        Tests a valid request to edit a vineyard with all parameters.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'edit_vineyard_info': {
+                'vineyard_id': os.environ.get('VINE_ID'),
+                'owners': [str(os.environ.get('VINE_OWNERS'))],
+                'enable': True,
+                'name': os.environ.get('VINE_NAME'),
+                'boundaries': [{
+                    'lat': os.environ.get('VINE_BOUND_LAT'),
+                    'lon': os.environ.get('VINE_BOUND_LON'),
+                }],
+                'center': {
+                    'lat': os.environ.get('VINE_CENTER_LAT'),
+                    'lon': os.environ.get('VINE_CENTER_LON'),
+                },
             },
         }
         response = client.post(

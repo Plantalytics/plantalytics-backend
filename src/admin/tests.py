@@ -1446,16 +1446,17 @@ class MainTests(TestCase):
         self.assertTrue('admin_invalid' in error)
         self.assertEqual(response.status_code, 403)
 
-    def test_edit_vineyard_invalid_username(self):
+    def test_edit_vineyard_invalid_vineyard_id_nonexistent(self):
         """
         Tests a request to edit a vineyard with an invalid vineyard id.
+        The vineyard id does not exist.
         """
         setup_test_environment()
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
             'edit_vineyard_info': {
-                'vineyard_id': 12345,
+                'vineyard_id': 1234567890,
                 'owners': [str(os.environ.get('VINE_OWNERS'))],
                 'name': os.environ.get('VINE_NAME'),
             },
@@ -1466,7 +1467,31 @@ class MainTests(TestCase):
             content_type='application/json'
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
-        self.assertTrue('vineyard_bad_id' in error)
+        self.assertTrue('vineyard_id_not_found' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_edit_vineyard_invalid_vineyard_id_negative(self):
+        """
+        Tests a request to edit a vineyard with an invalid vineyard id.
+        The vineyard id is negative.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'edit_vineyard_info': {
+                'vineyard_id': -1,
+                'owners': [str(os.environ.get('VINE_OWNERS'))],
+                'name': os.environ.get('VINE_NAME'),
+            },
+        }
+        response = client.post(
+            '/admin/vineyard/edit',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_id_invalid' in error)
         self.assertEqual(response.status_code, 403)
 
 # /admin/vineyard/edit exception tests

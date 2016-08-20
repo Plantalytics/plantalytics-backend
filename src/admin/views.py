@@ -555,6 +555,12 @@ def vineyard_edit(request):
             'Attemping to edit info for vineyard id: {}.'
         ).format(vineyard_id)
         logger.info(message)
+        invalid = (
+            vineyard_id == '' or
+            int(vineyard_id) < 0
+        )
+        if (invalid):
+            raise PlantalyticsDataException(VINEYARD_ID_INVALID)
         cassy.edit_vineyard(edit_vineyard_info)
         message = (
             'Successfully edited info for vineyard id: {}.'
@@ -620,8 +626,23 @@ def vineyard_new(request):
     auth_token = str(data.get('auth_token', ''))
     new_vineyard_info = data.get('new_vineyard_info', '')
     vineyard_id = str(new_vineyard_info.get('vineyard_id', ''))
+    vineyard_name = str(new_vineyard_info.get('name', ''))
+    is_enable = new_vineyard_info.get('enable', '')
+    owners = new_vineyard_info.get('owners', '')
+    boundaries = new_vineyard_info.get('boundaries', '')
+    center = new_vineyard_info.get('center', '')
 
     try:
+        missing_values = (
+            vineyard_id == '' or
+            vineyard_name == '' or
+            is_enable == '' or
+            owners == '' or
+            boundaries == '' or
+            center == ''
+        )
+        if (missing_values):
+            raise PlantalyticsDataException(DATA_MISSING)
         if not verify_admin(auth_token):
             raise PlantalyticsAuthException(ADMIN_INVALID)
 

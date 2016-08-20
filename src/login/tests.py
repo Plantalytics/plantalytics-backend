@@ -30,8 +30,8 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         payload = {
-            'username': str(os.environ.get('LOGIN_USERNAME')),
-            'password': str(os.environ.get('LOGIN_PASSWORD')),
+            'username': str(os.environ.get('LOGIN_USERNAME_MULTI')),
+            'password': str(os.environ.get('LOGIN_PASSWORD_MULTI')),
         }
         response = client.post(
             '/login',

@@ -592,7 +592,9 @@ def change_user_password(username, new_password, old_password):
         new_row_values = {
             'username': rows[0].username,
             'password': new_password,
+            'admin': rows[0].admin,
             'email': rows[0].email,
+            'enable': rows[0].enable,
             'securitytoken': rows[0].securitytoken,
             'subenddate': rows[0].subenddate,
             'userid': rows[0].userid,
@@ -600,9 +602,9 @@ def change_user_password(username, new_password, old_password):
         }
         query = (
             'INSERT INTO {} '
-            '(username, password, email, securitytoken, '
+            '(username, password, admin, email, enable, securitytoken, '
             'subenddate, userid, vineyards) '
-            'VALUES(?, ?, ?, ?, ?, ?, ?);'
+            'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);'
         )
         prepared_statement = session.prepare(
             query.format(table)

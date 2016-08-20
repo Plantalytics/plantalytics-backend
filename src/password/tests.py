@@ -84,7 +84,8 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     @patch('cassy.change_user_password')
-    def test_password_change_with_mail_token(self, cassy_mock):
+    @patch('password.views.reset_auth_token')
+    def test_password_change_with_mail_token(self, reset_mock, cassy_mock):
         """
         Tests the case where a user logs in after
         receiving gotten a password reset email.
@@ -109,6 +110,10 @@ class MainTests(TestCase):
             new_password,
             old_password
         )
+        reset_mock.assert_called_once_with(
+            username,
+            new_password
+        )
         self.assertEqual(response.status_code, 200)
 
     @patch('cassy.change_user_password')
@@ -121,8 +126,8 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         cassy_auth.return_value = str(os.environ.get('ADMIN'))
-        username = 'mr.forgetful'
-        old_password = 'testme'
+        username = 'tubulartester'
+        old_password = 'testthis'
         new_password = 'newpass'
         auth_token = 'token'
         body = {
@@ -343,10 +348,10 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         cassy_auth.return_value = str(os.environ.get('ADMIN'))
-        username = 'mr.forgetful'
-        old_password = 'testme'
-        new_password = 'testme'
-        auth_token = 'token'
+        username = 'tubulartester'
+        old_password = 'testthis'
+        new_password = 'testthis'
+        auth_token = 'chuckEcheese'
         body = {
             'auth_token': auth_token,
             'username': username,

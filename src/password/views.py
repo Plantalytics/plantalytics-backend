@@ -29,7 +29,26 @@ from django.utils.http import urlencode
 
 logger = logging.getLogger('plantalytics_backend.login')
 
-# TODO: Ensure reset-token is single use
+
+def reset_auth_token(username, new_password):
+    """
+    Changes the reset token after changing user's password via the
+    forgot password link.
+    """
+
+    try:
+        logger.info('Resetting user auth token.')
+        new_auth_token = str(uuid.uuid4())
+        cassy.set_user_auth_token(
+            username,
+            new_password,
+            new_auth_token
+        )
+        logger.info('Successfully reset user auth token.')
+    except PlantalyticsException as e:
+        raise e
+    except Exception as e:
+        raise e
 
 
 @csrf_exempt
@@ -78,6 +97,10 @@ def change(request):
                 'Password for \'{}\' successfully changed.'
             ).format(username)
             logger.info(message)
+            reset_auth_token(
+                username,
+                new_password
+            )
         # Else, password being reset by admin or logged-in user
         else:
             logger.info('Attempting password reset using auth token.')

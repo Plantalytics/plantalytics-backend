@@ -12,6 +12,7 @@ import logging
 import re
 import datetime
 import time
+import string
 
 from common.exceptions import *
 from common.errors import *
@@ -141,11 +142,13 @@ def check_username(username):
         )
         logger.info(message)
         invalid = (
-            username == '' or
-            cassy.check_username_exists(username)
+            not username.isalnum()
         )
         if (invalid):
             raise PlantalyticsDataException(USER_INVALID)
+        exists = cassy.check_username_exists(username)
+        if (exists):
+            raise PlantalyticsDataException(USER_TAKEN)
         message = (
             'Submitted username successfully validated.'
         )
@@ -267,7 +270,7 @@ def user_new(request):
             json.dumps(body),
             content_type='application/json'
         )
-    except PlantalyticsAuthException as e:
+    except (PlantalyticsAuthException, PlantalyticsDataException) as e:
         message = (
             'Error attempting to create new user. Error code: {}'
         ).format(str(e))

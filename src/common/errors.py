@@ -31,6 +31,7 @@ RESET_ERROR_USERNAME = 'reset_error_username'
 SUB_DATE_INVLAID = 'sub_end_date_invalid'
 USER_INVALID = 'username_invalid'
 USER_ID_INVALID = 'user_id_invalid'
+USER_TAKEN = 'username_taken'
 VINEYARD_NO_ID = 'vineyard_no_id'
 VINEYARD_BAD_ID = 'vineyard_bad_id'
 VINEYARD_ID_NOT_FOUND = 'vineyard_id_not_found'
@@ -68,6 +69,7 @@ responses = {
     SUB_DATE_INVLAID: 'Subscription end date is invalid.',
     USER_INVALID: 'Requested username is invalid.',
     USER_ID_INVALID: 'User ID is invalid.',
+    USER_TAKEN: 'Username is taken.',
     VINEYARD_NO_ID: 'A vineyard must have a valid ID.',
     VINEYARD_BAD_ID: 'A vineyard ID must be a positive integer.',
     VINEYARD_ID_NOT_FOUND: 'The vineyard ID was not found.',

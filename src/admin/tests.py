@@ -426,6 +426,92 @@ class MainTests(TestCase):
         self.assertTrue('admin_invalid' in error)
         self.assertEqual(response.status_code, 403)
 
+    def test_new_user_invalid_characters(self):
+        """
+        Tests a request to create a new user with invalid username.
+        The username contains non-alphanumeric characters.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'new_user_info': {
+                'username': "th!$ gUy-i$-n0-g00D!!",
+                'password': os.environ.get('LOGIN_PASSWORD'),
+                'email': os.environ.get('RESET_EMAIL'),
+                'securitytoken': os.environ.get('LOGIN_SEC_TOKEN'),
+                'subenddate': os.environ.get('LOGIN_SUB_END_DATE'),
+                'userid': os.environ.get('LOGIN_USER_ID'),
+                'vineyards': [int(os.environ.get('LOGIN_USER_ID'))],
+            },
+        }
+        response = client.post(
+            '/admin/user/new',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('username_invalid' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_new_user_invalid_username_missing(self):
+        """
+        Tests a request to create a new user with invalid username.
+        The username is missing from the request.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'new_user_info': {
+                'password': os.environ.get('LOGIN_PASSWORD'),
+                'email': os.environ.get('RESET_EMAIL'),
+                'securitytoken': os.environ.get('LOGIN_SEC_TOKEN'),
+                'subenddate': os.environ.get('LOGIN_SUB_END_DATE'),
+                'userid': os.environ.get('LOGIN_USER_ID'),
+                'vineyards': [int(os.environ.get('LOGIN_USER_ID'))],
+            },
+        }
+        response = client.post(
+            '/admin/user/new',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('username_invalid' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_new_user_invalid_username_taken(self):
+        """
+        Tests a request to create a new user with invalid username.
+        The username already exists.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'admin_username': os.environ.get('ADMIN_USER'),
+            'new_user_info': {
+                'username': os.environ.get('LOGIN_USERNAME'),
+                'password': os.environ.get('LOGIN_PASSWORD'),
+                'email': os.environ.get('RESET_EMAIL'),
+                'securitytoken': os.environ.get('LOGIN_SEC_TOKEN'),
+                'subenddate': os.environ.get('LOGIN_SUB_END_DATE'),
+                'userid': os.environ.get('LOGIN_USER_ID'),
+                'vineyards': [int(os.environ.get('LOGIN_USER_ID'))],
+            },
+        }
+        response = client.post(
+            '/admin/user/new',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('username_taken' in error)
+        self.assertEqual(response.status_code, 403)
+
 # /admin/user/new exception tests
 
     @patch('cassy.create_new_user')

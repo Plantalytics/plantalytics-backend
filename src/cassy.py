@@ -601,7 +601,8 @@ def get_user_info(username):
         'username': username,
     }
     query = (
-        'SELECT email, userid, vineyards FROM {} WHERE username=?;'
+        'SELECT admin, email, enable, subenddate, userid, vineyards '
+        'FROM {} WHERE username=?;'
     )
     prepared_statement = session.prepare(
         query.format(table)
@@ -615,8 +616,11 @@ def get_user_info(username):
         if not rows:
             raise PlantalyticsAuthException(USER_INVALID)
         user_info = {
+            'is_admin': rows[0].admin,
             'email': rows[0].email,
-            'userid': rows[0].userid,
+            'is_enabled': rows[0].enable,
+            'sub_end_date': rows[0].subenddate,
+            'user_id': rows[0].userid,
             'vineyards': rows[0].vineyards,
         }
         return user_info

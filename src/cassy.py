@@ -920,7 +920,7 @@ def create_new_vineyard(new_vineyard_info):
             'vineid': int(new_vineyard_info.get('vineyard_id', '')),
             'ownerlist': new_vineyard_info.get('owners', ''),
             'vinename': new_vineyard_info.get('name', ''),
-            'enable': True,
+            'enable': new_vineyard_info.get('enable', ''),
     }
     boundaries = []
     for point in new_vineyard_info.get('boundaries', ''):
@@ -1000,7 +1000,7 @@ def get_vineyard_info(vineyard_id):
     session.row_factory = named_tuple_factory
     table = os.environ.get('DB_VINE_TABLE')
     query = (
-        'SELECT vinename, ownerlist FROM {} WHERE vineid=?;'
+        'SELECT vinename, ownerlist, enable FROM {} WHERE vineid=?;'
     )
     prepared_statement = session.prepare(
         query.format(table)
@@ -1011,6 +1011,8 @@ def get_vineyard_info(vineyard_id):
             raise PlantalyticsVineyardException(VINEYARD_NO_ID)
         # Ensures vineyard_id is integer
         vineyard_id = int(vineyard_id)
+        if vineyard_id < 0:
+            raise PlantalyticsVineyardException(VINEYARD_BAD_ID)
         parameters = {
             'vineid': vineyard_id,
         }
@@ -1019,7 +1021,7 @@ def get_vineyard_info(vineyard_id):
             parameters
         )
         if not rows:
-            raise PlantalyticsVineyardException(VINEYARD_BAD_ID)
+            raise PlantalyticsVineyardException(VINEYARD_ID_NOT_FOUND)
 
         owners = []
         for owner in rows[0].ownerlist:
@@ -1029,9 +1031,12 @@ def get_vineyard_info(vineyard_id):
             'name': rows[0].vinename,
             'owners': owners,
             'users': users,
+            'is_enable': rows[0].enable,
         }
         return vineyard_info
     # Known exception
+    except PlantalyticsAuthException as e:
+        raise PlantalyticsVineyardException(VINEYARD_ID_NOT_FOUND)
     except PlantalyticsException as e:
         raise e
     except ValueError as e:

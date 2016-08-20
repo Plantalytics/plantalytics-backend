@@ -1183,6 +1183,26 @@ class MainTests(TestCase):
             content_type='application/json'
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_id_not_found' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_vineyard_info_invalid_vineyard_negative(self):
+        """
+        Tests a request for vineyard info with an invalid vineyard id.
+        The vineyard id is negative.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'vineyard_id': -1,
+        }
+        response = client.post(
+            '/admin/vineyard',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
         self.assertTrue('vineyard_bad_id' in error)
         self.assertEqual(response.status_code, 403)
 

@@ -152,8 +152,6 @@ def check_username(username):
         logger.info(message)
     except PlantalyticsException as e:
         raise e
-    except ValueError as e:
-        raise e
     except Exception as e:
         raise e
 
@@ -186,7 +184,7 @@ def check_subscription_end_date(sub_end_date, current_date):
     except PlantalyticsException as e:
         raise e
     except ValueError as e:
-        raise ValueError("Expected date format: YYYY-MM-DD")
+        raise PlantalyticsDataException("Expected date format: YYYY-MM-DD")
     except Exception as e:
         raise e
 
@@ -223,7 +221,7 @@ def check_user_parameters(user_info):
         if vineyards != '':
             for vineyard_id in vineyards:
                 if int(vineyard_id) < 0:
-                    PlantalyticsDataException(VINEYARD_BAD_ID)
+                    raise PlantalyticsDataException(VINEYARD_BAD_ID)
         message = (
             'Submitted user parameters successfully validated.'
         )
@@ -305,15 +303,15 @@ def user_new(request):
             'Error attempting to create new user. Error code: {}'
         ).format(str(e))
         logger.warn(message)
-        error = custom_error(SUB_DATE_INVLAID, str(e))
+        error = custom_error(str(e))
         return HttpResponseForbidden(error, content_type='application/json')
     except ValueError as e:
         message = (
             'Error attempting to create new user. Error code: {}'
         ).format(str(e))
         logger.warn(message)
-        error = custom_error(SUB_DATE_INVLAID, str(e))
-        return HttpResponseBadRequest(error, content_type='application/json')
+        error = custom_error(USER_ID_INVALID, str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
     except Exception as e:
         message = (
             'Unknown error occurred while attempting to create new user:'
@@ -360,12 +358,26 @@ def user_subscription(request):
             json.dumps(body),
             content_type='application/json'
         )
+    except PlantalyticsDataException as e:
+        message = (
+            'Error attempting to create new user. Error code: {}'
+        ).format(str(e))
+        logger.warn(message)
+        error = custom_error(SUB_DATE_INVLAID, str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
     except PlantalyticsException as e:
         message = (
             'Error attempting to update user subscription. Error code: {}'
         ).format(str(e))
         logger.warn(message)
         error = custom_error(str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
+    except ValueError as e:
+        message = (
+            'Error attempting to update user subscription. Error code: {}'
+        ).format(str(e))
+        logger.warn(message)
+        error = custom_error(SUB_DATE_INVLAID, str(e))
         return HttpResponseForbidden(error, content_type='application/json')
     except Exception as e:
         message = (

@@ -235,6 +235,27 @@ class MainTests(TestCase):
         self.assertTrue('sub_end_date_invalid' in error)
         self.assertEqual(response.status_code, 403)
 
+    def test_user_update_sub_end_date_invalid_format_long(self):
+        """
+        Tests a request to update a user subscription date
+        with an invalid subscriptione end date: invalid format - too long.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'request_username': os.environ.get('LOGIN_USERNAME'),
+            'sub_end_date': '01-01-2100-4000',
+        }
+        response = client.post(
+            '/admin/user/subscription',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('sub_end_date_invalid' in error)
+        self.assertEqual(response.status_code, 403)
+
     def test_user_update_sub_end_date_invalid_characters(self):
         """
         Tests a request to update a user subscription date
@@ -615,6 +636,35 @@ class MainTests(TestCase):
         self.assertTrue('user_id_invalid' in error)
         self.assertEqual(response.status_code, 403)
 
+    def test_new_user_invalid_user_id_noninteger(self):
+        """
+        Tests a request to create a new user with invalid user id.
+        The user id is not an integer.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'new_user_info': {
+                'username': "HiImTheNewGuy",
+                'password': os.environ.get('LOGIN_PASSWORD'),
+                'email': os.environ.get('RESET_EMAIL'),
+                'admin': False,
+                'enable': True,
+                'subenddate': os.environ.get('LOGIN_SUB_END_DATE'),
+                'userid': 'ImNotAnInteger',
+                'vineyards': [int(os.environ.get('LOGIN_USER_ID'))],
+            },
+        }
+        response = client.post(
+            '/admin/user/new',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('user_id_invalid' in error)
+        self.assertEqual(response.status_code, 403)
+
     def test_new_user_invalid_user_id_exists(self):
         """
         Tests a request to create a new user with invalid user id.
@@ -702,7 +752,7 @@ class MainTests(TestCase):
         self.assertTrue('data_invalid' in error)
         self.assertEqual(response.status_code, 403)
 
-    def test_new_user_invalid_admin_type(self):
+    def test_new_user_invalid_enable_type(self):
         """
         Tests a request to create a new user with invalid data types.
         The 'enable' parameter is an invalid data type.
@@ -804,6 +854,44 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 500)
 
     @patch('admin.views.check_username')
+    @patch('admin.views.check_user_parameters')
+    def test_new_user_value_error_exception(self, check_params_mock, check_name_mock):
+        """
+        Tests the /admin/user/new endpoint when
+        admin.views.check_user_parameters throws ValueError.
+        """
+        setup_test_environment()
+        client = Client()
+        check_params_mock.side_effect = ValueError('Test ValueError')
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'new_user_info': {
+                'username': os.environ.get('LOGIN_USERNAME'),
+                'password': os.environ.get('LOGIN_PASSWORD'),
+                'email': os.environ.get('RESET_EMAIL'),
+                'admin': False,
+                'enable': True,
+                'subenddate': os.environ.get('LOGIN_SUB_END_DATE'),
+                'userid': os.environ.get('LOGIN_USER_ID'),
+                'vineyards': [int(os.environ.get('LOGIN_USER_ID'))],
+            },
+        }
+        response = client.post(
+            '/admin/user/new',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        new_user_info = payload.get('new_user_info', '')
+        username = str(new_user_info.get('username', ''))
+        check_name_mock.assert_called_once_with(username)
+        check_params_mock.assert_called_once_with(
+            payload.get('new_user_info', '')
+        )
+        self.assertTrue('user_id_invalid' in error)
+        self.assertEqual(response.status_code, 403)
+
+    @patch('admin.views.check_username')
     def test_new_user_unknown_check_exception(self, check_user_mock):
         """
         Tests the /admin/user/new endpoint when
@@ -870,6 +958,76 @@ class MainTests(TestCase):
         new_user_info = payload.get('new_user_info', '')
         check_id_mock.assert_called_once_with(
             new_user_info.get('userid', '')
+        )
+        self.assertEqual(response.status_code, 500)
+
+    @patch('cassy.check_user_id_exists')
+    def test_new_user_unknown_check_id_cassy_exception(self, cassy_mock):
+        """
+        Tests the /admin/user/new endpoint when
+        cassy.check_user_id_exists throws Exception.
+        """
+        setup_test_environment()
+        client = Client()
+        cassy_mock.side_effect = Exception('Test exception')
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'new_user_info': {
+                'username': "HiImTheNewGuy",
+                'password': os.environ.get('LOGIN_PASSWORD'),
+                'email': os.environ.get('RESET_EMAIL'),
+                'admin': False,
+                'enable': True,
+                'subenddate': os.environ.get('LOGIN_SUB_END_DATE'),
+                'userid': os.environ.get('LOGIN_USER_ID'),
+                'vineyards': [int(os.environ.get('LOGIN_USER_ID'))],
+            },
+        }
+        response = client.post(
+            '/admin/user/new',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('unknown' in error)
+        new_user_info = payload.get('new_user_info', '')
+        cassy_mock.assert_called_once_with(
+            int(new_user_info.get('userid', ''))
+        )
+        self.assertEqual(response.status_code, 500)
+
+    @patch('cassy.check_username_exists')
+    def test_new_user_unknown_check_username_cassy_exception(self, cassy_mock):
+        """
+        Tests the /admin/user/new endpoint when
+        check_username_existsthrows Exception.
+        """
+        setup_test_environment()
+        client = Client()
+        cassy_mock.side_effect = Exception('Test exception')
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'new_user_info': {
+                'username': "HiImTheNewGuy",
+                'password': os.environ.get('LOGIN_PASSWORD'),
+                'email': os.environ.get('RESET_EMAIL'),
+                'admin': False,
+                'enable': True,
+                'subenddate': os.environ.get('LOGIN_SUB_END_DATE'),
+                'userid': os.environ.get('LOGIN_USER_ID'),
+                'vineyards': [int(os.environ.get('LOGIN_USER_ID'))],
+            },
+        }
+        response = client.post(
+            '/admin/user/new',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('unknown' in error)
+        new_user_info = payload.get('new_user_info', '')
+        cassy_mock.assert_called_once_with(
+            new_user_info.get('username', '')
         )
         self.assertEqual(response.status_code, 500)
 

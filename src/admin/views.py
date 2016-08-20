@@ -123,7 +123,7 @@ def check_user_id(user_id):
     except PlantalyticsException as e:
         raise e
     except ValueError as e:
-        raise e
+        raise PlantalyticsDataException(USER_ID_INVALID)
     except Exception as e:
         raise e
 
@@ -292,13 +292,6 @@ def user_new(request):
             content_type='application/json'
         )
     except (PlantalyticsAuthException, PlantalyticsDataException) as e:
-        message = (
-            'Error attempting to create new user. Error code: {}'
-        ).format(str(e))
-        logger.warn(message)
-        error = custom_error(str(e))
-        return HttpResponseForbidden(error, content_type='application/json')
-    except PlantalyticsException as e:
         message = (
             'Error attempting to create new user. Error code: {}'
         ).format(str(e))

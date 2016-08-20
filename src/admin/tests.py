@@ -362,8 +362,7 @@ class MainTests(TestCase):
                 'password': os.environ.get('LOGIN_PASSWORD'),
                 'email': os.environ.get('RESET_EMAIL'),
                 'admin': False,
-                'enable': False,
-                'securitytoken': os.environ.get('LOGIN_SEC_TOKEN'),
+                'enable': True,
                 'subenddate': os.environ.get('LOGIN_SUB_END_DATE'),
                 'userid': os.environ.get('LOGIN_USER_ID'),
                 'vineyards': [int(os.environ.get('LOGIN_USER_ID'))],
@@ -397,7 +396,8 @@ class MainTests(TestCase):
                 'username': os.environ.get('LOGIN_USERNAME'),
                 'password': os.environ.get('LOGIN_PASSWORD'),
                 'email': os.environ.get('RESET_EMAIL'),
-                'securitytoken': os.environ.get('LOGIN_SEC_TOKEN'),
+                'admin': False,
+                'enable': True,
                 'subenddate': os.environ.get('LOGIN_SUB_END_DATE'),
                 'userid': os.environ.get('LOGIN_USER_ID'),
                 'vineyards': [int(os.environ.get('LOGIN_USER_ID'))],
@@ -425,7 +425,8 @@ class MainTests(TestCase):
                 'username': "th!$ gUy-i$-n0-g00D!!",
                 'password': os.environ.get('LOGIN_PASSWORD'),
                 'email': os.environ.get('RESET_EMAIL'),
-                'securitytoken': os.environ.get('LOGIN_SEC_TOKEN'),
+                'admin': False,
+                'enable': True,
                 'subenddate': os.environ.get('LOGIN_SUB_END_DATE'),
                 'userid': os.environ.get('LOGIN_USER_ID'),
                 'vineyards': [int(os.environ.get('LOGIN_USER_ID'))],
@@ -452,7 +453,8 @@ class MainTests(TestCase):
             'new_user_info': {
                 'password': os.environ.get('LOGIN_PASSWORD'),
                 'email': os.environ.get('RESET_EMAIL'),
-                'securitytoken': os.environ.get('LOGIN_SEC_TOKEN'),
+                'admin': False,
+                'enable': True,
                 'subenddate': os.environ.get('LOGIN_SUB_END_DATE'),
                 'userid': os.environ.get('LOGIN_USER_ID'),
                 'vineyards': [int(os.environ.get('LOGIN_USER_ID'))],
@@ -464,7 +466,7 @@ class MainTests(TestCase):
             content_type='application/json'
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
-        self.assertTrue('username_invalid' in error)
+        self.assertTrue('data_missing' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_new_user_invalid_username_taken(self):
@@ -480,7 +482,8 @@ class MainTests(TestCase):
                 'username': os.environ.get('LOGIN_USERNAME'),
                 'password': os.environ.get('LOGIN_PASSWORD'),
                 'email': os.environ.get('RESET_EMAIL'),
-                'securitytoken': os.environ.get('LOGIN_SEC_TOKEN'),
+                'admin': False,
+                'enable': True,
                 'subenddate': os.environ.get('LOGIN_SUB_END_DATE'),
                 'userid': os.environ.get('LOGIN_USER_ID'),
                 'vineyards': [int(os.environ.get('LOGIN_USER_ID'))],
@@ -514,7 +517,8 @@ class MainTests(TestCase):
                 'username': os.environ.get('LOGIN_USERNAME'),
                 'password': os.environ.get('LOGIN_PASSWORD'),
                 'email': os.environ.get('RESET_EMAIL'),
-                'securitytoken': os.environ.get('LOGIN_SEC_TOKEN'),
+                'admin': False,
+                'enable': True,
                 'subenddate': os.environ.get('LOGIN_SUB_END_DATE'),
                 'userid': os.environ.get('LOGIN_USER_ID'),
                 'vineyards': [int(os.environ.get('LOGIN_USER_ID'))],

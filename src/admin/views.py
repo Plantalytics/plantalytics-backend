@@ -201,6 +201,8 @@ def check_user_parameters(user_info):
     vineyards = user_info.get('vineyards', '')
     current_date = datetime.date.today().strftime('%Y-%m-%d')
     new_user_id = user_info.get('userid', '')
+    is_admin = user_info.get('admin', '')
+    is_enable = user_info.get('enable', '')
 
     try:
         message = (
@@ -212,6 +214,12 @@ def check_user_parameters(user_info):
             if re.match(r"[^@]+@[^@]+\.[^@]+", email) is None:
                 raise PlantalyticsDataException(EMAIL_INVALID)
         check_subscription_end_date(sub_end_date, current_date)
+        if is_admin != '':
+            if not isinstance(is_admin, bool):
+                raise PlantalyticsDataException(DATA_INVALID)
+        if is_enable != '':
+            if not isinstance(is_enable, bool):
+                raise PlantalyticsDataException(DATA_INVALID)
         if vineyards != '':
             for vineyard_id in vineyards:
                 if int(vineyard_id) < 0:
@@ -242,8 +250,28 @@ def user_new(request):
     auth_token = str(data.get('auth_token', ''))
     new_user_info = data.get('new_user_info', '')
     new_username = str(new_user_info.get('username', ''))
+    password = new_user_info.get('password', '')
+    email = new_user_info.get('email', '')
+    is_admin = new_user_info.get('admin', '')
+    is_enable = new_user_info.get('enable', '')
+    sub_end_date = new_user_info.get('subenddate', '')
+    user_id = new_user_info.get('userid', '')
+    vineyards = new_user_info.get('vineyards', '')
 
     try:
+        missing_values = (
+            new_username == '' or
+            password == '' or
+            email == '' or
+            is_admin == '' or
+            is_enable == '' or
+            auth_token == '' or
+            sub_end_date == '' or
+            user_id == '' or
+            vineyards == ''
+        )
+        if (missing_values):
+            raise PlantalyticsDataException(DATA_MISSING)
         if not verify_admin(auth_token):
             raise PlantalyticsAuthException(ADMIN_INVALID)
 

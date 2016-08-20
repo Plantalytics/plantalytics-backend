@@ -478,7 +478,9 @@ def change_user_password(username, new_password, old_password):
         new_row_values = {
             'username': rows[0].username,
             'password': new_password,
+            'admin': rows[0].admin,
             'email': rows[0].email,
+            'enable': rows[0].enable,
             'securitytoken': rows[0].securitytoken,
             'subenddate': rows[0].subenddate,
             'userid': rows[0].userid,
@@ -486,9 +488,9 @@ def change_user_password(username, new_password, old_password):
         }
         query = (
             'INSERT INTO {} '
-            '(username, password, email, securitytoken, '
+            '(username, password, admin, email, enable, securitytoken, '
             'subenddate, userid, vineyards) '
-            'VALUES(?, ?, ?, ?, ?, ?, ?);'
+            'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);'
         )
         prepared_statement = session.prepare(
             query.format(table)
@@ -645,15 +647,14 @@ def create_new_user(new_user_info):
             'email': new_user_info.get('email', ''),
             'admin': new_user_info.get('admin', ''),
             'enable': new_user_info.get('enable', ''),
-            'securitytoken': new_user_info.get('securitytoken', ''),
             'subenddate': new_user_info.get('subenddate', ''),
             'userid': int(new_user_info.get('userid', '')),
             'vineyards': new_user_info.get('vineyards', ''),
     }
     query = (
         'INSERT INTO {} (username, password, admin, email, enable, '
-        'securitytoken, subenddate, userid, vineyards) '
-        'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);'
+        'subenddate, userid, vineyards) '
+        'VALUES(?, ?, ?, ?, ?, ?, ?, ?);'
     )
     prepared_statement = session.prepare(
         query.format(table)

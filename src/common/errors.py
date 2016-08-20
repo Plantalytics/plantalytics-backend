@@ -17,6 +17,7 @@ AUTH_NOT_FOUND = 'auth_error_not_found'
 CHANGE_ERROR_PASSWORD = 'reset_error_password'
 CHANGE_EMAIL_UNKNOWN = 'change_email_unknown'
 DATA_INVALID = 'data_invalid'
+DATA_MISSING = 'data_missing'
 ENV_DATA_INVALID = 'env_data_invalid'
 ENV_DATA_NOT_FOUND = 'env_data_not_found'
 ENV_DATA_UNKNOWN = 'env_data_unknown'
@@ -47,6 +48,7 @@ responses = {
     CHANGE_ERROR_PASSWORD: 'Invalid new password.',
     CHANGE_EMAIL_UNKNOWN: 'Unknown error while attempting to change email',
     DATA_INVALID: 'Submitted data is invalid.',
+    DATA_MISSING: 'Missing required data.',
     ENV_DATA_INVALID: (
         'Request for invalid environmental data. '
         'Must be one of leafwetness, humidity, or temperature.'

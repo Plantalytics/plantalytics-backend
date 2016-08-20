@@ -1305,6 +1305,78 @@ class MainTests(TestCase):
 
 # /admin/vineyard/new - invalid request tests
 
+    def test_new_vineyard_invalid_id_exists(self):
+        """
+        Tests an invalid request to create a new vineyard.
+        The vineyard id already exists.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'new_vineyard_info': {
+                'vineyard_id': os.environ.get('VINE_ID'),
+                'owners': [str(os.environ.get('VINE_OWNERS'))],
+                'enable': True,
+                'name': os.environ.get('VINE_NAME'),
+                'boundaries': [{
+                    'lat': os.environ.get('VINE_BOUND_LAT'),
+                    'lon': os.environ.get('VINE_BOUND_LON'),
+                }],
+                'center': {
+                    'lat': os.environ.get('VINE_CENTER_LAT'),
+                    'lon': os.environ.get('VINE_CENTER_LON'),
+                },
+            },
+        }
+        response = client.post(
+            '/admin/vineyard/new',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('vineyard_id_invalid' in error)
+        self.assertEqual(response.status_code, 403)
+
+    @patch('admin.views.check_vineyard_id')
+    def test_new_vineyard_invalid_enable_type(self, check_id_mock):
+        """
+        Tests an invalid request to create a new vineyard.
+        The enable is an invalid data type.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'new_vineyard_info': {
+                'vineyard_id': os.environ.get('VINE_ID'),
+                'owners': [str(os.environ.get('VINE_OWNERS'))],
+                'enable': 'ImNotABoolean',
+                'name': os.environ.get('VINE_NAME'),
+                'boundaries': [{
+                    'lat': os.environ.get('VINE_BOUND_LAT'),
+                    'lon': os.environ.get('VINE_BOUND_LON'),
+                }],
+                'center': {
+                    'lat': os.environ.get('VINE_CENTER_LAT'),
+                    'lon': os.environ.get('VINE_CENTER_LON'),
+                },
+            },
+        }
+        response = client.post(
+            '/admin/vineyard/new',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        new_vineyard_info = payload.get('new_vineyard_info', '')
+        vineyard_id = str(new_vineyard_info.get('vineyard_id', ''))
+        check_id_mock.assert_called_once_with(
+             vineyard_id
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('data_invalid' in error)
+        self.assertEqual(response.status_code, 403)
+
     def test_new_vineyard_invalid_admin(self):
         """
         Tests a request to create a new vineyard
@@ -1492,6 +1564,31 @@ class MainTests(TestCase):
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
         self.assertTrue('vineyard_id_invalid' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_edit_vineyard_invalid_enable_type(self):
+        """
+        Tests a request to edit a vineyard with an invalid enable value.
+        The enable value is an inavlid data type.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'auth_token': os.environ.get('ADMIN_TOKEN'),
+            'edit_vineyard_info': {
+                'vineyard_id': os.environ.get('VINE_ID'),
+                'owners': [str(os.environ.get('VINE_OWNERS'))],
+                'name': os.environ.get('VINE_NAME'),
+                'enable': "ImNotABoolean",
+            },
+        }
+        response = client.post(
+            '/admin/vineyard/edit',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('data_invalid' in error)
         self.assertEqual(response.status_code, 403)
 
 # /admin/vineyard/edit exception tests

@@ -546,6 +546,7 @@ def vineyard_edit(request):
     auth_token = str(data.get('auth_token', ''))
     edit_vineyard_info = data.get('edit_vineyard_info', '')
     vineyard_id = str(edit_vineyard_info.get('vineyard_id', ''))
+    is_enable = edit_vineyard_info.get('enable', '')
 
     try:
         if not verify_admin(auth_token):
@@ -561,6 +562,9 @@ def vineyard_edit(request):
         )
         if (invalid):
             raise PlantalyticsDataException(VINEYARD_ID_INVALID)
+        if is_enable != '':
+            if not isinstance(is_enable, bool):
+                raise PlantalyticsDataException(DATA_INVALID)
         cassy.edit_vineyard(edit_vineyard_info)
         message = (
             'Successfully edited info for vineyard id: {}.'
@@ -595,21 +599,26 @@ def check_vineyard_id(vineyard_id):
     Validates submitted vineyard id by checking if it already exists.
     """
 
-    message = (
-        'Validating submitted vineyard id.'
-    )
-    logger.info(message)
-    invalid = (
-        vineyard_id == '' or
-        int(vineyard_id) < 0 or
-        cassy.check_vineyard_id_exists(int(vineyard_id))
-    )
-    if (invalid):
-        raise PlantalyticsDataException(VINEYARD_ID_INVALID)
-    message = (
-        'Submitted vineyard id successfully validated.'
-    )
-    logger.info(message)
+    try:
+        message = (
+            'Validating submitted vineyard id.'
+        )
+        logger.info(message)
+        invalid = (
+            vineyard_id == '' or
+            int(vineyard_id) < 0 or
+            cassy.check_vineyard_id_exists(int(vineyard_id))
+        )
+        if (invalid):
+            raise PlantalyticsDataException(VINEYARD_ID_INVALID)
+        message = (
+            'Submitted vineyard id successfully validated.'
+        )
+        logger.info(message)
+    except PlantalyticsException as e:
+        raise e
+    except Exception as e:
+        raise e
 
 
 @csrf_exempt
@@ -651,6 +660,8 @@ def vineyard_new(request):
         ).format(vineyard_id)
         logger.info(message)
         check_vineyard_id(vineyard_id)
+        if not isinstance(is_enable, bool):
+            raise PlantalyticsDataException(DATA_INVALID)
         cassy.create_new_vineyard(new_vineyard_info)
         message = (
             'Successfully created new vineyard with vineyard id: {}.'

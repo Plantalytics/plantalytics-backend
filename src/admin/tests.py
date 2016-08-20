@@ -31,7 +31,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'request_username': os.environ.get('LOGIN_USERNAME'),
         }
         response = client.post(
@@ -56,7 +55,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'request_username': 'thisGuyAintInThere',
         }
         response = client.post(
@@ -76,7 +74,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': 'thisWontGetYouFar',
-            'admin_username': 'mrDerp',
             'request_username': os.environ.get('LOGIN_USERNAME'),
         }
         response = client.post(
@@ -101,7 +98,6 @@ class MainTests(TestCase):
         cassy_mock.side_effect = Exception('Test exception')
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'request_username': os.environ.get('LOGIN_USERNAME'),
         }
         response = client.post(
@@ -137,7 +133,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'request_username': os.environ.get('LOGIN_USERNAME'),
             'sub_end_date': '2100-01-01',
         }
@@ -161,7 +156,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'request_username': 'thisGuyAintInThere',
             'sub_end_date': '2100-01-01',
         }
@@ -183,7 +177,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': 'thisWontGetYouFar',
-            'admin_username': 'mrDerp',
             'request_username': os.environ.get('LOGIN_USERNAME'),
             'sub_end_date': '2100-01-01',
         }
@@ -209,7 +202,6 @@ class MainTests(TestCase):
         cassy_mock.side_effect = Exception('Test exception')
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'request_username': os.environ.get('LOGIN_USERNAME'),
             'sub_end_date': '2100-01-01',
         }
@@ -248,7 +240,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'edit_user_info': {
                 'username': os.environ.get('LOGIN_USERNAME'),
                 'password': os.environ.get('LOGIN_PASSWORD'),
@@ -274,7 +265,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': 'thisWontGetYouFar',
-            'admin_username': 'mrDerp',
             'edit_user_info': {
                 'username': os.environ.get('LOGIN_USERNAME'),
                 'password': os.environ.get('LOGIN_PASSWORD'),
@@ -298,7 +288,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'edit_user_info': {
                 'username': 'thisGuyAintInThere',
                 'password': os.environ.get('LOGIN_PASSWORD'),
@@ -327,7 +316,6 @@ class MainTests(TestCase):
         cassy_mock.side_effect = Exception('Test exception')
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'edit_user_info': {
                 'username': os.environ.get('LOGIN_USERNAME'),
                 'password': os.environ.get('LOGIN_PASSWORD'),
@@ -369,7 +357,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'new_user_info': {
                 'username': os.environ.get('LOGIN_USERNAME'),
                 'password': os.environ.get('LOGIN_PASSWORD'),
@@ -406,7 +393,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': 'thisWontGetYouFar',
-            'admin_username': 'mrDerp',
             'new_user_info': {
                 'username': os.environ.get('LOGIN_USERNAME'),
                 'password': os.environ.get('LOGIN_PASSWORD'),
@@ -435,7 +421,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'new_user_info': {
                 'username': "th!$ gUy-i$-n0-g00D!!",
                 'password': os.environ.get('LOGIN_PASSWORD'),
@@ -464,7 +449,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'new_user_info': {
                 'password': os.environ.get('LOGIN_PASSWORD'),
                 'email': os.environ.get('RESET_EMAIL'),
@@ -492,7 +476,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'new_user_info': {
                 'username': os.environ.get('LOGIN_USERNAME'),
                 'password': os.environ.get('LOGIN_PASSWORD'),
@@ -527,7 +510,6 @@ class MainTests(TestCase):
         cassy_mock.side_effect = Exception('Test exception')
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'new_user_info': {
                 'username': os.environ.get('LOGIN_USERNAME'),
                 'password': os.environ.get('LOGIN_PASSWORD'),
@@ -576,7 +558,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'request_username': os.environ.get('LOGIN_USERNAME'),
         }
         response = client.post(
@@ -598,7 +579,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'request_username': 'thisGuyAintInThere',
         }
         response = client.post(
@@ -618,7 +598,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': 'thisWontGetYouFar',
-            'admin_username': 'mrDerp',
             'request_username': os.environ.get('LOGIN_USERNAME'),
         }
         response = client.post(
@@ -643,7 +622,6 @@ class MainTests(TestCase):
         cassy_mock.side_effect = Exception('Test exception')
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'request_username': os.environ.get('LOGIN_USERNAME'),
         }
         response = client.post(
@@ -679,7 +657,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'vineyard_id': os.environ.get('VINE_ID'),
         }
         response = client.post(
@@ -704,7 +681,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'vineyard_id': 12345,
         }
         response = client.post(
@@ -724,7 +700,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': 'thisWontGetYouFar',
-            'admin_username': 'mrDerp',
             'vineyard_id': os.environ.get('VINE_ID'),
         }
         response = client.post(
@@ -749,7 +724,6 @@ class MainTests(TestCase):
         cassy_mock.side_effect = Exception('Test exception')
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'vineyard_id': os.environ.get('VINE_ID'),
         }
         response = client.post(
@@ -786,7 +760,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'new_vineyard_info': {
                 'vineyard_id': os.environ.get('VINE_ID'),
                 'owners': [str(os.environ.get('VINE_OWNERS'))],
@@ -827,7 +800,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': 'thisWontGetYouFar',
-            'admin_username': 'mrDerp',
             'new_vineyard_info': {
                 'vineyard_id': os.environ.get('VINE_ID'),
                 'owners': [str(os.environ.get('VINE_OWNERS'))],
@@ -866,7 +838,6 @@ class MainTests(TestCase):
         cassy_mock.side_effect = Exception('Test exception')
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'new_vineyard_info': {
                 'vineyard_id': os.environ.get('VINE_ID'),
                 'owners': [str(os.environ.get('VINE_OWNERS'))],
@@ -920,7 +891,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'edit_vineyard_info': {
                 'vineyard_id': os.environ.get('VINE_ID'),
                 'owners': [str(os.environ.get('VINE_OWNERS'))],
@@ -947,7 +917,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': 'thisWontGetYouFar',
-            'admin_username': 'mrDerp',
             'edit_vineyard_info': {
                 'vineyard_id': os.environ.get('VINE_ID'),
                 'owners': [str(os.environ.get('VINE_OWNERS'))],
@@ -971,7 +940,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'edit_vineyard_info': {
                 'vineyard_id': 12345,
                 'owners': [str(os.environ.get('VINE_OWNERS'))],
@@ -1000,7 +968,6 @@ class MainTests(TestCase):
         cassy_mock.side_effect = Exception('Test exception')
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'edit_vineyard_info': {
                 'vineyard_id': os.environ.get('VINE_ID'),
                 'owners': [str(os.environ.get('VINE_OWNERS'))],
@@ -1040,7 +1007,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'vineyard_id': os.environ.get('VINE_ID'),
         }
         response = client.post(
@@ -1062,7 +1028,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'vineyard_id': 12345,
         }
         response = client.post(
@@ -1082,7 +1047,6 @@ class MainTests(TestCase):
         client = Client()
         payload = {
             'auth_token': 'thisWontGetYouFar',
-            'admin_username': 'mrDerp',
             'vineyard_id': os.environ.get('VINE_ID'),
         }
         response = client.post(
@@ -1107,7 +1071,6 @@ class MainTests(TestCase):
         cassy_mock.side_effect = Exception('Test exception')
         payload = {
             'auth_token': os.environ.get('ADMIN_TOKEN'),
-            'admin_username': os.environ.get('ADMIN_USER'),
             'vineyard_id': os.environ.get('VINE_ID'),
         }
         response = client.post(

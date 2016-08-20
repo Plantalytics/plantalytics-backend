@@ -558,8 +558,7 @@ def change_user_email(username, new_email):
         raise Exception('Transaction Error Occurred: '.format(str(e)))
 
 
-
-def verify_authenticated_admin(username, auth_token):
+def verify_authenticated_admin(auth_token):
     """
     Verifies if supplied username is an admin and is authenticated.
     """
@@ -567,31 +566,25 @@ def verify_authenticated_admin(username, auth_token):
     session.row_factory = named_tuple_factory
     table = str(os.environ.get('DB_USER_TABLE'))
     parameters = {
-        'username': username,
+        'securitytoken': auth_token,
     }
     query = (
-        'SELECT admin FROM {} WHERE username=?;'
+        'SELECT admin FROM {} WHERE securitytoken=? ALLOW FILTERING;'
     )
     prepared_statement = session.prepare(
         query.format(table)
     )
 
     try:
-        verified = str(verify_auth_token(auth_token))
-        if (verified != username):
-            return False
         rows = session.execute(
             prepared_statement,
             parameters
         )
-        if not rows:
+        if (not rows or rows[0].admin is False):
             return False
-        return True
-    # Known exception
-    except PlantalyticsAuthException as e:
-            return False
-    except PlantalyticsException as e:
-        raise e
+        if (rows[0].admin is True):
+            return True
+        return False
     # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))

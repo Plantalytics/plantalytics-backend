@@ -851,9 +851,6 @@ def edit_vineyard(edit_vineyard_info):
         )
         if not rows:
             raise PlantalyticsAuthException(VINEYARD_ID_NOT_FOUND)
-        old_row = {
-            'vineid': rows[0].vineid,
-        }
 
         edit_row = {
             'vineid': rows[0].vineid,

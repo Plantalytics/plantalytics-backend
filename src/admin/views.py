@@ -186,18 +186,18 @@ def check_subscription_end_date(sub_end_date, current_date):
         raise e
 
 
-def check_user_parameters(user_info):
+def check_user_parameters(user_information):
     """
     Checks submitted user data for parameter constraints.
     """
 
-    email = user_info.get('email', '')
-    sub_end_date = user_info.get('subenddate', '')
-    vineyards = user_info.get('vineyards', '')
+    email = user_information.get('email', '')
+    sub_end_date = user_information.get('subenddate', '')
+    vineyards = user_information.get('vineyards', '')
     current_date = datetime.date.today().strftime('%Y-%m-%d')
-    new_user_id = user_info.get('userid', '')
-    is_admin = user_info.get('admin', '')
-    is_enable = user_info.get('enable', '')
+    new_user_id = user_information.get('userid', '')
+    is_admin = user_information.get('admin', '')
+    is_enable = user_information.get('enable', '')
 
     try:
         message = (

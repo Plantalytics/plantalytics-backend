@@ -70,7 +70,7 @@ class MainTests(TestCase):
             )
             for _ in range(6)
         )
-        auth_token = 'token'
+        auth_token = os.environ.get('ADMIN_TOKEN')
         body = {
             'auth_token': auth_token,
             'username': username,
@@ -117,7 +117,7 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     @patch('cassy.change_user_password')
-    @patch('cassy.verify_auth_token')
+    @patch('cassy.verify_authenticated_admin')
     def test_password_change_with_admin(self, cassy_auth, cassy_mock):
         """
         Tests the case where an admin resets someone's password.
@@ -125,7 +125,7 @@ class MainTests(TestCase):
         """
         setup_test_environment()
         client = Client()
-        cassy_auth.return_value = str(os.environ.get('ADMIN'))
+        cassy_auth.return_value = True
         username = 'tubulartester'
         old_password = 'testthis'
         new_password = 'newpass'
@@ -189,7 +189,7 @@ class MainTests(TestCase):
         self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
-    @patch('cassy.verify_auth_token')
+    @patch('cassy.verify_authenticated_admin')
     def test_password_change_with_admin_empty_username(self, cassy_auth):
         """
         Tests the case where an admin resets someone's password,
@@ -198,7 +198,7 @@ class MainTests(TestCase):
         """
         setup_test_environment()
         client = Client()
-        cassy_auth.return_value = str(os.environ.get('ADMIN'))
+        cassy_auth.return_value = True
         new_password = 'newpass'
         auth_token = 'token'
         body = {
@@ -335,7 +335,7 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
     @patch('cassy.change_user_password')
-    @patch('cassy.verify_auth_token')
+    @patch('cassy.verify_authenticated_admin')
     def test_admin_password_change_same_old_and_new(
         self,
         cassy_auth,
@@ -347,7 +347,7 @@ class MainTests(TestCase):
         """
         setup_test_environment()
         client = Client()
-        cassy_auth.return_value = str(os.environ.get('ADMIN'))
+        cassy_auth.return_value = True
         username = 'tubulartester'
         old_password = 'testthis'
         new_password = 'testthis'

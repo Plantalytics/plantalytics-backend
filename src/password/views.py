@@ -104,9 +104,9 @@ def change(request):
         # Else, password being reset by admin or logged-in user
         else:
             logger.info('Attempting password reset using auth token.')
-            verified_name = cassy.verify_auth_token(auth_token)
+            verified_admin = cassy.verify_authenticated_admin(auth_token)
             # if the auth token is associated with the admin user,
-            if verified_name == str(os.environ.get('ADMIN')):
+            if verified_admin is True:
                 if username:
                     stored_password = cassy.get_user_password(username)
                     if new_password == stored_password:
@@ -127,6 +127,7 @@ def change(request):
                     logger.warn('Invalid username. Username cannot be empty.')
                     raise PlantalyticsException(RESET_ERROR_USERNAME)
             else:
+                verified_name = cassy.verify_auth_token(auth_token)
                 message = (
                     'User \'{}\' attempting to reset password.'
                 ).format(verified_name)

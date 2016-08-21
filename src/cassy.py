@@ -672,3 +672,35 @@ def change_user_email(username, new_email):
     # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def verify_authenticated_admin(auth_token):
+    """
+    Verifies if supplied username is an admin and is authenticated.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'securitytoken': auth_token,
+    }
+    query = (
+        'SELECT admin FROM {} WHERE securitytoken=? ALLOW FILTERING;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if (not rows or rows[0].admin is False):
+            return False
+        if (rows[0].admin is True):
+            return True
+        return False
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))

@@ -167,6 +167,13 @@ def index(request):
         logger.warn(message)
         error = custom_error(str(e))
         return HttpResponseBadRequest(error, content_type='application/json')
+    except ValueError as e:
+        message = (
+            'Error occurred while fetching {} data for vineyard id {}. {}'
+        ).format(env_variable, str(vineyard_id), str(e))
+        logger.exception(message)
+        error = custom_error(ENV_DATA_UNKNOWN, str(e))
+        return HttpResponseBadRequest(error, content_type='application/json')
     except Exception as e:
         message = (
             'Error occurred while fetching {} data for vineyard id {}. {}'

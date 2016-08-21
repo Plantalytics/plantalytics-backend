@@ -19,6 +19,7 @@ from common.exceptions import *
 from unittest.mock import patch
 
 import cassy
+from password.views import reset_auth_token
 
 
 class MainTests(TestCase):
@@ -495,3 +496,15 @@ class MainTests(TestCase):
             rows = cassy.get_user_email(username)
         except PlantalyticsException as e:
             self.assertEqual('email_reset_error', str(e))
+
+    @patch('cassy.set_user_auth_token')
+    def test_auth_token_reset(self, cassy_mock):
+        """
+        Tests the auth token reset.
+        """
+        setup_test_environment()
+        client = Client()
+        username = 'somePersonYouMightKnow'
+        new_password = 'someNewPasswordYouMightKnow'
+        reset_auth_token(username, new_password)
+        self.assertTrue(cassy_mock.called)

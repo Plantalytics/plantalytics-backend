@@ -14,7 +14,7 @@ import logging
 import datetime
 import time
 
-from common.exceptions import PlantalyticsException
+from common.exceptions import *
 from common.errors import *
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, HttpResponseForbidden
@@ -34,16 +34,14 @@ def check_user_is_enabled(username):
             'Verifying account for user \'{}\' is enabled.'
         ).format(username)
         logger.info(message)
-
         is_enabled = cassy.verify_user_account(username)
-        if not is_enabled:
-            return False
-        return True
-
         message = (
             'Successfully verified account for user \'{}\'.'
         ).format(username)
         logger.info(message)
+        if not is_enabled:
+            return False
+        return True
     except PlantalyticsException as e:
         raise e
     except Exception as e:
@@ -60,17 +58,15 @@ def check_user_subscription_end_date(username):
             'Verifying subscription for user \'{}\' has not expired.'
         ).format(username)
         logger.info(message)
-
         current_date = datetime.date.today().strftime('%Y-%m-%d')
         sub_end_date = cassy.get_user_subscription(username)
-        if time.strptime(sub_end_date, '%Y-%m-%d') < time.strptime(current_date, '%Y-%m-%d'):
-            return True
-        return False
-
         message = (
             'Successfully verified subscription for user \'{}\'.'
         ).format(username)
         logger.info(message)
+        if time.strptime(sub_end_date, '%Y-%m-%d') < time.strptime(current_date, '%Y-%m-%d'):
+            return True
+        return False
     except PlantalyticsException as e:
         raise e
     except Exception as e:
@@ -87,16 +83,14 @@ def check_user_exists(username):
             'Verifying user \'{}\' exists.'
         ).format(username)
         logger.info(message)
-
         exists = cassy.check_username_exists(username)
-        if not exists:
-            return False
-        return True
-
         message = (
             'Successfully verified user \'{}\' exists.'
         ).format(username)
         logger.info(message)
+        if not exists:
+            return False
+        return True
     except PlantalyticsException as e:
         raise e
     except Exception as e:

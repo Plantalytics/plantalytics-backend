@@ -105,8 +105,7 @@ class MainTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-    @patch('cassy.check_latest_batch_time')
-    def test_response_invalid_vineyard(self, cassy_mock):
+    def test_response_invalid_vineyard(self):
         """
         Test env data endpoint when an invalid vineyard id is supplied.
         """
@@ -123,7 +122,6 @@ class MainTests(TestCase):
             content_type='application/json'
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
-        cassy_mock.assert_called_once_with(body.get('vineyard_id', ''))
         self.assertTrue('vineyard_id_not_found' in error)
         self.assertEqual(response.status_code, 400)
 

@@ -36,26 +36,31 @@ def check_hubs_not_reporting(latest_times):
     more than 20 minutes.
     """
 
-    timestamp_format = "%Y-%m-%d %H:%M:%S"
-    current_epoch_time = time.strftime(
-        timestamp_format,
-        time.gmtime(time.time())
-    )
-    current_timestamp = datetime.datetime.strptime(
-        current_epoch_time,
-        timestamp_format
-    )
-    current_unix_timestamp = time.mktime(current_timestamp.timetuple())
-
-    for timestamp in latest_times:
-        batch_time = timestamp.lasthubbatchsent
-        batch_unix_time = time.mktime(batch_time.timetuple())
-        time_elapsed = (
-            int(current_unix_timestamp - batch_unix_time) / 60
+    try:
+        timestamp_format = "%Y-%m-%d %H:%M:%S"
+        current_epoch_time = time.strftime(
+            timestamp_format,
+            time.gmtime(time.time())
         )
-        if(time_elapsed > 20):
-            return False
-    return True
+        current_timestamp = datetime.datetime.strptime(
+            current_epoch_time,
+            timestamp_format
+        )
+        current_unix_timestamp = time.mktime(current_timestamp.timetuple())
+
+        for timestamp in latest_times:
+            batch_time = timestamp.lasthubbatchsent
+            batch_unix_time = time.mktime(batch_time.timetuple())
+            time_elapsed = (
+                int(current_unix_timestamp - batch_unix_time) / 60
+            )
+            if(time_elapsed > 20):
+                return False
+        return True
+    except ValueError as e:
+        raise e
+    except Exception as e:
+        raise e
 
 
 def send_hub_not_reporting_email(vineyard_id):
@@ -64,18 +69,21 @@ def send_hub_not_reporting_email(vineyard_id):
     more than 20 minutes.
     """
 
-    vineyard_name = str(cassy.get_vineyard_name(vineyard_id))
-    message = (
-        'A hub has failed to report data within the last 20 minutes at '
-        'the following vineyard:\n\n{}'
-    ).format(vineyard_name)
-    send_mail(
-        'Plantalytics - Hub Not Reporting',
-        message,
-        settings.EMAIL_HOST_USER,
-        [os.environ.get('RESET_EMAIL')],
-        fail_silently=False,
-    )
+    try:
+        vineyard_name = str(cassy.get_vineyard_name(vineyard_id))
+        message = (
+            'A hub has failed to report data within the last 20 minutes at '
+            'the following vineyard:\n\n{}'
+        ).format(vineyard_name)
+        send_mail(
+            'Plantalytics - Hub Not Reporting',
+            message,
+            settings.EMAIL_HOST_USER,
+            [os.environ.get('RESET_EMAIL')],
+            fail_silently=False,
+        )
+    except Exception as e:
+        raise e
 
 
 @csrf_exempt

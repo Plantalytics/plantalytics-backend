@@ -71,6 +71,8 @@ def get_env_data(node_id, env_variable):
             else:
                 # Shouldn't reach this point, but here for completeness
                 raise PlantalyticsDataException(ENV_DATA_UNKNOWN)
+    except PlantalyticsDataException as e:
+        raise e
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))
 
@@ -99,6 +101,8 @@ def check_latest_batch_time(vineyard_id):
         if not rows:
             raise PlantalyticsDataException(VINEYARD_ID_NOT_FOUND)
         return rows
+    except PlantalyticsDataException as e:
+        raise e
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))
 
@@ -132,9 +136,6 @@ def set_latest_batch_time(vineyard_id, hub_id, batch_sent, hub_data):
             )
         session.execute(batch_statement)
         return True
-    # Known exception
-    except PlantalyticsException as e:
-        raise e
     # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))
@@ -524,6 +525,9 @@ def set_user_auth_token(username, password, auth_token):
             parameters
         )
         return True
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))
 
@@ -797,9 +801,6 @@ def check_username_exists(username):
         if not rows:
             return False
         return True
-    # Known exception
-    except PlantalyticsException as e:
-        raise e
     # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))

@@ -43,6 +43,7 @@ class MainTests(TestCase):
     def test_response_invalid_username(self):
         """
          Tests the case where user logs in with an invalid username.
+         The username does not exist.
         """
         setup_test_environment()
         client = Client()
@@ -57,6 +58,46 @@ class MainTests(TestCase):
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
         self.assertTrue('login_error' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_invalid_username_not_enabled(self):
+        """
+         Tests the case where user logs in with an invalid username.
+         The user is not enabled.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'username': 'MrNotEnabled',
+            'password': str(os.environ.get('LOGIN_PASSWORD')),
+        }
+        response = client.post(
+            '/login',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('auth_error_disabled' in error)
+        self.assertEqual(response.status_code, 403)
+
+    def test_response_invalid_username_expired(self):
+        """
+         Tests the case where user logs in with an invalid username.
+         The user subscription has expired.
+        """
+        setup_test_environment()
+        client = Client()
+        payload = {
+            'username': 'MrExpired',
+            'password': str(os.environ.get('LOGIN_PASSWORD')),
+        }
+        response = client.post(
+            '/login',
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        error = json.loads(response.content.decode('utf-8'))['errors']
+        self.assertTrue('auth_error_expired' in error)
         self.assertEqual(response.status_code, 403)
 
     def test_response_username_missing(self):

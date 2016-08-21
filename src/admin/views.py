@@ -12,7 +12,6 @@ import logging
 import re
 import datetime
 import time
-import string
 
 from common.exceptions import *
 from common.errors import *
@@ -20,7 +19,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import (
     HttpResponse,
     HttpResponseForbidden,
-    HttpResponseBadRequest,
     HttpResponseServerError,
     HttpResponseNotAllowed
 )
@@ -41,7 +39,7 @@ def verify_admin(auth_token):
         )
         logger.info(message)
         is_admin = cassy.verify_authenticated_admin(auth_token)
-        if (is_admin is False):
+        if is_admin is False:
             return False
         message = (
             'Successfully validated user is an authenticated admin.'
@@ -84,7 +82,7 @@ def user_info(request):
         )
     except PlantalyticsException as e:
         message = (
-            'Error attempting to retireve user info. Error code: {}'
+            'Error attempting to retrieve user info. Error code: {}'
         ).format(str(e))
         logger.warn(message)
         error = custom_error(str(e))
@@ -110,11 +108,10 @@ def check_user_id(user_id):
         logger.info(message)
         if user_id != '':
             invalid = (
-
                 int(user_id) < 0 or
                 cassy.check_user_id_exists(int(user_id))
             )
-            if (invalid):
+            if invalid:
                 raise PlantalyticsDataException(USER_ID_INVALID)
         message = (
             'Submitted user id successfully validated.'
@@ -122,7 +119,7 @@ def check_user_id(user_id):
         logger.info(message)
     except PlantalyticsException as e:
         raise e
-    except ValueError as e:
+    except ValueError:
         raise PlantalyticsDataException(USER_ID_INVALID)
     except Exception as e:
         raise e
@@ -141,10 +138,10 @@ def check_username(username):
         invalid = (
             not username.isalnum()
         )
-        if (invalid):
+        if invalid:
             raise PlantalyticsDataException(USER_INVALID)
         exists = cassy.check_username_exists(username)
-        if (exists):
+        if exists:
             raise PlantalyticsDataException(USER_TAKEN)
         message = (
             'Submitted username successfully validated.'
@@ -274,7 +271,7 @@ def user_new(request):
             raise PlantalyticsAuthException(ADMIN_INVALID)
 
         message = (
-            'Attemping to create new user: {}.'
+            'Attempting to create new user: {}.'
         ).format(new_username)
         logger.info(message)
         check_username(new_username)
@@ -335,13 +332,13 @@ def user_subscription(request):
             raise PlantalyticsAuthException(ADMIN_INVALID)
 
         message = (
-            'Attemping to update subscription for user: {}.'
+            'Attempting to update subscription for user: {}.'
         ).format(request_username)
         logger.info(message)
         check_subscription_end_date(sub_end_date, current_date)
         cassy.update_user_subscription(request_username, sub_end_date)
         message = (
-            'Successfully updated subscruption for user: {}.'
+            'Successfully updated subscription for user: {}.'
         ).format(request_username)
         logger.info(message)
         body = {
@@ -402,7 +399,7 @@ def user_edit(request):
             raise PlantalyticsAuthException(ADMIN_INVALID)
 
         message = (
-            'Attemping to edit info for user: {}.'
+            'Attempting to edit info for user: {}.'
         ).format(username)
         logger.info(message)
         check_user_parameters(edit_user_info)
@@ -553,14 +550,14 @@ def vineyard_edit(request):
             raise PlantalyticsAuthException(ADMIN_INVALID)
 
         message = (
-            'Attemping to edit info for vineyard id: {}.'
+            'Attempting to edit info for vineyard id: {}.'
         ).format(vineyard_id)
         logger.info(message)
         invalid = (
             vineyard_id == '' or
             int(vineyard_id) < 0
         )
-        if (invalid):
+        if invalid:
             raise PlantalyticsDataException(VINEYARD_ID_INVALID)
         if is_enable != '':
             if not isinstance(is_enable, bool):
@@ -609,7 +606,7 @@ def check_vineyard_id(vineyard_id):
             int(vineyard_id) < 0 or
             cassy.check_vineyard_id_exists(int(vineyard_id))
         )
-        if (invalid):
+        if invalid:
             raise PlantalyticsDataException(VINEYARD_ID_INVALID)
         message = (
             'Submitted vineyard id successfully validated.'
@@ -650,13 +647,13 @@ def vineyard_new(request):
             boundaries == '' or
             center == ''
         )
-        if (missing_values):
+        if missing_values:
             raise PlantalyticsDataException(DATA_MISSING)
         if not verify_admin(auth_token):
             raise PlantalyticsAuthException(ADMIN_INVALID)
 
         message = (
-            'Attemping to create new vineyard with vineyard id: {}.'
+            'Attempting to create new vineyard with vineyard id: {}.'
         ).format(vineyard_id)
         logger.info(message)
         check_vineyard_id(vineyard_id)
@@ -709,7 +706,7 @@ def vineyard_disable(request):
             raise PlantalyticsAuthException(ADMIN_INVALID)
 
         message = (
-            'Attemping to disable vineyard with vineyard id: {}.'
+            'Attempting to disable vineyard with vineyard id: {}.'
         ).format(vineyard_id)
         logger.info(message)
         response = cassy.disable_vineyard(vineyard_id)

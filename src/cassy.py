@@ -582,9 +582,9 @@ def verify_authenticated_admin(auth_token):
             prepared_statement,
             parameters
         )
-        if (not rows or rows[0].admin is False):
+        if not rows or rows[0].admin is False:
             return False
-        if (rows[0].admin is True):
+        if rows[0].admin is True:
             return True
         return False
     # Unknown exception
@@ -790,7 +790,7 @@ def edit_user(user_edit_info):
         }
 
         for key in user_edit_info:
-            if (user_edit_info.get(key, '') != ''):
+            if user_edit_info.get(key, '') != '':
                 edit_row[key] = user_edit_info.get(key, '')
 
         query = (
@@ -863,9 +863,9 @@ def edit_vineyard(edit_vineyard_info):
             'ownerlist': rows[0].ownerlist,
             'vinename': rows[0].vinename,
         }
-        if (edit_vineyard_info.get('vineyard_id', '') != ''):
+        if edit_vineyard_info.get('vineyard_id', '') != '':
             edit_row['vineid'] = int(edit_vineyard_info.get('vineyard_id', ''))
-        if (edit_vineyard_info.get('boundaries', '') != ''):
+        if edit_vineyard_info.get('boundaries', '') != '':
             boundaries = []
             for point in edit_vineyard_info.get('boundaries', ''):
                 coordinate = (
@@ -874,18 +874,18 @@ def edit_vineyard(edit_vineyard_info):
                 )
                 boundaries.append(coordinate)
             edit_row['boundaries'] = boundaries
-        if (edit_vineyard_info.get('center', '') != ''):
+        if edit_vineyard_info.get('center', '') != '':
             center_point = edit_vineyard_info.get('center', '')
             center = (
                 float(center_point['lon']),
                 float(center_point['lat']),
             )
             edit_row['center'] = center
-        if (edit_vineyard_info.get('enable', '') != ''):
+        if edit_vineyard_info.get('enable', '') != '':
             edit_row['enable'] = edit_vineyard_info.get('enable', '')
-        if (edit_vineyard_info.get('owners', '') != ''):
+        if edit_vineyard_info.get('owners', '') != '':
             edit_row['ownerlist'] = edit_vineyard_info.get('owners', '')
-        if (edit_vineyard_info.get('name', '') != ''):
+        if edit_vineyard_info.get('name', '') != '':
             edit_row['vinename'] = edit_vineyard_info.get('name', '')
 
         query = (

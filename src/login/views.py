@@ -11,6 +11,8 @@ import os
 import uuid
 import json
 import logging
+import datetime
+import time
 
 from common.exceptions import PlantalyticsException
 from common.errors import *
@@ -20,6 +22,85 @@ from django.http import HttpResponse, HttpResponseForbidden
 import cassy
 
 logger = logging.getLogger('plantalytics_backend.login')
+
+
+def check_user_is_enabled(username):
+    """
+    Checks that the user account is enabled.
+    """
+
+    try:
+        message = (
+            'Verifying account for user \'{}\' is enabled.'
+        ).format(username)
+        logger.info(message)
+
+        is_enabled = cassy.verify_user_account(username)
+        if not is_enabled:
+            return False
+        return True
+
+        message = (
+            'Successfully verified account for user \'{}\'.'
+        ).format(username)
+        logger.info(message)
+    except PlantalyticsException as e:
+        raise e
+    except Exception as e:
+        raise e
+
+
+def check_user_subscription_end_date(username):
+    """
+    Checks that the user account subscription date has not expired.
+    """
+
+    try:
+        message = (
+            'Verifying subscription for user \'{}\' has not expired.'
+        ).format(username)
+        logger.info(message)
+
+        current_date = datetime.date.today().strftime('%Y-%m-%d')
+        sub_end_date = cassy.get_user_subscription(username)
+        if time.strptime(sub_end_date, '%Y-%m-%d') < time.strptime(current_date, '%Y-%m-%d'):
+            return True
+        return False
+
+        message = (
+            'Successfully verified subscription for user \'{}\'.'
+        ).format(username)
+        logger.info(message)
+    except PlantalyticsException as e:
+        raise e
+    except Exception as e:
+        raise e
+
+
+def check_user_exists(username):
+    """
+    Checks that the user exists in the database
+    """
+
+    try:
+        message = (
+            'Verifying user \'{}\' exists.'
+        ).format(username)
+        logger.info(message)
+
+        exists = cassy.check_username_exists(username)
+        if not exists:
+            return False
+        return True
+
+        message = (
+            'Successfully verified user \'{}\' exists.'
+        ).format(username)
+        logger.info(message)
+    except PlantalyticsException as e:
+        raise e
+    except Exception as e:
+        raise e
 
 
 @csrf_exempt
@@ -34,6 +115,17 @@ def index(request):
     submitted_password = str(data.get('password', ''))
 
     try:
+        if username == '':
+            raise PlantalyticsException(LOGIN_ERROR)
+        exists = check_user_exists(username)
+        if not exists:
+            raise PlantalyticsException(LOGIN_ERROR)
+        is_enabled = check_user_is_enabled(username)
+        if not is_enabled:
+            raise PlantalyticsAuthException(AUTH_DISABLED)
+        is_expired = check_user_subscription_end_date(username)
+        if is_expired:
+            raise PlantalyticsAuthException(AUTH_EXPIRED)
         # Get stored password from database, and verify with password arg
         message = (
             'Fetching password for user \'{}\'.'

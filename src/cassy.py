@@ -704,3 +704,102 @@ def verify_authenticated_admin(auth_token):
     # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def verify_user_account(username):
+    """
+    Verifies if account for supplied username is enabled.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': username,
+    }
+    query = (
+        'SELECT enable FROM {} WHERE username=? ALLOW FILTERING;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if (not rows or rows[0].enable is False):
+            return False
+        if (rows[0].enable is True):
+            return True
+        return False
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def get_user_subscription(username):
+    """
+    Obtains subscription end date for the requested user.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': username,
+    }
+    query = (
+        'SELECT subenddate FROM {} WHERE username=? ALLOW FILTERING;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            raise PlantalyticsException(LOGIN_ERROR)
+        else:
+            return rows[0].subenddate
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def check_username_exists(username):
+    """
+    Checks if submitted username exists in the database.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': username,
+    }
+    query = (
+        'SELECT * FROM {} WHERE username=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            return False
+        return True
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))

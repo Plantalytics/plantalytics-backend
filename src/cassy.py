@@ -562,7 +562,7 @@ def change_user_email(username, new_email):
 
 def verify_authenticated_admin(auth_token):
     """
-    Verifies if supplied username is an admin and is authenticated.
+    Verifies if supplied auth token belongs to an admin user.
     """
 
     session.row_factory = named_tuple_factory

@@ -29,7 +29,8 @@ LOGIN_UNKNOWN = 'login_unknown'
 LOGIN_NO_VINEYARDS = 'login_no_vineyards'
 RESET_ERROR = 'reset_error'
 RESET_ERROR_USERNAME = 'reset_error_username'
-SUB_DATE_INVLAID = 'sub_end_date_invalid'
+SUB_DATE_INVALID = 'sub_end_date_invalid'
+SUB_DATE_EXPIRED = 'sub_end_date_expired'
 USER_INVALID = 'username_invalid'
 USER_ID_INVALID = 'user_id_invalid'
 USER_TAKEN = 'username_taken'
@@ -68,7 +69,12 @@ responses = {
     RESET_ERROR_USERNAME: (
         'An error occurred resetting the password. Bad username.'
     ),
-    SUB_DATE_INVLAID: 'Subscription end date is invalid.',
+    SUB_DATE_INVALID: (
+        'Subscription end date is invalid. Expected date format: YYYY-MM-DD'
+    ),
+    SUB_DATE_EXPIRED: (
+        'Subscription end date is invalid. Date has expired.'
+    ),
     USER_INVALID: 'Requested username is invalid.',
     USER_ID_INVALID: 'User ID is invalid.',
     USER_TAKEN: 'Username is taken.',

@@ -295,7 +295,7 @@ class MainTests(TestCase):
             content_type='application/json'
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
-        self.assertTrue('sub_end_date_invalid' in error)
+        self.assertTrue('sub_end_date_expired' in error)
         self.assertEqual(response.status_code, 403)
 
 # /admin/user/subscription exception tests

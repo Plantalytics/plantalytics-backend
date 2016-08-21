@@ -174,9 +174,9 @@ def check_subscription_end_date(sub_end_date, current_date):
                 len(date) != 3
             )
             if invalid is True:
-                raise PlantalyticsDataException("Expected date format: YYYY-MM-DD")
+                raise PlantalyticsDataException(SUB_DATE_INVALID)
             if time.strptime(sub_end_date, '%Y-%m-%d') < time.strptime(current_date, '%Y-%m-%d'):
-                raise PlantalyticsDataException("Subcription end date has already passed.")
+                raise PlantalyticsDataException(SUB_DATE_EXPIRED)
         message = (
             'Submitted user subscription end date successfully validated.'
         )
@@ -184,7 +184,7 @@ def check_subscription_end_date(sub_end_date, current_date):
     except PlantalyticsException as e:
         raise e
     except ValueError as e:
-        raise PlantalyticsDataException("Expected date format: YYYY-MM-DD")
+        raise PlantalyticsDataException(SUB_DATE_INVALID)
     except Exception as e:
         raise e
 
@@ -356,7 +356,7 @@ def user_subscription(request):
             'Error attempting to create new user. Error code: {}'
         ).format(str(e))
         logger.warn(message)
-        error = custom_error(SUB_DATE_INVLAID, str(e))
+        error = custom_error(str(e))
         return HttpResponseForbidden(error, content_type='application/json')
     except PlantalyticsException as e:
         message = (
@@ -370,7 +370,7 @@ def user_subscription(request):
             'Error attempting to update user subscription. Error code: {}'
         ).format(str(e))
         logger.warn(message)
-        error = custom_error(SUB_DATE_INVLAID, str(e))
+        error = custom_error(SUB_DATE_INVALID, str(e))
         return HttpResponseForbidden(error, content_type='application/json')
     except Exception as e:
         message = (

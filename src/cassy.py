@@ -306,7 +306,7 @@ def get_authorized_vineyards(username):
 
     try:
         if username == '':
-            raise PlantalyticsEmailException(EMAIL_ERROR)
+            raise PlantalyticsVineyardException(USER_INVALID)
         rows = session.execute(bound)
 
         if not rows:

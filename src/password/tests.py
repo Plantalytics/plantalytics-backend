@@ -121,8 +121,8 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         cassy_auth.return_value = str(os.environ.get('ADMIN'))
-        username = 'mr.forgetful'
-        old_password = 'testme'
+        username = 'tubulartester'
+        old_password = 'testthis'
         new_password = 'newpass'
         auth_token = 'token'
         body = {
@@ -343,10 +343,10 @@ class MainTests(TestCase):
         setup_test_environment()
         client = Client()
         cassy_auth.return_value = str(os.environ.get('ADMIN'))
-        username = 'mr.forgetful'
-        old_password = 'testme'
-        new_password = 'testme'
-        auth_token = 'token'
+        username = 'tubulartester'
+        old_password = 'testthis'
+        new_password = 'testthis'
+        auth_token = 'chuckEcheese'
         body = {
             'auth_token': auth_token,
             'username': username,

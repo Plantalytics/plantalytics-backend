@@ -306,7 +306,7 @@ def get_authorized_vineyards(username):
 
     try:
         if username == '':
-            raise PlantalyticsEmailException(EMAIL_ERROR)
+            raise PlantalyticsVineyardException(USER_INVALID)
         rows = session.execute(bound)
 
         if not rows:
@@ -478,7 +478,9 @@ def change_user_password(username, new_password, old_password):
         new_row_values = {
             'username': rows[0].username,
             'password': new_password,
+            'admin': rows[0].admin,
             'email': rows[0].email,
+            'enable': rows[0].enable,
             'securitytoken': rows[0].securitytoken,
             'subenddate': rows[0].subenddate,
             'userid': rows[0].userid,
@@ -486,9 +488,9 @@ def change_user_password(username, new_password, old_password):
         }
         query = (
             'INSERT INTO {} '
-            '(username, password, email, securitytoken, '
+            '(username, password, admin, email, enable, securitytoken, '
             'subenddate, userid, vineyards) '
-            'VALUES(?, ?, ?, ?, ?, ?, ?);'
+            'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);'
         )
         prepared_statement = session.prepare(
             query.format(table)
@@ -557,3 +559,637 @@ def change_user_email(username, new_email):
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))
 
+
+def verify_authenticated_admin(auth_token):
+    """
+    Verifies if supplied auth token belongs to an admin user.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'securitytoken': auth_token,
+    }
+    query = (
+        'SELECT admin FROM {} WHERE securitytoken=? ALLOW FILTERING;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows or rows[0].admin is False:
+            return False
+        if rows[0].admin is True:
+            return True
+        return False
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def get_user_info(username):
+    """
+    Obtains email, user id, and vineyard ids for submitted user.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': username,
+    }
+    query = (
+        'SELECT admin, email, enable, subenddate, userid, vineyards '
+        'FROM {} WHERE username=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            raise PlantalyticsAuthException(USER_INVALID)
+        user_info = {
+            'is_admin': rows[0].admin,
+            'email': rows[0].email,
+            'is_enabled': rows[0].enable,
+            'sub_end_date': rows[0].subenddate,
+            'user_id': rows[0].userid,
+            'vineyards': rows[0].vineyards,
+        }
+        return user_info
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def create_new_user(new_user_info):
+    """
+    Creates new user in DB using the submitted info.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+            'username': new_user_info.get('username', ''),
+            'password': new_user_info.get('password', ''),
+            'email': new_user_info.get('email', ''),
+            'admin': new_user_info.get('admin', ''),
+            'enable': new_user_info.get('enable', ''),
+            'subenddate': new_user_info.get('subenddate', ''),
+            'userid': int(new_user_info.get('userid', '')),
+            'vineyards': new_user_info.get('vineyards', ''),
+    }
+    query = (
+        'INSERT INTO {} (username, password, admin, email, enable, '
+        'subenddate, userid, vineyards) '
+        'VALUES(?, ?, ?, ?, ?, ?, ?, ?);'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        session.execute(
+            prepared_statement,
+            parameters
+        )
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def update_user_subscription(username, sub_end_date):
+    """
+    Updates the subscription end date for the supplied user.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': username,
+        'subenddate': sub_end_date,
+    }
+    query = (
+        'UPDATE {} SET subenddate=? WHERE username=? AND password=?;'
+    )
+
+    try:
+        password = get_user_password(username)
+        if not password:
+            raise PlantalyticsAuthException(USER_INVALID)
+        parameters['password'] = password
+        prepared_statement = session.prepare(
+            query.format(table)
+        )
+        session.execute(
+            prepared_statement,
+            parameters
+        )
+        return True
+    # Known exception
+    except PlantalyticsLoginException as e:
+            raise PlantalyticsAuthException(USER_INVALID)
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def disable_user(username):
+    """
+    Disables user in DB for submitted username.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': username,
+        'enable': False,
+    }
+    query = (
+        'UPDATE {} SET enable=? WHERE username=? AND password=?;'
+    )
+
+    try:
+        password = get_user_password(username)
+        if not password:
+            raise PlantalyticsAuthException(USER_INVALID)
+        parameters['password'] = password
+        prepared_statement = session.prepare(
+            query.format(table)
+        )
+        session.execute(
+            prepared_statement,
+            parameters
+        )
+        return True
+    # Known exception
+    except PlantalyticsLoginException as e:
+            raise PlantalyticsAuthException(USER_INVALID)
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def edit_user(user_edit_info):
+    """
+    Edits user info in DB using submitted info.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': user_edit_info.get('username', ''),
+    }
+    query = (
+        'SELECT * FROM {} WHERE username=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            raise PlantalyticsAuthException(USER_INVALID)
+        old_row = {
+            'username': rows[0].username,
+            'password': rows[0].password,
+        }
+
+        edit_row = {
+            'username': rows[0].username,
+            'password': rows[0].password,
+            'admin': rows[0].admin,
+            'email': rows[0].email,
+            'enable': rows[0].enable,
+            'securitytoken': rows[0].securitytoken,
+            'subenddate': rows[0].subenddate,
+            'userid': rows[0].userid,
+            'vineyards': rows[0].vineyards,
+        }
+
+        for key in user_edit_info:
+            if user_edit_info.get(key, '') != '':
+                edit_row[key] = user_edit_info.get(key, '')
+
+        query = (
+            'INSERT INTO {} '
+            '(username, password, admin, email, enable, '
+            'securitytoken, subenddate, userid, vineyards) '
+            'VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);'
+        )
+        prepared_statement = session.prepare(
+            query.format(table)
+        )
+        session.execute(
+            prepared_statement,
+            edit_row
+        )
+        new_password = edit_row.get('password', '')
+        old_password = old_row.get('password', '')
+        if (new_password != old_password):
+            query = (
+                'DELETE FROM {} WHERE username=? AND password=?;'
+            )
+            prepared_statement = session.prepare(
+                query.format(table)
+            )
+            session.execute(
+                prepared_statement,
+                old_row
+            )
+        return True
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def edit_vineyard(edit_vineyard_info):
+    """
+    Edits vineyard info in DB using submitted info.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_VINE_TABLE'))
+    parameters = {
+        'vineid': int(edit_vineyard_info.get('vineyard_id', '')),
+    }
+    query = (
+        'SELECT * FROM {} WHERE vineid=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            raise PlantalyticsAuthException(VINEYARD_ID_NOT_FOUND)
+
+        edit_row = {
+            'vineid': rows[0].vineid,
+            'boundaries': rows[0].boundaries,
+            'center': rows[0].center,
+            'enable': rows[0].enable,
+            'ownerlist': rows[0].ownerlist,
+            'vinename': rows[0].vinename,
+        }
+        if edit_vineyard_info.get('vineyard_id', '') != '':
+            edit_row['vineid'] = int(edit_vineyard_info.get('vineyard_id', ''))
+        if edit_vineyard_info.get('boundaries', '') != '':
+            boundaries = []
+            for point in edit_vineyard_info.get('boundaries', ''):
+                coordinate = (
+                    float(point['lon']),
+                    float(point['lat'])
+                )
+                boundaries.append(coordinate)
+            edit_row['boundaries'] = boundaries
+        if edit_vineyard_info.get('center', '') != '':
+            center_point = edit_vineyard_info.get('center', '')
+            center = (
+                float(center_point['lon']),
+                float(center_point['lat']),
+            )
+            edit_row['center'] = center
+        if edit_vineyard_info.get('enable', '') != '':
+            edit_row['enable'] = edit_vineyard_info.get('enable', '')
+        if edit_vineyard_info.get('owners', '') != '':
+            edit_row['ownerlist'] = edit_vineyard_info.get('owners', '')
+        if edit_vineyard_info.get('name', '') != '':
+            edit_row['vinename'] = edit_vineyard_info.get('name', '')
+
+        query = (
+            'INSERT INTO {} '
+            '(vineid, boundaries, center, enable, ownerlist, vinename) '
+            'VALUES(?, ?, ?, ?, ?, ?);'
+        )
+        prepared_statement = session.prepare(
+            query.format(table)
+        )
+        session.execute(
+            prepared_statement,
+            edit_row
+        )
+        return True
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def create_new_vineyard(new_vineyard_info):
+    """
+    Creates new vineyard in DB using the submitted info.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_VINE_TABLE'))
+    parameters = {
+            'vineid': int(new_vineyard_info.get('vineyard_id', '')),
+            'ownerlist': new_vineyard_info.get('owners', ''),
+            'vinename': new_vineyard_info.get('name', ''),
+            'enable': new_vineyard_info.get('enable', ''),
+    }
+    boundaries = []
+    for point in new_vineyard_info.get('boundaries', ''):
+        coordinate = (
+            float(point['lon']),
+            float(point['lat'])
+        )
+        boundaries.append(coordinate)
+    center_point = new_vineyard_info.get('center', '')
+    center = (
+        float(center_point['lon']),
+        float(center_point['lat']),
+    )
+    parameters['boundaries'] = boundaries
+    parameters['center'] = center
+    query = (
+        'INSERT INTO {} '
+        '(vineid, boundaries, center, enable, ownerlist, vinename) '
+        'VALUES(?, ?, ?, ?, ?, ?);'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        session.execute(
+            prepared_statement,
+            parameters
+        )
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def get_vineyard_users(vineyard_id):
+    """
+    Obtains the users of the supplied vineyard id.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    query = (
+        'SELECT username FROM {} WHERE vineyards CONTAINS ' +
+        str(vineyard_id) + ';'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement
+        )
+        if not rows:
+            raise PlantalyticsAuthException(AUTH_NOT_FOUND)
+        users = []
+        for row in rows:
+            users.append(row.username)
+        return users
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def get_vineyard_info(vineyard_id):
+    """
+    Obtains the name, owners, and users of a vineyard
+    matching the supplied vineyard id.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = os.environ.get('DB_VINE_TABLE')
+    query = (
+        'SELECT vinename, ownerlist, enable FROM {} WHERE vineid=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        if vineyard_id == '':
+            raise PlantalyticsVineyardException(VINEYARD_NO_ID)
+        # Ensures vineyard_id is integer
+        vineyard_id = int(vineyard_id)
+        if vineyard_id < 0:
+            raise PlantalyticsVineyardException(VINEYARD_BAD_ID)
+        parameters = {
+            'vineid': vineyard_id,
+        }
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            raise PlantalyticsVineyardException(VINEYARD_ID_NOT_FOUND)
+
+        owners = []
+        for owner in rows[0].ownerlist:
+            owners.append(owner)
+        users = get_vineyard_users(vineyard_id)
+        vineyard_info = {
+            'name': rows[0].vinename,
+            'owners': owners,
+            'users': users,
+            'is_enable': rows[0].enable,
+        }
+        return vineyard_info
+    # Known exception
+    except PlantalyticsAuthException as e:
+        raise PlantalyticsVineyardException(VINEYARD_ID_NOT_FOUND)
+    except PlantalyticsException as e:
+        raise e
+    except ValueError as e:
+        raise PlantalyticsVineyardException(VINEYARD_BAD_ID)
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def disable_vineyard(vineyard_id):
+    """
+    Disables vineyard in DB for submitted vineyard id.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_VINE_TABLE'))
+    parameters = {
+        'vineid': int(vineyard_id),
+    }
+    query = (
+        'SELECT * FROM {} WHERE vineid=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            raise PlantalyticsVineyardException(VINEYARD_BAD_ID)
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+    parameters['enable'] = False
+    query = (
+        'UPDATE {} SET enable=? WHERE vineid=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        session.execute(
+            prepared_statement,
+            parameters
+        )
+        return True
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def check_username_exists(username):
+    """
+    Checks if submitted username exists in the database.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': username,
+    }
+    query = (
+        'SELECT * FROM {} WHERE username=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            return False
+        return True
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def check_user_id_exists(user_id):
+    """
+    Checks if submitted user ID exists in the database.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'userid': int(user_id),
+    }
+    query = (
+        'SELECT * FROM {} WHERE userid=? ALLOW FILTERING;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            return False
+        return True
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def check_vineyard_id_exists(vineyard_id):
+    """
+    Checks if submitted vineyard ID exists in the database.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_VINE_TABLE'))
+    parameters = {
+        'vineid': int(vineyard_id),
+    }
+    query = (
+        'SELECT * FROM {} WHERE vineid=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            return False
+        return True
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))

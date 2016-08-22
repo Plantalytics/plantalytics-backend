@@ -168,8 +168,8 @@ def change(request):
         )
         error = custom_error(UNKNOWN, str(e))
         return HttpResponseServerError(error, content_type='application/json')
-
-    return HttpResponse()
+    body = {'errors': {}}
+    return HttpResponse(json.dumps(body), content_type='application/json')
 
 
 @csrf_exempt
@@ -234,5 +234,5 @@ def reset(request):
         logger.exception(message)
         error = custom_error(EMAIL_RESET_ERROR, str(e))
         return HttpResponseForbidden(error, content_type='application/json')
-
-    return HttpResponse()
+    body = {'errors': {}}
+    return HttpResponse(json.dumps(body), content_type='application/json')

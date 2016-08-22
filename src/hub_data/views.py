@@ -51,7 +51,8 @@ def index(request):
         logger.info('Inserting hub data.')
         cassy.store_env_data(data)
         logger.info('Successfully inserted hub data.')
-        return HttpResponse()
+        body = {'errors': {}}
+        return HttpResponse(json.dumps(body), content_type='application/json')
     except PlantalyticsException as e:
         message = (
             'Error attempting to process hub data. Error code: {}'
@@ -64,4 +65,5 @@ def index(request):
             'Error occurred while inserting hub data for hub id \'{}\'. {}'
         ).format(hub_id, str(e))
         logger.exception(message)
-        return HttpResponseBadRequest()
+        error = custom_error(str(e))
+        return HttpResponseBadRequest(error, content_type='application/json')

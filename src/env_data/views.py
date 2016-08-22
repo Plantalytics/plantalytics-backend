@@ -111,7 +111,8 @@ def index(request):
             'Error occurred while auth token for vineyard id {}. {}'
         ).format(str(vineyard_id), str(e))
         logger.exception(message)
-        return HttpResponseForbidden()
+        error = custom_error(str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
 
     try:
         message = (

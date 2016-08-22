@@ -7,7 +7,6 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
-import os
 import uuid
 import json
 import logging
@@ -50,7 +49,7 @@ def check_user_is_enabled(username):
 
 def check_user_subscription_end_date(username):
     """
-    Checks that the user account subscription date has not expired.
+    Checks if the user account subscription date has expired.
     """
 
     try:
@@ -64,7 +63,9 @@ def check_user_subscription_end_date(username):
             'Successfully verified subscription for user \'{}\'.'
         ).format(username)
         logger.info(message)
-        if time.strptime(sub_end_date, '%Y-%m-%d') < time.strptime(current_date, '%Y-%m-%d'):
+        expire_time = time.strptime(sub_end_date, '%Y-%m-%d')
+        current_time = time.strptime(current_date, '%Y-%m-%d')
+        if expire_time < current_time:
             return True
         return False
     except PlantalyticsException as e:

@@ -104,5 +104,5 @@ def index(request):
         error_code = AUTH_NO_TOKEN if auth_token == '' else EMAIL_INVALID
         error = custom_error(error_code)
         return HttpResponseBadRequest(error, content_type='application/json')
-
-    return HttpResponse()
+    body = {'errors': {}}
+    return HttpResponse(json.dumps(body), content_type='application/json')

@@ -205,3 +205,12 @@ class MainTests(TestCase):
         for key in error:
             self.assertEqual('change_email_unknown', key)
         self.assertEqual(response.status_code, 500)
+
+    def test_email_change_invalid_method(self):
+        """
+        Tests the email change endpoint with unsupported HTTP method.
+        """
+        setup_test_environment()
+        client = Client()
+        response = client.get('/email_change')
+        self.assertEqual(response.status_code, 405)

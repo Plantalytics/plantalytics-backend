@@ -7,9 +7,8 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
-from django.conf.urls import url
-from .import views
+from django.apps import AppConfig
 
-urlpatterns = [
-    url(r'^$', views.index, name='index'),
-]
+
+class PasswordConfig(AppConfig):
+    name = 'password'

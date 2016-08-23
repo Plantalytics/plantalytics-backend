@@ -7,16 +7,8 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
-# !/usr/bin/env python
-import os
-import sys
+from __future__ import unicode_literals
 
-if __name__ == '__main__':
-    os.environ.setdefault(
-        'DJANGO_SETTINGS_MODULE',
-        'plantalytics_backend.settings'
-    )
+from django.db import models
 
-    from django.core.management import execute_from_command_line
-
-    execute_from_command_line(sys.argv)
+# Create your models here.

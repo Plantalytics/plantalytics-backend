@@ -7,16 +7,8 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
-# !/usr/bin/env python
-import os
-import sys
+from django.apps import AppConfig
 
-if __name__ == '__main__':
-    os.environ.setdefault(
-        'DJANGO_SETTINGS_MODULE',
-        'plantalytics_backend.settings'
-    )
 
-    from django.core.management import execute_from_command_line
-
-    execute_from_command_line(sys.argv)
+class HubDataConfig(AppConfig):
+    name = 'hub_data'

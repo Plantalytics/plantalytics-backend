@@ -10,32 +10,89 @@
 import json
 import logging
 
-from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseBadRequest
+from common.exceptions import PlantalyticsException
+from common.errors import *
+from django.views.decorators.csrf import csrf_exempt
+from django.http import (
+    HttpResponse,
+    HttpResponseBadRequest,
+    HttpResponseForbidden,
+    HttpResponseNotAllowed
+)
 
 import cassy
 
 logger = logging.getLogger('plantalytics_backend.vineyard')
 
 
+@csrf_exempt
 def index(request):
     """
-    Access database to respond with requested vineyard metadata.
+    Accesses database to respond with requested vineyard metadata.
     """
-    vineyard_id = request.GET.get('vineyard_id', '')
-    response = {}
+
+    if request.method != "POST":
+        return HttpResponseNotAllowed(['POST'])
+
+    data = json.loads(request.body.decode('utf-8'))
+    vineyard_id = str(data.get('vineyard_id', ''))
+    auth_token = str(data.get('auth_token', ''))
 
     try:
-        logger.info('Fetching vineyard data for vineyard id \'' + vineyard_id + '\'.')
-        coordinates = cassy.get_vineyard_coordinates(vineyard_id)
-        logger.info('Successfully fetched vineyard data for vineyard id \'' + vineyard_id + '\'.')
+        message = (
+            'Validating auth token for vineyard id {}.'
+        ).format(vineyard_id)
+        logger.info(message)
 
-        response['center'] = coordinates[0]
-        response['boundary'] = coordinates[1]
-        return HttpResponse(json.dumps(response), content_type='application/json')
+        cassy.verify_auth_token(auth_token)
+    except PlantalyticsException as e:
+        message = (
+            'Invalid auth token for vineyard id {}'
+        ).format(vineyard_id)
+        logger.warn(message)
+        error = custom_error(str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
     except Exception as e:
-        logger.exception('Error occurred while fetching vineyard data for '
-                    + 'vineyard id \'' + vineyard_id + ' \'.'
-                    + str(e)
+        message = (
+            'Error occurred while auth token for vineyard id {}\n{}.'
+        ).format(vineyard_id, str(e))
+        logger.exception(message)
+        error = custom_error(AUTH_UNKNOWN, str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
+
+    try:
+        message = (
+            'Fetching vineyard data for vineyard id {}.'
+        ).format(vineyard_id)
+        logger.info(message)
+
+        coordinates = cassy.get_vineyard_coordinates(vineyard_id)
+
+        message = (
+            'Successfully fetched vineyard data for vineyard id {}.'
+        ).format(vineyard_id)
+        logger.info(message)
+
+        response = {
+            'center': coordinates[0],
+            'boundary': coordinates[1],
+        }
+        return HttpResponse(
+            json.dumps(response),
+            content_type='application/json'
         )
-        return HttpResponseBadRequest()
+    except PlantalyticsException as e:
+        message = (
+            'Invalid vineyard ID while fetching vineyard data: {}'
+        ).format(vineyard_id)
+        logger.warn(message)
+        error = custom_error(str(e))
+        return HttpResponseBadRequest(error, content_type='application/json')
+    except Exception as e:
+        message = (
+            'Error occurred while fetching vineyard data for '
+            'vineyard id {}. {}'
+        ).format(vineyard_id, str(e))
+        logger.exception(message)
+        error = custom_error(VINEYARD_UNKNOWN, str(e))
+        return HttpResponseBadRequest(error, content_type='application/json')

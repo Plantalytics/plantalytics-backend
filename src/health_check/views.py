@@ -7,17 +7,19 @@
 # Contact: plantalytics.capstone@gmail.com
 #
 
+import json
 import logging
 
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 
-logger = logging.getLogger('plantalytics_backend.tests')
+logger = logging.getLogger('plantalytics_backend.health_check')
 
 
+@csrf_exempt
 def index(request):
-    logger.info('Hello, Logging World!!')
-    return HttpResponse(
-                'Hello , Plantalytics World!! '
-                + 'Welcome to the backend, '
-                + 'where things ain\'t pretty, but they get stuff DONE!'
-    )
+    logger.info('It\'s Alive!!')
+    response = {
+        'isAlive': True,
+    }
+    return HttpResponse(json.dumps(response), content_type='application/json')

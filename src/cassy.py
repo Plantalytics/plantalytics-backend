@@ -71,6 +71,72 @@ def get_env_data(node_id, env_variable):
             else:
                 # Shouldn't reach this point, but here for completeness
                 raise PlantalyticsDataException(ENV_DATA_UNKNOWN)
+    except PlantalyticsDataException as e:
+        raise e
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def check_latest_batch_time(vineyard_id):
+    """
+    Checks hub timestamps for submitted vineyard id.
+    """
+
+    table = os.environ.get('DB_HW_TABLE')
+    parameters = {
+        'vineid': int(vineyard_id),
+    }
+    query = (
+        'SELECT lasthubbatchsent FROM {} WHERE vineid=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            raise PlantalyticsDataException(VINEYARD_ID_NOT_FOUND)
+        return rows
+    except PlantalyticsDataException as e:
+        raise e
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def set_latest_batch_time(vineyard_id, hub_id, batch_sent, hub_data):
+    """
+    Inserts timestamp for latest data, received from a hub, into the database.
+    """
+
+    table = os.environ.get('DB_HW_TABLE')
+    parameters = {
+        'vineid': vineyard_id,
+        'hubid': hub_id,
+        'lasthubbatchsent': batch_sent,
+    }
+    query = (
+        'UPDATE {} SET lasthubbatchsent=? '
+        'WHERE vineid=? AND hubid=? AND nodeid=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+    batch_statement = BatchStatement()
+
+    try:
+        for data_point in hub_data:
+            parameters['nodeid'] = int(data_point['node_id'])
+            batch_statement.add(
+                prepared_statement,
+                parameters
+            )
+        session.execute(batch_statement)
+        return True
+    # Unknown exception
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))
 
@@ -92,6 +158,12 @@ def store_env_data(env_data):
     batch_statement = BatchStatement()
 
     try:
+        set_latest_batch_time(
+            int(env_data.get('vine_id', '')),
+            int(env_data.get('hub_id', '')),
+            env_data.get('batch_sent', ''),
+            env_data.get('hub_data', '')
+        )
         for data_point in env_data['hub_data']:
             data = (
                 data_point['node_id'],
@@ -295,48 +367,91 @@ def get_authorized_vineyards(username):
     Obtains authorized vineyard ids for requested user.
     """
 
-    values = {'username': username}
-    vineyards_stmt_get = session.prepare(
-        'SELECT vineyards'
-        + ' FROM ' + os.environ.get('DB_USER_TABLE')
-        + ' WHERE username=?'
-    )
-    bound = vineyards_stmt_get.bind(values)
     session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': username,
+    }
+    query = (
+        'SELECT vineyards FROM {} WHERE username=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
 
     try:
         if username == '':
-            raise PlantalyticsVineyardException(USER_INVALID)
-        rows = session.execute(bound)
+            raise PlantalyticsEmailException(EMAIL_ERROR)
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
 
         if not rows:
             raise PlantalyticsLoginException(LOGIN_NO_VINEYARDS)
         else:
             # Loop through vineyards and grab vineyard names
             vineyard_ids = rows[0].vineyards
-            vineyard_object_array = []
+            authorized_vineyards = []
 
             # Assemble array of vineyard id/name combinations
             for vine in vineyard_ids:
                 # Perform query for vineyard name
-                values = {'vineid': vine}
-                vineyard_names_stmt_get = session.prepare(
-                    'SELECT vinename'
-                    + ' FROM ' + os.environ.get('DB_VINE_TABLE')
-                    + ' WHERE vineid=?'
+                table = str(os.environ.get('DB_VINE_TABLE'))
+                parameters = {
+                    'vineid': vine,
+                }
+                query = (
+                    'SELECT vinename FROM {} WHERE vineid=?;'
                 )
-                bound = vineyard_names_stmt_get.bind(values)
-                session.row_factory = named_tuple_factory
-                name_rows = session.execute(bound)
-
-                cur_vineyard_object = {
+                prepared_statement = session.prepare(
+                    query.format(table)
+                )
+                name_rows = session.execute(
+                    prepared_statement,
+                    parameters
+                )
+                current_vineyard = {
                     'vineyard_id': vine,
                     'vineyard_name': name_rows[0].vinename
                 }
-                vineyard_object_array.append(cur_vineyard_object)
+                authorized_vineyards.append(current_vineyard)
 
             # Return completed object.
-            return vineyard_object_array
+            return authorized_vineyards
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: ' + str(e))
+
+
+def get_vineyard_name(vineyard_id):
+    """
+    Obtains vineyard name for the submitted vineyard id.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_VINE_TABLE'))
+    parameters = {
+        'vineid': int(vineyard_id),
+    }
+    query = (
+        'SELECT vinename FROM {} WHERE vineid=?;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            raise PlantalyticsLoginException(LOGIN_NO_VINEYARDS)
+        return rows[0].vinename
     # Known exception
     except PlantalyticsException as e:
         raise e
@@ -410,6 +525,9 @@ def set_user_auth_token(username, password, auth_token):
             parameters
         )
         return True
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
     except Exception as e:
         raise Exception('Transaction Error Occurred: '.format(str(e)))
 
@@ -1187,6 +1305,72 @@ def check_vineyard_id_exists(vineyard_id):
         if not rows:
             return False
         return True
+    # Known exception
+    except PlantalyticsException as e:
+        raise e
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def verify_user_account(username):
+    """
+    Verifies if account for supplied username is enabled.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': username,
+    }
+    query = (
+        'SELECT enable FROM {} WHERE username=? ALLOW FILTERING;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if (not rows or rows[0].enable is False):
+            return False
+        if (rows[0].enable is True):
+            return True
+        return False
+    # Unknown exception
+    except Exception as e:
+        raise Exception('Transaction Error Occurred: '.format(str(e)))
+
+
+def get_user_subscription(username):
+    """
+    Obtains subscription end date for the requested user.
+    """
+
+    session.row_factory = named_tuple_factory
+    table = str(os.environ.get('DB_USER_TABLE'))
+    parameters = {
+        'username': username,
+    }
+    query = (
+        'SELECT subenddate FROM {} WHERE username=? ALLOW FILTERING;'
+    )
+    prepared_statement = session.prepare(
+        query.format(table)
+    )
+
+    try:
+        rows = session.execute(
+            prepared_statement,
+            parameters
+        )
+        if not rows:
+            raise PlantalyticsException(LOGIN_ERROR)
+        else:
+            return rows[0].subenddate
     # Known exception
     except PlantalyticsException as e:
         raise e

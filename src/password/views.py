@@ -29,7 +29,26 @@ from django.utils.http import urlencode
 
 logger = logging.getLogger('plantalytics_backend.login')
 
-# TODO: Ensure reset-token is single use
+
+def reset_auth_token(username, new_password):
+    """
+    Changes the reset token after changing user's password via the
+    forgot password link.
+    """
+
+    try:
+        logger.info('Resetting user auth token.')
+        new_auth_token = str(uuid.uuid4())
+        cassy.set_user_auth_token(
+            username,
+            new_password,
+            new_auth_token
+        )
+        logger.info('Successfully reset user auth token.')
+    except PlantalyticsException as e:
+        raise e
+    except Exception as e:
+        raise e
 
 
 @csrf_exempt
@@ -78,12 +97,16 @@ def change(request):
                 'Password for \'{}\' successfully changed.'
             ).format(username)
             logger.info(message)
+            reset_auth_token(
+                username,
+                new_password
+            )
         # Else, password being reset by admin or logged-in user
         else:
             logger.info('Attempting password reset using auth token.')
-            verified_name = cassy.verify_auth_token(auth_token)
+            verified_admin = cassy.verify_authenticated_admin(auth_token)
             # if the auth token is associated with the admin user,
-            if verified_name == str(os.environ.get('ADMIN')):
+            if verified_admin is True:
                 if username:
                     stored_password = cassy.get_user_password(username)
                     if new_password == stored_password:
@@ -104,6 +127,7 @@ def change(request):
                     logger.warn('Invalid username. Username cannot be empty.')
                     raise PlantalyticsException(RESET_ERROR_USERNAME)
             else:
+                verified_name = cassy.verify_auth_token(auth_token)
                 message = (
                     'User \'{}\' attempting to reset password.'
                 ).format(verified_name)
@@ -144,8 +168,8 @@ def change(request):
         )
         error = custom_error(UNKNOWN, str(e))
         return HttpResponseServerError(error, content_type='application/json')
-
-    return HttpResponse()
+    body = {'errors': {}}
+    return HttpResponse(json.dumps(body), content_type='application/json')
 
 
 @csrf_exempt
@@ -210,5 +234,5 @@ def reset(request):
         logger.exception(message)
         error = custom_error(EMAIL_RESET_ERROR, str(e))
         return HttpResponseForbidden(error, content_type='application/json')
-
-    return HttpResponse()
+    body = {'errors': {}}
+    return HttpResponse(json.dumps(body), content_type='application/json')

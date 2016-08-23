@@ -14,6 +14,8 @@ ADMIN_INVALID = 'admin_invalid'
 AUTH_NO_TOKEN = 'auth_error_no_token'
 AUTH_UNKNOWN = 'auth_error_unknown'
 AUTH_NOT_FOUND = 'auth_error_not_found'
+AUTH_DISABLED = 'auth_error_disabled'
+AUTH_EXPIRED = 'auth_error_expired'
 CHANGE_ERROR_PASSWORD = 'reset_error_password'
 CHANGE_EMAIL_UNKNOWN = 'change_email_unknown'
 DATA_INVALID = 'data_invalid'
@@ -46,6 +48,8 @@ responses = {
     AUTH_NO_TOKEN: 'Missing auth token in request.',
     AUTH_UNKNOWN: 'Unexpected error occurred during authorization.',
     AUTH_NOT_FOUND: 'Auth token not found.',
+    AUTH_DISABLED: 'User account has been disabled.',
+    AUTH_EXPIRED: 'The subscription for this account has expired.',
     CHANGE_ERROR_PASSWORD: 'Invalid new password.',
     CHANGE_EMAIL_UNKNOWN: 'Unknown error while attempting to change email',
     DATA_INVALID: 'Submitted data is invalid.',

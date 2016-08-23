@@ -11,10 +11,12 @@ import json
 import logging
 
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 
 logger = logging.getLogger('plantalytics_backend.health_check')
 
 
+@csrf_exempt
 def index(request):
     logger.info('It\'s Alive!!')
     response = {

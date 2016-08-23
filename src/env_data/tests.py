@@ -145,7 +145,8 @@ class MainTests(TestCase):
         self.assertTrue('env_data_invalid' in error)
         self.assertEqual(response.status_code, 400)
 
-    def test_response_env_data_request_missing_vineyard(self):
+    @patch('cassy.check_latest_batch_time')
+    def test_response_env_data_request_missing_vineyard(self, cassy_mock):
         """
         Test env data endpoint when a vineyard id is missing.
         """
@@ -161,6 +162,7 @@ class MainTests(TestCase):
             content_type='application/json'
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
+        cassy_mock.assert_called_once_with('')
         self.assertTrue('vineyard_no_id' in error)
         self.assertEqual(response.status_code, 400)
 
@@ -183,7 +185,8 @@ class MainTests(TestCase):
         self.assertTrue('env_data_invalid' in error)
         self.assertEqual(response.status_code, 400)
 
-    def test_response_invalid_env_data_request_non_integer_id(self):
+    @patch('cassy.check_latest_batch_time')
+    def test_response_invalid_env_data_request_non_int_id(self, cassy_mock):
         """
         Test env data endpoint when an invalid vineyard id type is supplied.
         """
@@ -200,6 +203,7 @@ class MainTests(TestCase):
             content_type='application/json'
         )
         error = json.loads(response.content.decode('utf-8'))['errors']
+        cassy_mock.assert_called_once_with(body.get('vineyard_id', ''))
         self.assertTrue('vineyard_bad_id' in error)
         self.assertEqual(response.status_code, 400)
 

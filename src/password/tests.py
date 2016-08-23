@@ -19,6 +19,7 @@ from common.exceptions import *
 from unittest.mock import patch
 
 import cassy
+from password.views import reset_auth_token
 
 
 class MainTests(TestCase):
@@ -70,7 +71,7 @@ class MainTests(TestCase):
             )
             for _ in range(6)
         )
-        auth_token = 'token'
+        auth_token = os.environ.get('ADMIN_TOKEN')
         body = {
             'auth_token': auth_token,
             'username': username,
@@ -84,7 +85,8 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     @patch('cassy.change_user_password')
-    def test_password_change_with_mail_token(self, cassy_mock):
+    @patch('password.views.reset_auth_token')
+    def test_password_change_with_mail_token(self, reset_mock, cassy_mock):
         """
         Tests the case where a user logs in after
         receiving gotten a password reset email.
@@ -109,10 +111,14 @@ class MainTests(TestCase):
             new_password,
             old_password
         )
+        reset_mock.assert_called_once_with(
+            username,
+            new_password
+        )
         self.assertEqual(response.status_code, 200)
 
     @patch('cassy.change_user_password')
-    @patch('cassy.verify_auth_token')
+    @patch('cassy.verify_authenticated_admin')
     def test_password_change_with_admin(self, cassy_auth, cassy_mock):
         """
         Tests the case where an admin resets someone's password.
@@ -120,7 +126,7 @@ class MainTests(TestCase):
         """
         setup_test_environment()
         client = Client()
-        cassy_auth.return_value = str(os.environ.get('ADMIN'))
+        cassy_auth.return_value = True
         username = 'tubulartester'
         old_password = 'testthis'
         new_password = 'newpass'
@@ -184,7 +190,7 @@ class MainTests(TestCase):
         self.assertTrue('login_error' in error)
         self.assertEqual(response.status_code, 403)
 
-    @patch('cassy.verify_auth_token')
+    @patch('cassy.verify_authenticated_admin')
     def test_password_change_with_admin_empty_username(self, cassy_auth):
         """
         Tests the case where an admin resets someone's password,
@@ -193,7 +199,7 @@ class MainTests(TestCase):
         """
         setup_test_environment()
         client = Client()
-        cassy_auth.return_value = str(os.environ.get('ADMIN'))
+        cassy_auth.return_value = True
         new_password = 'newpass'
         auth_token = 'token'
         body = {
@@ -330,7 +336,7 @@ class MainTests(TestCase):
         self.assertEqual(response.status_code, 400)
 
     @patch('cassy.change_user_password')
-    @patch('cassy.verify_auth_token')
+    @patch('cassy.verify_authenticated_admin')
     def test_admin_password_change_same_old_and_new(
         self,
         cassy_auth,
@@ -342,7 +348,7 @@ class MainTests(TestCase):
         """
         setup_test_environment()
         client = Client()
-        cassy_auth.return_value = str(os.environ.get('ADMIN'))
+        cassy_auth.return_value = True
         username = 'tubulartester'
         old_password = 'testthis'
         new_password = 'testthis'
@@ -490,3 +496,15 @@ class MainTests(TestCase):
             rows = cassy.get_user_email(username)
         except PlantalyticsException as e:
             self.assertEqual('email_reset_error', str(e))
+
+    @patch('cassy.set_user_auth_token')
+    def test_auth_token_reset(self, cassy_mock):
+        """
+        Tests the auth token reset.
+        """
+        setup_test_environment()
+        client = Client()
+        username = 'somePersonYouMightKnow'
+        new_password = 'someNewPasswordYouMightKnow'
+        reset_auth_token(username, new_password)
+        self.assertTrue(cassy_mock.called)

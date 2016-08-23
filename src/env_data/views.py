@@ -9,9 +9,14 @@
 
 import json
 import logging
+import time
+import datetime
+import os
 
 from common.exceptions import *
 from common.errors import *
+from django.core.mail import send_mail
+from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.http import (
     HttpResponse,
@@ -23,6 +28,62 @@ from django.http import (
 import cassy
 
 logger = logging.getLogger('plantalytics_backend.env_data')
+
+
+def check_hubs_not_reporting(latest_times):
+    """
+    Checks if the most recent hub batch times haven't reported in
+    more than 20 minutes.
+    """
+
+    try:
+        timestamp_format = "%Y-%m-%d %H:%M:%S"
+        current_epoch_time = time.strftime(
+            timestamp_format,
+            time.gmtime(time.time())
+        )
+        current_timestamp = datetime.datetime.strptime(
+            current_epoch_time,
+            timestamp_format
+        )
+        current_unix_timestamp = time.mktime(current_timestamp.timetuple())
+
+        for timestamp in latest_times:
+            batch_time = timestamp.lasthubbatchsent
+            batch_unix_time = time.mktime(batch_time.timetuple())
+            time_elapsed = (
+                int(current_unix_timestamp - batch_unix_time) / 60
+            )
+            if(time_elapsed > 20):
+                return False
+        return True
+    except ValueError as e:
+        raise e
+    except Exception as e:
+        raise e
+
+
+def send_hub_not_reporting_email(vineyard_id):
+    """
+    Checks if the most recent hub batch times haven't reported in
+    more than 20 minutes.
+    """
+
+    try:
+        vineyard_name = str(cassy.get_vineyard_name(vineyard_id))
+        message = (
+            'A hub has failed to report data within the last 20 minutes at '
+            'the following vineyard:\n\n{}'
+        ).format(vineyard_name)
+        send_mail(
+            'Plantalytics - Hub Not Reporting',
+            message,
+            settings.EMAIL_HOST_USER,
+            [os.environ.get('RESET_EMAIL')],
+            fail_silently=False,
+        )
+    except Exception as e:
+        raise e
 
 
 @csrf_exempt
@@ -50,13 +111,29 @@ def index(request):
             'Error occurred while auth token for vineyard id {}. {}'
         ).format(str(vineyard_id), str(e))
         logger.exception(message)
-        return HttpResponseForbidden()
+        error = custom_error(str(e))
+        return HttpResponseForbidden(error, content_type='application/json')
 
     try:
         message = (
             'Fetching {} data.'
         ).format(env_variable)
         logger.info(message)
+
+        # Check most recent hub batch timestamp
+        message = (
+            'Checking latest hub batch times.'
+        )
+        logger.info(message)
+        latest_times = cassy.check_latest_batch_time(vineyard_id)
+        hubs_are_reporting = check_hubs_not_reporting(latest_times)
+        if(hubs_are_reporting is False):
+            message = (
+                'A hub for vineyard id {} has not reported in the last 20 min.'
+            ).format(str(vineyard_id))
+            logger.warn(message)
+            send_hub_not_reporting_email(vineyard_id)
+
         coordinates = cassy.get_node_coordinates(vineyard_id)
 
         # Build data structure to return as JSON response content.
@@ -90,6 +167,13 @@ def index(request):
         ).format(str(e))
         logger.warn(message)
         error = custom_error(str(e))
+        return HttpResponseBadRequest(error, content_type='application/json')
+    except ValueError as e:
+        message = (
+            'Error occurred while fetching {} data for vineyard id {}. {}'
+        ).format(env_variable, str(vineyard_id), str(e))
+        logger.exception(message)
+        error = custom_error(ENV_DATA_UNKNOWN, str(e))
         return HttpResponseBadRequest(error, content_type='application/json')
     except Exception as e:
         message = (

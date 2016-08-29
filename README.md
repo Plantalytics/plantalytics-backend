@@ -78,6 +78,12 @@ If successful, you should see the following response:
 For more information, including API details, please see the 
 [documentation repository](https://github.com/Plantalytics/documentation).
 
+## Contribution
+
+Development on this version of the Plantalytics system has closed. If you 
+would like to continue work, you are more than welcome to branch this 
+repository, as per the license.
+
 ## License
 
 Copyright (c) 2016 Sapphire Becker, Katy Brimm, Scott Ewing, Matt Fraser, 
